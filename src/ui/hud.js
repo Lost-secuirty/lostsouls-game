@@ -17,6 +17,19 @@ export const hud = {
     el.textContent = '❤️'.repeat(Math.max(0, n)) + '🖤'.repeat(Math.max(0, max - n));
   },
 
+  // Player 2 (co-op) hearts — green
+  setHearts2(n, max) {
+    const el = $('hearts2');
+    if (!el) return;
+    el.textContent = 'P2 ' + '💚'.repeat(Math.max(0, n)) + '🖤'.repeat(Math.max(0, max - n));
+  },
+
+  // show/hide the co-op (P2) HUD bits
+  setCoop(on) {
+    const el = $('hearts2');
+    if (el) el.style.display = on ? 'block' : 'none';
+  },
+
   setLives(n) {
     const el = $('lives');
     if (el) el.textContent = `LIVES ${'🔺'.repeat(Math.max(0, n))}`;

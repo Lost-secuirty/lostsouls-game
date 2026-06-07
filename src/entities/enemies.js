@@ -77,7 +77,7 @@ export class Enemy {
 
   update(dt, game) {
     if (this.dead) return;
-    const p = game.player;
+    const p = game.nearestPlayer(this.x, this.z) || game.player;
     this.contactTimer -= dt;
 
     if (this.type === 'chaser') {

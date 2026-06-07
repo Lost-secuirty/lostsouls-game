@@ -1,7 +1,7 @@
 // =====================================================================
-// player.js — that's you. Move with WASD (or left stick), aim + shoot with
-// the mouse (or right stick), lose hearts when monsters hit you, and grab
-// items + weapons.
+// player.js — a player. Player 1 = keyboard/mouse (blue); Player 2 (co-op) =
+// Xbox controller (green). Both are the same class with a different `device`
+// and look. Move, aim + shoot, lose hearts, grab items + weapons.
 // =====================================================================
 
 import * as THREE from 'three';
@@ -13,15 +13,16 @@ import * as audio from '../systems/audio.js';
 import { hud } from '../ui/hud.js';
 
 export class Player {
-  constructor(scene) {
-    this.mesh = makeCharacter('player', {
+  constructor(scene, { color = PALETTE.player, modelKey = 'player', device = 'both' } = {}) {
+    this.device = device; // 'kb' | 'pad' | 'both'
+    this.mesh = makeCharacter(modelKey, {
       radius: PLAYER.radius,
       height: PLAYER.height,
-      color: PALETTE.player,
+      color,
     });
     scene.add(this.mesh);
     this.radius = PLAYER.radius;
-    this._baseColor = new THREE.Color(PALETTE.player);
+    this._baseColor = new THREE.Color(color);
     this.reset(0, 0);
   }
 
@@ -41,6 +42,17 @@ export class Player {
     this.mesh.visible = true;
   }
 
+  /** bring a downed player back (co-op revive) */
+  revive(x, z) {
+    this.x = x;
+    this.z = z;
+    this.hearts = PLAYER.maxHearts;
+    this.alive = true;
+    this.invuln = 1.4;
+    this.mesh.position.set(x, 0, z);
+    this.mesh.visible = true;
+  }
+
   setWeapon(type) {
     this.weapon = type;
     this.weaponDef = WEAPONS[type] || WEAPONS.pistol;
@@ -52,7 +64,7 @@ export class Player {
     const { input, camera } = game;
 
     // --- move ---
-    const m = input.move();
+    const m = input.move(this.device);
     this.x += m.x * this.speed * dt;
     this.z += m.z * this.speed * dt;
     let p = slideOutOfWalls(this.x, this.z, this.radius, game.walls);
@@ -61,17 +73,19 @@ export class Player {
     this.z = p.z;
 
     // --- aim + shoot ---
-    const aim = input.aim(camera, this.x, this.z);
+    const aim = input.aim(this.device, camera, this.x, this.z);
     this.mesh.rotation.y = Math.atan2(aim.x, aim.z);
 
     this.fireTimer -= dt;
-    if (input.shoot && this.fireTimer <= 0 && (aim.x !== 0 || aim.z !== 0)) {
+    if (input.shoot(this.device) && this.fireTimer <= 0 && (aim.x !== 0 || aim.z !== 0)) {
       this._fireWeapon(game, aim);
       this.fireTimer = this.weaponDef.cooldown * this.fireRateMul;
       game.juice.shake(game.JUICE.shakeOnShoot);
       audio.play(
         this.weapon === 'shotgun' ? 'shotgun' : this.weapon === 'rocket' ? 'rocketLaunch' : 'shoot',
       );
+      // a little controller buzz on the punchier weapons (no-op for keyboard / no pad)
+      if (this.device !== 'kb' && this.weaponDef.cooldown >= 0.15) input.rumble(0.12, 0.08, 50);
     }
 
     // --- i-frames + hit flash ---
@@ -116,14 +130,16 @@ export class Player {
     this.invuln = PLAYER.invuln;
     game.juice.shake(game.JUICE.shakeOnHurt);
     game.juice.hitStop(game.JUICE.hitStopOnHurt);
-    game.particles.burst(this.x, this.z, 10, PALETTE.player);
+    game.particles.burst(this.x, this.z, 10, this._baseColor.getHex());
     hud.flashSplatter();
     audio.play('hurt');
+    if (this.device !== 'kb') game.input.rumble(0.6, 0.4, 200); // controller takes a hit
     if (this.hearts <= 0) {
       this.hearts = 0;
       this.alive = false;
+      this.mesh.visible = false; // "down"
     }
-    hud.setHearts(this.hearts, PLAYER.maxHearts);
+    game.refreshHud();
   }
 
   /** apply a survivor outcome or pickup buff/debuff */
@@ -147,6 +163,6 @@ export class Player {
         break;
       // SPAWN_ENEMIES is handled by the game (it owns spawning)
     }
-    hud.setHearts(this.hearts, PLAYER.maxHearts);
+    game.refreshHud();
   }
 }
