@@ -1,10 +1,12 @@
 // =====================================================================
-// spawner.js — decides what's in each room: how many monsters, which kind,
-// and where the survivors stand. Gets harder the deeper you go.
+// spawner.js — decides what's in each room: the boss in boss rooms, otherwise
+// monsters (more/tougher deeper into a floor) and the occasional survivor.
 // =====================================================================
 
 import { ARENA, ROOMS, ENEMY, NPC } from '../config.js';
+import { floorInfo } from '../core/progression.js';
 import { Enemy } from '../entities/enemies.js';
+import { Boss } from '../entities/boss.js';
 import { Npc } from '../entities/npc.js';
 import { circleVsBox } from '../core/math2d.js';
 
@@ -22,12 +24,21 @@ function findSpot(rng, walls, radius) {
   return { x: 0, z: -hd + 4 };
 }
 
-/** Populate the room: spawns enemies + (sometimes) two survivors. */
+/** Populate the room: a boss in boss rooms, else monsters + maybe a survivor. */
 export function populateRoom(game, roomIndex) {
   const { rng } = game;
-  const roomNo = roomIndex + 1;
+  const info = floorInfo(roomIndex);
 
-  const count = Math.round(ROOMS.baseEnemies + roomIndex * ROOMS.enemiesPerRoom);
+  // ---- BOSS ROOM ----
+  if (info.isBossRoom) {
+    game.addEnemy(new Boss(game.scene, 0, -ARENA.depth / 2 + 4, info.def.diff));
+    return;
+  }
+
+  // ---- NORMAL ROOM ----
+  const diff = info.def.diff;
+  const count = Math.round((ROOMS.baseEnemies + info.roomInFloor * ROOMS.enemiesPerRoom) * diff);
+  const roomNo = info.roomInFloor + 1; // 1-based within the floor
   for (let i = 0; i < count; i++) {
     const useShooter = roomNo >= ROOMS.shooterFromRoom && rng.chance(0.4);
     const type = useShooter ? 'shooter' : 'chaser';
@@ -35,7 +46,8 @@ export function populateRoom(game, roomIndex) {
     game.addEnemy(new Enemy(game.scene, type, spot.x, spot.z));
   }
 
-  if (ROOMS.npcRooms.includes(roomNo)) {
+  // survivors appear in a couple of normal rooms per floor
+  if (ROOMS.survivorRoomsInFloor.includes(info.roomInFloor)) {
     for (let i = 0; i < NPC.perRoom; i++) {
       const spot = findSpot(rng, game.walls, 1);
       const name = rng.pick(SURVIVOR_NAMES);

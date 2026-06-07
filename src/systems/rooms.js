@@ -20,7 +20,7 @@ function boxMesh(box, height, color) {
   return mesh;
 }
 
-export function buildRoom(scene, rng, roomIndex) {
+export function buildRoom(scene, rng) {
   const group = new THREE.Group();
   scene.add(group);
 
@@ -72,12 +72,9 @@ export function buildRoom(scene, rng, roomIndex) {
   doorGlow.visible = false;
   group.add(doorGlow);
 
-  const lastRoom = roomIndex >= ROOMS.total - 1;
-
   return {
     walls,
     door,
-    lastRoom,
     openDoor() {
       door.active = true;
       doorGlow.visible = true;

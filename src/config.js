@@ -93,19 +93,50 @@ export const ENEMY = {
 export const NPC = {
   radius: 0.7,
   height: 1.7,
-  interactRadius: 2.6, // how close before "press E" shows
-  perRoom: 2, // exactly two survivors per room (when room has them)
+  interactRadius: 3.4, // how close before "press E" shows (roomy so it's easy to trigger)
+  perRoom: 1, // one survivor in survivor-rooms (clearer than two)
 };
 
-// ---- rooms / run structure ----
+// ---- per-room tunables (counts/obstacles) ----
 export const ROOMS = {
-  total: 6, // rooms in a run
-  baseEnemies: 3, // enemies in room 1
-  enemiesPerRoom: 1.5, // extra enemies added per room deeper
-  shooterFromRoom: 2, // shooters start appearing at this room number
+  baseEnemies: 3, // enemies in the first room of a floor
+  enemiesPerRoom: 1.2, // extra enemies added per room deeper in the floor
+  shooterFromRoom: 2, // shooters start appearing at this room-in-floor (1-based)
   obstaclesMin: 2, // rubble boxes
   obstaclesMax: 5,
-  npcRooms: [2, 4], // which rooms contain survivors to meet
+  survivorRoomsInFloor: [1, 3], // which normal rooms (0-based) hold a survivor
+};
+
+// ---- progression: floors of 5 rooms + 1 boss room each ----
+export const PROGRESSION = {
+  roomsPerFloor: 5, // normal rooms before the boss
+  floors: [
+    { name: 'The Outskirts', boss: 'spider', diff: 1.0 },
+    { name: 'Downtown Ruins', boss: 'spider', diff: 1.35 },
+    { name: 'The Hive', boss: 'spider', diff: 1.7 },
+  ],
+};
+
+// ---- lives + checkpoints ----
+export const LIVES = {
+  max: 3, // die this many times total -> start all over
+};
+
+// ---- the spider boss ----
+export const BOSS = {
+  spider: {
+    hp: 60, // base HP (scaled by floor diff)
+    radius: 2.7,
+    speed: 4.5,
+    contactDamage: 1,
+    contactCooldown: 0.8,
+    fireInterval: 1.7, // seconds between bullet-hell volleys
+    ringBullets: 14, // bullets in a ring
+    bulletSpeed: 11,
+    spawnInterval: 4.5, // seconds between spawning spiderlings
+    spawnCount: 2, // spiderlings per spawn
+    enrageAt: 0.35, // fraction of HP where it speeds up + fires more
+  },
 };
 
 // ---- juice (the "feel good" knobs) ----
@@ -129,6 +160,51 @@ export const PARTICLES = {
   size: 0.22,
 };
 
+// ---- weapons (Doom-style). The pistol is the default. ----
+// cooldown = seconds between shots; pellets = bullets per shot;
+// spreadDeg = cone width for multi-pellet guns; explosive = rocket AoE.
+export const WEAPONS = {
+  pistol: { name: 'Pistol', cooldown: 0.16, damage: 1, pellets: 1, spreadDeg: 0, bulletSpeed: 26 },
+  shotgun: { name: 'Shotgun', cooldown: 0.5, damage: 1, pellets: 6, spreadDeg: 40, bulletSpeed: 24 },
+  machinegun: {
+    name: 'Machine Gun',
+    cooldown: 0.07,
+    damage: 1,
+    pellets: 1,
+    spreadDeg: 8,
+    bulletSpeed: 30,
+  },
+  rocket: {
+    name: 'Rocket',
+    cooldown: 0.8,
+    damage: 4,
+    pellets: 1,
+    spreadDeg: 0,
+    bulletSpeed: 18,
+    explosive: true,
+    explodeRadius: 4.5,
+  },
+};
+
+// ---- pickups you walk over to grab ----
+export const PICKUPS = {
+  radius: 0.7, // grab range
+  // weighted drop table for the reward after clearing a normal room
+  dropTable: [
+    { type: 'HEAL', weight: 3 },
+    { type: 'DAMAGE_UP', weight: 2 },
+    { type: 'FIRE_RATE_UP', weight: 2 },
+    { type: 'SPEED_UP', weight: 2 },
+    { type: 'SHOTGUN', weight: 2 },
+    { type: 'MACHINEGUN', weight: 2 },
+    { type: 'ROCKET', weight: 1 },
+  ],
+  speedUpAmount: 1.5, // units/sec added by SPEED_UP
+  damageUpAmount: 1,
+  fireRateMul: 0.82, // multiplies cooldown (lower = faster)
+  healAmount: 2,
+};
+
 // ---- models: map a key -> a file under /models/ (.glb). ----
 // null  => use a built-in primitive shape (always works).
 // To use a real model: drop the .glb in public/models/ and set its path,
@@ -138,5 +214,7 @@ export const MODELS = {
   ally: null,
   chaser: null,
   shooter: null,
+  spider: null,
+  spiderling: null,
   npc: null,
 };

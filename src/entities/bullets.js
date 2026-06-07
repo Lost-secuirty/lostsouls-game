@@ -3,7 +3,8 @@
 //
 // A fixed pool of small glowing spheres. spawnPlayer/spawnEnemy launch one;
 // update() flies them, kills them on walls or after a lifetime, and checks
-// hits (player bullets -> enemies, enemy bullets -> you).
+// hits (player bullets -> enemies, enemy bullets -> you). Rockets explode
+// for area damage.
 // =====================================================================
 
 import * as THREE from 'three';
@@ -17,6 +18,7 @@ export class Bullets {
     const geo = new THREE.SphereGeometry(BULLET.radius, 8, 8);
     this.playerMat = new THREE.MeshBasicMaterial({ color: PALETTE.playerBullet });
     this.enemyMat = new THREE.MeshBasicMaterial({ color: PALETTE.enemyBullet });
+    this.rocketMat = new THREE.MeshBasicMaterial({ color: 0xff7722 });
     for (let i = 0; i < BULLET.poolSize; i++) {
       const mesh = new THREE.Mesh(geo, this.playerMat);
       mesh.visible = false;
@@ -31,30 +33,47 @@ export class Bullets {
         life: 0,
         team: 'player',
         damage: 1,
+        explosive: false,
+        explodeRadius: 0,
       });
     }
     this._next = 0;
   }
 
-  spawnPlayer(x, z, dx, dz, damage) {
-    this._spawn(x, z, dx, dz, 'player', BULLET.player.speed, damage ?? BULLET.player.damage);
+  // opts: { damage, speed, explosive, explodeRadius }  (or a bare number = damage)
+  spawnPlayer(x, z, dx, dz, opts = {}) {
+    const o = typeof opts === 'number' ? { damage: opts } : opts;
+    this._spawn(x, z, dx, dz, 'player', {
+      speed: o.speed ?? BULLET.player.speed,
+      damage: o.damage ?? BULLET.player.damage,
+      explosive: !!o.explosive,
+      explodeRadius: o.explodeRadius ?? 0,
+    });
   }
 
   spawnEnemy(x, z, dx, dz, speed) {
-    this._spawn(x, z, dx, dz, 'enemy', speed ?? BULLET.enemy.speed, BULLET.enemy.damage);
+    this._spawn(x, z, dx, dz, 'enemy', {
+      speed: speed ?? BULLET.enemy.speed,
+      damage: BULLET.enemy.damage,
+      explosive: false,
+      explodeRadius: 0,
+    });
   }
 
-  _spawn(x, z, dx, dz, team, speed, damage) {
+  _spawn(x, z, dx, dz, team, o) {
     const b = this._grab();
     b.active = true;
     b.team = team;
     b.x = x;
     b.z = z;
-    b.vx = dx * speed;
-    b.vz = dz * speed;
+    b.vx = dx * o.speed;
+    b.vz = dz * o.speed;
     b.life = BULLET.lifetime;
-    b.damage = damage;
-    b.mesh.material = team === 'player' ? this.playerMat : this.enemyMat;
+    b.damage = o.damage;
+    b.explosive = o.explosive;
+    b.explodeRadius = o.explodeRadius;
+    b.mesh.material = b.explosive ? this.rocketMat : team === 'player' ? this.playerMat : this.enemyMat;
+    b.mesh.scale.setScalar(b.explosive ? 1.9 : 1);
     b.mesh.position.set(x, 1.0, z);
     b.mesh.visible = true;
   }
@@ -84,18 +103,25 @@ export class Bullets {
       b.life -= dt;
 
       if (b.life <= 0 || hitsAnyWall(b.x, b.z, BULLET.radius, game.walls)) {
+        if (b.explosive) this._explode(b, game);
         this._kill(b);
         continue;
       }
 
       if (b.team === 'player') {
+        let hit = null;
         for (const e of game.enemies) {
           if (e.dead) continue;
           if (circleVsCircle(b.x, b.z, BULLET.radius, e.x, e.z, e.radius)) {
-            e.hurt(b.damage, game);
-            this._kill(b);
+            hit = e;
             break;
           }
+        }
+        if (hit) {
+          if (b.explosive) this._explode(b, game);
+          else hit.hurt(b.damage, game);
+          this._kill(b);
+          continue;
         }
       } else {
         const p = game.player;
@@ -110,9 +136,22 @@ export class Bullets {
     }
   }
 
+  /** rocket area-of-effect: damage every enemy within the blast radius */
+  _explode(b, game) {
+    for (const e of game.enemies) {
+      if (e.dead) continue;
+      if (circleVsCircle(b.x, b.z, b.explodeRadius, e.x, e.z, e.radius)) {
+        e.hurt(b.damage, game);
+      }
+    }
+    game.particles.burst(b.x, b.z, 26, 0xff7722);
+    game.juice.shake(0.4);
+  }
+
   _kill(b) {
     b.active = false;
     b.mesh.visible = false;
+    b.mesh.scale.setScalar(1);
   }
 
   _grab() {

@@ -4,6 +4,8 @@
 // red blood-splatter flash.
 // =====================================================================
 
+import { PROGRESSION } from '../config.js';
+
 const $ = (id) => document.getElementById(id);
 
 let _toastTimer = null;
@@ -15,9 +17,34 @@ export const hud = {
     el.textContent = '❤️'.repeat(Math.max(0, n)) + '🖤'.repeat(Math.max(0, max - n));
   },
 
-  setRoom(index, total) {
+  setLives(n) {
+    const el = $('lives');
+    if (el) el.textContent = `LIVES ${'🔺'.repeat(Math.max(0, n))}`;
+  },
+
+  // info = floorInfo(roomIndex); weaponName = e.g. "Shotgun"
+  setRoom(info, weaponName) {
     const el = $('room');
-    if (el) el.textContent = `ROOM ${index} / ${total}`;
+    if (!el) return;
+    const floor = info.floorIndex + 1;
+    const where = info.isBossRoom
+      ? 'BOSS'
+      : `ROOM ${info.roomInFloor + 1}/${PROGRESSION.roomsPerFloor}`;
+    el.textContent = `FLOOR ${floor} · ${where}${weaponName ? ` · ${weaponName}` : ''}`;
+  },
+
+  setBossHp(frac, name) {
+    const bar = $('bossbar');
+    const fill = $('bossbar-fill');
+    const label = $('bossbar-name');
+    if (!bar || !fill) return;
+    bar.classList.add('show');
+    fill.style.width = `${Math.max(0, Math.min(1, frac)) * 100}%`;
+    if (label && name) label.textContent = name;
+  },
+
+  hideBossHp() {
+    $('bossbar')?.classList.remove('show');
   },
 
   banner(text) {
