@@ -1,6 +1,6 @@
 # 🩸 City of Monsters
 
-A **3D bullet-hell shooter** — think *Binding of Isaac* meets *Doom* — that a dad and
+A **3D bullet-hell shooter** — think _Binding of Isaac_ meets _Doom_ — that a dad and
 his 11-year-old son are building together. You're stuck in a **ruined city overrun by
 monsters and demons**. Your dad fights beside you. Other survivors are scattered
 around… but not all of them are friendly, and you can't always tell who is.
@@ -13,11 +13,14 @@ around… but not all of them are friendly, and you can't always tell who is.
 - 🕷️ **The spider has real attack patterns** (designed by Caden): a pistol-like **base
   attack**, a telegraphed **bullet ring** you dodge through, and **baby spiders** that swarm
   in once it drops below half health.
+- 🎨 **Each floor is themed around its boss** — the monsters are mini versions of the boss
+  and share its colors (floor 1 red, floor 2 toxic-green, floor 3 violet).
 - ❤️ **3 lives + checkpoints.** Beat a boss and you respawn at the next floor if you
   die. Run out of all 3 lives and it's back to the start.
 - 🔫 **Weapons & power-ups you walk over to grab** — shotgun, machine gun, rocket
-  launcher, plus heart / damage / speed / fire-rate boosts. (The starting pistol is weak on
-  purpose, so every upgrade feels great.)
+  launcher, plus heart / damage / speed / fire-rate boosts, each with a **floating name
+  label** so you know what it is. (The starting pistol is weak on purpose, so every upgrade
+  feels great.)
 - 🩸 **Blood, screen-shake, hit-stop, and sound** — all made in code, fast and punchy.
 - 🤝 **Survivors you can help or leave.** Walk up, press **E** (or **A** on a pad), and
   choose. The outcome is **random** — helping might heal you… or be a trap. You never
@@ -50,18 +53,22 @@ npm start        # serve it at http://localhost:3000
 `Q` leave a survivor · `R` restart. **Xbox pad:** left stick move · right stick aim ·
 `RT` shoot · `A` help · `B` leave · `Start` restart.
 
+**Debug menu (for grown-ups):** press the **backtick** key (`` ` ``) or add `?debug=1` to the
+URL to open a dev panel — jump to any floor/room, spawn the boss, give weapons/pickups, god
+mode, kill-all, and an FPS meter. It never loads during normal play.
+
 ---
 
 ## 🛠️ Make it your own (free tools for you + dad)
 
 Everything here is **free**.
 
-| Want to… | Use | Where | How hard |
-| --- | --- | --- | --- |
-| Make blocky monsters (Minecraft style) | **MagicaVoxel** | <https://ephtracy.github.io> | ⭐ easy |
-| Make any 3D model | **Blender** | <https://www.blender.org/download/> | ⭐⭐⭐ takes practice |
-| Edit/record sounds | **Audacity** | <https://www.audacityteam.org/download/> | ⭐ easy |
-| Paint textures/art | **Krita** / **GIMP** | <https://krita.org> · <https://www.gimp.org> | ⭐⭐ |
+| Want to…                               | Use                  | Where                                        | How hard              |
+| -------------------------------------- | -------------------- | -------------------------------------------- | --------------------- |
+| Make blocky monsters (Minecraft style) | **MagicaVoxel**      | <https://ephtracy.github.io>                 | ⭐ easy               |
+| Make any 3D model                      | **Blender**          | <https://www.blender.org/download/>          | ⭐⭐⭐ takes practice |
+| Edit/record sounds                     | **Audacity**         | <https://www.audacityteam.org/download/>     | ⭐ easy               |
+| Paint textures/art                     | **Krita** / **GIMP** | <https://krita.org> · <https://www.gimp.org> | ⭐⭐                  |
 
 **Free monsters, props & sounds you can download** (all free for games):
 
@@ -80,7 +87,7 @@ sound recipes there to change how things sound. See `ASSETS.md` for details.
 
 ## 🧠 The most fun thing to change
 
-Open **`src/config.js`** — *every* number that controls how the game feels lives there:
+Open **`src/config.js`** — _every_ number that controls how the game feels lives there:
 player speed, fire rate, how much the screen shakes, how much blood, monster health.
 Change a number, save, and watch it change instantly in `npm run dev`. That's the best
 way to learn how games work.
@@ -95,5 +102,5 @@ This is a **hybrid** project: fast and fun, but it keeps a real rulebook.
 - **`docs/adr/`** — why the big technical choices were made.
 - **`docs/LEARNINGS.md`** — running notes/gotchas.
 
-Tech: Three.js + Vite + Express, with procedural Web Audio sound. No physics engine
+Tech: Three.js + Vite + Express, with procedural Web Audio sound and a lil-gui debug menu. No physics engine
 (custom collision). MIT licensed.
