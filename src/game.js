@@ -48,6 +48,7 @@ export class Game {
     this.roomIndex = 0;
     this.lives = LIVES.max;
     this.checkpointRoom = 0;
+    this.godMode = false; // debug menu toggle
     this.state = State.BOOT;
   }
 
@@ -160,7 +161,8 @@ export class Game {
       }
       this.enemies = this.enemies.filter((e) => !e.dead);
 
-      if (this.boss && !this.boss.dead) hud.setBossHp(this.boss.hp / this.boss.maxHp, this.boss.name);
+      if (this.boss && !this.boss.dead)
+        hud.setBossHp(this.boss.hp / this.boss.maxHp, this.boss.name);
 
       if (!this.player.alive) this._onDeath();
       else if (this.enemies.length === 0) this._onRoomClear();
@@ -169,6 +171,7 @@ export class Game {
       this.ally.update(dt, this);
       this.bullets.update(dt, this);
       this._handlePickups();
+      this._handleSurvivors(dt); // survivors stay helpable after the fight is over
       this._checkDoor();
     }
 

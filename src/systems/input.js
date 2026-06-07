@@ -102,6 +102,15 @@ export class Input {
     this._padPrev[name] = pressed;
   }
 
+  /** drop all held inputs — call on window blur / tab hide so a missed keyup
+   *  can't leave the player stuck moving (e.g. "stuck going up"). */
+  clearKeys() {
+    this.keys.clear();
+    this._mouseDown = false;
+    this._touchDown = false;
+    this.shoot = false;
+  }
+
   /** WASD / left stick -> {x, z}. Screen "up" (W) moves away from the camera (-z). */
   move() {
     let x = 0;

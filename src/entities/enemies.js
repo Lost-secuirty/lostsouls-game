@@ -10,16 +10,21 @@
 import * as THREE from 'three';
 import { ENEMY, BULLET, PALETTE, PARTICLES } from '../config.js';
 import { getModel } from '../core/assets.js';
+import { buildSpiderMesh } from './spiderMesh.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { normalize, dist, circleVsCircle } from '../core/math2d.js';
 import * as audio from '../systems/audio.js';
 
-function makeEnemyMesh(type) {
+function makeEnemyMesh(type, theme) {
   const group = new THREE.Group();
   const model = getModel(type);
   if (model) {
     group.add(model);
     return group;
+  }
+  // themed mini-spiders on spider floors (small, simplified for many on screen)
+  if (theme && theme.boss === 'spider') {
+    return buildSpiderMesh(ENEMY[type].radius * 1.4, theme.palette || {}, { simple: true }).group;
   }
   const cfg = ENEMY[type];
   const color = type === 'chaser' ? PALETTE.enemyChaser : PALETTE.enemyShooter;
@@ -52,7 +57,7 @@ function makeEnemyMesh(type) {
 }
 
 export class Enemy {
-  constructor(scene, type, x, z) {
+  constructor(scene, type, x, z, theme = null) {
     this.scene = scene;
     this.type = type;
     this.cfg = ENEMY[type];
@@ -64,7 +69,8 @@ export class Enemy {
     this.contactTimer = 0;
     this.fireTimer = this.cfg.fireInterval ? this.cfg.fireInterval * Math.random() : 0;
     this.phase = Math.random() * Math.PI * 2;
-    this.mesh = makeEnemyMesh(type);
+    this.isSpider = !!(theme && theme.boss === 'spider');
+    this.mesh = makeEnemyMesh(type, theme);
     this.mesh.position.set(x, 0, z);
     scene.add(this.mesh);
   }
@@ -113,7 +119,9 @@ export class Enemy {
     const s = this.mesh.scale.x;
     if (s !== 1) this.mesh.scale.setScalar(s + (1 - s) * Math.min(1, dt * 12));
 
-    this.mesh.rotation.y += dt * 1.5; // slow menacing spin
+    // spiders face the player; blobs do a slow menacing spin
+    if (this.isSpider) this.mesh.rotation.y = Math.atan2(p.x - this.x, p.z - this.z);
+    else this.mesh.rotation.y += dt * 1.5;
     this.mesh.position.set(this.x, 0, this.z);
   }
 

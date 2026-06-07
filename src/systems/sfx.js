@@ -91,8 +91,12 @@ const SOUNDS = {
     tone({ freq: 300, slideTo: 900, type: 'square', dur: 0.16, vol: 0.2 });
     tone({ freq: 600, type: 'square', dur: 0.12, vol: 0.18, delay: 0.14 });
   },
-  good: () => [523, 659, 784].forEach((f, i) => tone({ freq: f, dur: 0.12, vol: 0.2, delay: i * 0.09 })),
-  bad: () => [400, 300, 200].forEach((f, i) => tone({ freq: f, type: 'sawtooth', dur: 0.14, vol: 0.22, delay: i * 0.09 })),
+  good: () =>
+    [523, 659, 784].forEach((f, i) => tone({ freq: f, dur: 0.12, vol: 0.2, delay: i * 0.09 })),
+  bad: () =>
+    [400, 300, 200].forEach((f, i) =>
+      tone({ freq: f, type: 'sawtooth', dur: 0.14, vol: 0.22, delay: i * 0.09 }),
+    ),
   bossHit: () => {
     tone({ freq: 220, slideTo: 120, type: 'square', dur: 0.08, vol: 0.18 });
     noise({ dur: 0.06, vol: 0.12, freq: 600 });
@@ -102,8 +106,14 @@ const SOUNDS = {
     tone({ freq: 200, slideTo: 30, type: 'sawtooth', dur: 0.7, vol: 0.3 });
   },
   lifeLost: () => tone({ freq: 330, slideTo: 60, type: 'triangle', dur: 0.4, vol: 0.3 }),
-  gameover: () => [300, 240, 180, 120].forEach((f, i) => tone({ freq: f, type: 'sawtooth', dur: 0.3, vol: 0.28, delay: i * 0.18 })),
-  win: () => [523, 659, 784, 1047].forEach((f, i) => tone({ freq: f, dur: 0.18, vol: 0.25, delay: i * 0.12 })),
+  gameover: () =>
+    [300, 240, 180, 120].forEach((f, i) =>
+      tone({ freq: f, type: 'sawtooth', dur: 0.3, vol: 0.28, delay: i * 0.18 }),
+    ),
+  win: () =>
+    [523, 659, 784, 1047].forEach((f, i) =>
+      tone({ freq: f, dur: 0.18, vol: 0.25, delay: i * 0.12 }),
+    ),
   // expansion 2: more variety
   rocketLaunch: () => {
     noise({ dur: 0.22, vol: 0.2, freq: 1200 });
@@ -114,7 +124,8 @@ const SOUNDS = {
     tone({ freq: 120, slideTo: 30, type: 'sawtooth', dur: 0.5, vol: 0.3 });
   },
   doorOpen: () => tone({ freq: 120, slideTo: 320, type: 'square', dur: 0.25, vol: 0.14 }),
-  roomClear: () => [659, 784, 988].forEach((f, i) => tone({ freq: f, dur: 0.12, vol: 0.18, delay: i * 0.1 })),
+  roomClear: () =>
+    [659, 784, 988].forEach((f, i) => tone({ freq: f, dur: 0.12, vol: 0.18, delay: i * 0.1 })),
   bossRoar: () => {
     noise({ dur: 0.7, vol: 0.35, freq: 300, q: 3 });
     tone({ freq: 90, slideTo: 50, type: 'sawtooth', dur: 0.7, vol: 0.3 });

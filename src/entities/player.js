@@ -111,7 +111,7 @@ export class Player {
   }
 
   hurt(dmg, game) {
-    if (this.invuln > 0 || !this.alive) return;
+    if (game.godMode || this.invuln > 0 || !this.alive) return;
     this.hearts -= dmg;
     this.invuln = PLAYER.invuln;
     game.juice.shake(game.JUICE.shakeOnHurt);

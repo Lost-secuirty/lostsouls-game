@@ -110,10 +110,45 @@ export const ROOMS = {
 // ---- progression: floors of 5 rooms + 1 boss room each ----
 export const PROGRESSION = {
   roomsPerFloor: 5, // normal rooms before the boss
+  // each floor: a boss type + difficulty + a color palette shared by the boss
+  // AND that floor's monsters (so the monsters "reflect" their boss).
   floors: [
-    { name: 'The Outskirts', boss: 'spider', diff: 1.0 },
-    { name: 'Downtown Ruins', boss: 'spider', diff: 1.35 },
-    { name: 'The Hive', boss: 'spider', diff: 1.7 },
+    {
+      name: 'The Outskirts',
+      boss: 'spider',
+      diff: 1.0,
+      palette: {
+        body: 0x2a0606,
+        emissive: 0x6a0d0d,
+        leg: 0x1a0303,
+        legEmissive: 0x400808,
+        eye: 0xffe000,
+      },
+    },
+    {
+      name: 'Downtown Ruins',
+      boss: 'spider',
+      diff: 1.35,
+      palette: {
+        body: 0x14210a,
+        emissive: 0x4aa00d,
+        leg: 0x0a1405,
+        legEmissive: 0x2a5008,
+        eye: 0xc8ff3a,
+      },
+    },
+    {
+      name: 'The Hive',
+      boss: 'spider',
+      diff: 1.7,
+      palette: {
+        body: 0x1a0a2a,
+        emissive: 0x6a0d8a,
+        leg: 0x0a0316,
+        legEmissive: 0x40085a,
+        eye: 0x6ad8ff,
+      },
+    },
   ],
 };
 
@@ -177,7 +212,14 @@ export const PARTICLES = {
 // spreadDeg = cone width for multi-pellet guns; explosive = rocket AoE.
 export const WEAPONS = {
   pistol: { name: 'Pistol', cooldown: 0.26, damage: 1, pellets: 1, spreadDeg: 0, bulletSpeed: 24 },
-  shotgun: { name: 'Shotgun', cooldown: 0.5, damage: 1, pellets: 6, spreadDeg: 40, bulletSpeed: 24 },
+  shotgun: {
+    name: 'Shotgun',
+    cooldown: 0.5,
+    damage: 1,
+    pellets: 6,
+    spreadDeg: 40,
+    bulletSpeed: 24,
+  },
   machinegun: {
     name: 'Machine Gun',
     cooldown: 0.07,

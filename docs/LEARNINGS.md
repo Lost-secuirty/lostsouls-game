@@ -43,3 +43,24 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
   attack cues, low-health heartbeat) and the drone music rises ~2 semitones per floor.
 - Tag boss adds with `isSpiderling` so the boss can count its own live spawns to maintain
   the HP-gated target.
+
+## 2026-06-07 — Expansion 3 (bug fixes, theming, debug menu, probability)
+
+- **"E doesn't work" was real**: `_handleSurvivors` only ran in `State.PLAYING`, so you
+  couldn't help survivors after clearing a room (when it's calm — exactly when you try). Fix:
+  also run it in `ROOM_CLEAR`. (Combat-only help is now a future hard-mode toggle.)
+- **"Stuck going up"**: a held key's `keyup` is lost when the window/tab loses focus (common
+  in the VS Code Simple Browser), so the key stays in the Set. Fix: `input.clearKeys()` on
+  window `blur` + `visibilitychange(hidden)`.
+- Extracted `buildSpiderMesh` into `entities/spiderMesh.js` (palette + `simple` mode) so the
+  boss AND themed mini-spider enemies share it without a boss↔enemies import cycle. Floor
+  palette in `PROGRESSION.floors[].palette` is shared by the boss and its monsters.
+- Pickups now carry a camera-facing canvas `Sprite` label (`core/textSprite.js`,
+  `depthTest:false`) + distinct shapes — readable with no pickup key.
+- Debug menu = `lil-gui`, lazy-loaded only on `?debug=1`/backtick (never in normal play);
+  drives `window.__game`. God mode = a `game.godMode` flag checked in `Player.hurt`.
+- Probability: `core/probability.js` `atLeastOne` (1−∏(1−p)) is from Scott's Dokkan notes;
+  `droprate.test.js` verifies the real drop table with seeded sampling + chi-square + ±10%
+  (deterministic, no flake). Methodology ported from `testing-kits` harness patterns.
+- Drive recon: the April Dokkan docs are mostly unit stats; only the RNG/probability section
+  was useful (independent-probability formula, ±3% variance). Looked, used the bit that fit.

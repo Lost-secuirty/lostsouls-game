@@ -8,8 +8,26 @@
 
 import * as THREE from 'three';
 import { PICKUPS } from '../config.js';
+import { makeTextSprite } from '../core/textSprite.js';
 import { hud } from '../ui/hud.js';
 import * as audio from '../systems/audio.js';
+
+/** a distinct shape per pickup type, so you can read it at a glance */
+function shapeFor(type, weapon) {
+  if (weapon) return new THREE.BoxGeometry(0.7, 0.4, 0.9);
+  switch (type) {
+    case 'HEAL':
+      return new THREE.TetrahedronGeometry(0.55);
+    case 'DAMAGE_UP':
+      return new THREE.OctahedronGeometry(0.5);
+    case 'FIRE_RATE_UP':
+      return new THREE.DodecahedronGeometry(0.45);
+    case 'SPEED_UP':
+      return new THREE.ConeGeometry(0.45, 0.9, 6);
+    default:
+      return new THREE.OctahedronGeometry(0.5);
+  }
+}
 
 const WEAPON_TYPES = ['SHOTGUN', 'MACHINEGUN', 'ROCKET'];
 
@@ -47,12 +65,10 @@ export class Pickup {
     this._t = Math.random() * 10;
 
     const look = LOOK[type] || LOOK.HEAL;
-    // weapons = chunky box, stats = floating gem
-    const geo = look.weapon
-      ? new THREE.BoxGeometry(0.7, 0.4, 0.9)
-      : new THREE.OctahedronGeometry(0.5, 0);
-    this.mesh = new THREE.Mesh(
-      geo,
+    // group = a spinning shape + a floating name label (so you know what it is)
+    const group = new THREE.Group();
+    this.shape = new THREE.Mesh(
+      shapeFor(type, look.weapon),
       new THREE.MeshStandardMaterial({
         color: look.color,
         emissive: look.color,
@@ -61,14 +77,21 @@ export class Pickup {
         flatShading: true,
       }),
     );
-    this.mesh.position.set(x, 1, z);
-    scene.add(this.mesh);
+    group.add(this.shape);
+
+    const label = makeTextSprite(look.label, look.color);
+    label.position.set(0, 1.4, 0);
+    group.add(label);
+
+    group.position.set(x, 1, z);
+    this.mesh = group;
+    scene.add(group);
   }
 
   update(dt) {
     this._t += dt;
     this.mesh.position.y = 1 + Math.sin(this._t * 3) * 0.2;
-    this.mesh.rotation.y += dt * 2.5;
+    this.shape.rotation.y += dt * 2.5;
   }
 
   collect(game) {
