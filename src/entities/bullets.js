@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { BULLET, PALETTE } from '../config.js';
 import { circleVsCircle } from '../core/math2d.js';
 import { hitsAnyWall } from '../systems/collision.js';
+import * as audio from '../systems/audio.js';
 
 export class Bullets {
   constructor(scene) {
@@ -146,6 +147,7 @@ export class Bullets {
     }
     game.particles.burst(b.x, b.z, 26, 0xff7722);
     game.juice.shake(0.4);
+    audio.play('explosion');
   }
 
   _kill(b) {

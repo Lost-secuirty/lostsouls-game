@@ -32,6 +32,7 @@ export class Player {
     this.alive = true;
     this.fireTimer = 0;
     this.invuln = 0;
+    this._beatTimer = 0; // low-health heartbeat cue
     this.speed = PLAYER.speed; // SPEED_UP raises this
     this.damageBonus = 0; // DAMAGE_UP raises this
     this.fireRateMul = 1; // FIRE_RATE_UP lowers this (faster)
@@ -68,7 +69,9 @@ export class Player {
       this._fireWeapon(game, aim);
       this.fireTimer = this.weaponDef.cooldown * this.fireRateMul;
       game.juice.shake(game.JUICE.shakeOnShoot);
-      audio.play(this.weapon === 'shotgun' ? 'shotgun' : 'shoot');
+      audio.play(
+        this.weapon === 'shotgun' ? 'shotgun' : this.weapon === 'rocket' ? 'rocketLaunch' : 'shoot',
+      );
     }
 
     // --- i-frames + hit flash ---
@@ -77,6 +80,17 @@ export class Player {
       this.mesh.visible = Math.floor(this.invuln * 20) % 2 === 0; // blink
     } else {
       this.mesh.visible = true;
+    }
+
+    // --- low-health heartbeat ---
+    if (this.hearts <= 1) {
+      this._beatTimer -= dt;
+      if (this._beatTimer <= 0) {
+        audio.play('lowHealth');
+        this._beatTimer = 0.9;
+      }
+    } else {
+      this._beatTimer = 0;
     }
 
     this.mesh.position.set(this.x, 0, this.z);

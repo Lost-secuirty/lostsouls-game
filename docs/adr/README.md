@@ -14,3 +14,4 @@ below).
 | [0006](0006-procedural-audio.md) | Procedural audio (no files, no library) | Accepted |
 | [0007](0007-floors-lives-checkpoints.md) | Floors, lives, and checkpoints | Accepted |
 | [0008](0008-gamepad-input.md) | Basic gamepad (Xbox controller) input | Accepted |
+| [0009](0009-boss-attack-patterns.md) | Spider boss attack patterns (Caden's card) | Accepted |

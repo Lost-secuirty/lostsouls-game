@@ -123,6 +123,9 @@ export const LIVES = {
 };
 
 // ---- the spider boss ----
+// Caden's design card: P# = an ATTACK PATTERN (not a health phase).
+//   P1 = base attack (pistol mimic)   P2 = dodgeable bullet ring
+//   P3 = baby-spider spawns, HP-gated (see spiderlingTarget in progression.js)
 export const BOSS = {
   spider: {
     hp: 60, // base HP (scaled by floor diff)
@@ -130,12 +133,21 @@ export const BOSS = {
     speed: 4.5,
     contactDamage: 1,
     contactCooldown: 0.8,
-    fireInterval: 1.7, // seconds between bullet-hell volleys
-    ringBullets: 14, // bullets in a ring
-    bulletSpeed: 11,
-    spawnInterval: 4.5, // seconds between spawning spiderlings
-    spawnCount: 2, // spiderlings per spawn
-    enrageAt: 0.35, // fraction of HP where it speeds up + fires more
+
+    // P1 — base attack: a quick aimed burst, like a pistol
+    p1Interval: 1.3, // seconds between bursts
+    p1Burst: 3, // shots per burst
+    p1Spread: 8, // degrees of spread across the burst
+    p1BulletSpeed: 14,
+
+    // P2 — bullet ring: "a circle of small dots", few on floor 1, denser later
+    p2Interval: 3.6, // seconds between rings
+    telegraph: 0.45, // wind-up (boss rears up) before the ring fires = fair warning
+    ringBullets: 8, // base count on floor 1 (scaled by floor diff in code)
+    ringBulletSpeed: 9, // slower so the ring is dodgeable
+
+    // P3 — spiderling spawns (count gated by HP in spiderlingTarget())
+    spawnInterval: 2.4, // how often it tops up toward the target count
   },
 };
 
@@ -164,7 +176,7 @@ export const PARTICLES = {
 // cooldown = seconds between shots; pellets = bullets per shot;
 // spreadDeg = cone width for multi-pellet guns; explosive = rocket AoE.
 export const WEAPONS = {
-  pistol: { name: 'Pistol', cooldown: 0.16, damage: 1, pellets: 1, spreadDeg: 0, bulletSpeed: 26 },
+  pistol: { name: 'Pistol', cooldown: 0.26, damage: 1, pellets: 1, spreadDeg: 0, bulletSpeed: 24 },
   shotgun: { name: 'Shotgun', cooldown: 0.5, damage: 1, pellets: 6, spreadDeg: 40, bulletSpeed: 24 },
   machinegun: {
     name: 'Machine Gun',

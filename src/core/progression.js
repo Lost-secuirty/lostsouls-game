@@ -51,6 +51,19 @@ export function nextIsBoss(roomIndex) {
 }
 
 /**
+ * Spider boss P3: how many baby spiders to keep alive, gated by the boss's HP.
+ * PURE. From Caden's card: none above 50% HP, keep 2–3 under 50%, keep 3 under 25%.
+ * `min` = spawn more when fewer than this are alive; `max` = top up to this (hard cap).
+ * @param {number} hpFrac boss hp / maxHp (0..1)
+ * @returns {{min:number, max:number}}
+ */
+export function spiderlingTarget(hpFrac) {
+  if (hpFrac > 0.5) return { min: 0, max: 0 };
+  if (hpFrac > 0.25) return { min: 2, max: 3 };
+  return { min: 3, max: 3 };
+}
+
+/**
  * Decide what happens when the player dies. PURE.
  * Lose a life; if any remain, respawn at the checkpoint room; otherwise it's
  * game over (which the caller turns into a full restart).
