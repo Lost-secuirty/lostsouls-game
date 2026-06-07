@@ -10,7 +10,14 @@ import { Boss } from '../entities/boss.js';
 import { Npc } from '../entities/npc.js';
 import { circleVsBox } from '../core/math2d.js';
 
-const SURVIVOR_NAMES = ['a kid', 'an old man', 'a soldier', 'a nurse', 'a stranger', 'a shopkeeper'];
+const SURVIVOR_NAMES = [
+  'a kid',
+  'an old man',
+  'a soldier',
+  'a nurse',
+  'a stranger',
+  'a shopkeeper',
+];
 
 /** find a spot in the upper part of the arena that isn't inside a wall */
 function findSpot(rng, walls, radius) {
@@ -29,9 +36,12 @@ export function populateRoom(game, roomIndex) {
   const { rng } = game;
   const info = floorInfo(roomIndex);
 
+  // monsters reflect the floor's boss (theme + matching colors)
+  const theme = { boss: info.def.boss, palette: info.def.palette };
+
   // ---- BOSS ROOM ----
   if (info.isBossRoom) {
-    game.addEnemy(new Boss(game.scene, 0, -ARENA.depth / 2 + 4, info.def.diff));
+    game.addEnemy(new Boss(game.scene, 0, -ARENA.depth / 2 + 4, info.def.diff, info.def.palette));
     return;
   }
 
@@ -43,7 +53,7 @@ export function populateRoom(game, roomIndex) {
     const useShooter = roomNo >= ROOMS.shooterFromRoom && rng.chance(0.4);
     const type = useShooter ? 'shooter' : 'chaser';
     const spot = findSpot(rng, game.walls, ENEMY[type].radius);
-    game.addEnemy(new Enemy(game.scene, type, spot.x, spot.z));
+    game.addEnemy(new Enemy(game.scene, type, spot.x, spot.z, theme));
   }
 
   // survivors appear in a couple of normal rooms per floor

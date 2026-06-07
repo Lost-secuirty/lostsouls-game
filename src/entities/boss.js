@@ -12,93 +12,23 @@
 // die(), update()).
 // =====================================================================
 
-import * as THREE from 'three';
 import { BOSS, PALETTE, PARTICLES } from '../config.js';
 import { getModel } from '../core/assets.js';
+import { buildSpiderMesh } from './spiderMesh.js';
 import { spiderlingTarget } from '../core/progression.js';
 import { Enemy } from './enemies.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { normalize, spreadDirs, circleVsCircle } from '../core/math2d.js';
 import * as audio from '../systems/audio.js';
 
-function buildSpiderMesh(radius) {
-  const group = new THREE.Group();
-  const model = getModel('spider');
-  if (model) {
-    group.add(model);
-    return { group, legs: [] };
-  }
-
-  const dark = new THREE.MeshStandardMaterial({
-    color: 0x2a0606,
-    emissive: 0x6a0d0d,
-    emissiveIntensity: 0.5,
-    roughness: 0.4,
-    flatShading: true,
-  });
-
-  // abdomen (big rear) + head (smaller front), sitting up on the legs
-  const bodyY = radius * 0.9;
-  const abdomen = new THREE.Mesh(new THREE.SphereGeometry(radius * 0.7, 12, 12), dark);
-  abdomen.position.set(0, bodyY, -radius * 0.3);
-  group.add(abdomen);
-
-  const head = new THREE.Mesh(new THREE.SphereGeometry(radius * 0.45, 12, 12), dark);
-  head.position.set(0, bodyY, radius * 0.45);
-  group.add(head);
-
-  // glowing eyes on the head
-  const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffe000 });
-  for (const sx of [-1, 1]) {
-    for (const sy of [0, 1]) {
-      const eye = new THREE.Mesh(new THREE.SphereGeometry(radius * 0.08, 6, 6), eyeMat);
-      eye.position.set(sx * radius * 0.18, bodyY + sy * radius * 0.14, radius * 0.78);
-      group.add(eye);
-    }
-  }
-
-  // 8 legs (4 per side), each = thigh + shin we can animate
-  const legMat = new THREE.MeshStandardMaterial({
-    color: 0x1a0303,
-    emissive: 0x400808,
-    emissiveIntensity: 0.3,
-    flatShading: true,
-  });
-  const legs = [];
-  for (let i = 0; i < 8; i++) {
-    const side = i < 4 ? -1 : 1;
-    const k = i % 4;
-    const hip = new THREE.Group();
-    hip.position.set(side * radius * 0.35, bodyY, radius * (0.4 - k * 0.3));
-    hip.rotation.y = side * (0.5 + k * 0.12);
-
-    const thigh = new THREE.Mesh(new THREE.CylinderGeometry(radius * 0.06, radius * 0.05, radius), legMat);
-    thigh.geometry.translate(0, -radius / 2, 0); // pivot at the hip
-    thigh.rotation.z = side * 0.7;
-    hip.add(thigh);
-
-    const shin = new THREE.Mesh(
-      new THREE.CylinderGeometry(radius * 0.045, radius * 0.03, radius * 1.1),
-      legMat,
-    );
-    shin.geometry.translate(0, -radius * 0.55, 0);
-    shin.position.y = -radius;
-    shin.rotation.z = side * -0.9;
-    thigh.add(shin);
-
-    group.add(hip);
-    legs.push({ hip, thigh, side, offset: i * 0.5 });
-  }
-
-  return { group, legs };
-}
-
 export class Boss {
-  constructor(scene, x, z, diff = 1) {
+  constructor(scene, x, z, diff = 1, palette = null) {
     this.scene = scene;
     this.cfg = BOSS.spider;
     this.isBoss = true;
     this.name = 'The Spider';
+    this.palette = palette; // per-floor colors (passed to spiderlings too)
+    this.theme = { boss: 'spider', palette };
     this.x = x;
     this.z = z;
     this.radius = this.cfg.radius;
@@ -115,9 +45,15 @@ export class Boss {
     this.phase = 0;
     this.t = 0;
 
-    const built = buildSpiderMesh(this.radius);
-    this.mesh = built.group;
-    this.legs = built.legs;
+    const model = getModel('spider');
+    if (model) {
+      this.mesh = model;
+      this.legs = [];
+    } else {
+      const built = buildSpiderMesh(this.radius, palette || {});
+      this.mesh = built.group;
+      this.legs = built.legs;
+    }
     this.mesh.position.set(x, 0, z);
     scene.add(this.mesh);
     audio.play('bossRoar');
@@ -212,8 +148,8 @@ export class Boss {
       const a = Math.random() * Math.PI * 2;
       const lx = this.x + Math.cos(a) * this.radius * 1.5;
       const lz = this.z + Math.sin(a) * this.radius * 1.5;
-      game.particles.burst(lx, lz, 5, PALETTE.enemyChaser); // little spawn puff (telegraph)
-      const ling = new Enemy(this.scene, 'chaser', lx, lz);
+      game.particles.burst(lx, lz, 5, PALETTE.blood); // little spawn puff (telegraph)
+      const ling = new Enemy(this.scene, 'chaser', lx, lz, this.theme);
       ling.isSpiderling = true;
       ling.mesh.scale.setScalar(0.55);
       ling.radius *= 0.6;

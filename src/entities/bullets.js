@@ -73,7 +73,11 @@ export class Bullets {
     b.damage = o.damage;
     b.explosive = o.explosive;
     b.explodeRadius = o.explodeRadius;
-    b.mesh.material = b.explosive ? this.rocketMat : team === 'player' ? this.playerMat : this.enemyMat;
+    b.mesh.material = b.explosive
+      ? this.rocketMat
+      : team === 'player'
+        ? this.playerMat
+        : this.enemyMat;
     b.mesh.scale.setScalar(b.explosive ? 1.9 : 1);
     b.mesh.position.set(x, 1.0, z);
     b.mesh.visible = true;
