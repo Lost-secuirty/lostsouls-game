@@ -2,15 +2,15 @@
 // game.js — the conductor. Owns the world, runs the state machine, wires
 // every system together each tick, and renders (with camera shake).
 //
-//   BOOT -> PLAYING -> ROOM_CLEAR -> (next room / next floor) -> ... -> WIN
-//                 \-> DEAD (out of lives -> start all over)
+//   BOOT -> (start menu) -> PLAYING -> ROOM_CLEAR -> ... -> WIN
+//                                  \-> DEAD (out of lives -> start over)
 //
-// Each floor = 5 normal rooms + 1 boss room. Beating a boss sets a checkpoint
-// (you respawn at the next floor). You have 3 lives; lose them all and it's
-// back to the very beginning.
+// Single-player: you (blue) + an AI dad (green). Co-op: P1 = you (keyboard,
+// blue), P2 = the dad (Xbox controller, green). In co-op a downed player
+// revives when the room is cleared; Game Over only on a full wipe.
 // =====================================================================
 
-import { PLAYER, CAMERA, JUICE, ARENA, LIVES } from './config.js';
+import { PLAYER, CAMERA, JUICE, ARENA, LIVES, PALETTE } from './config.js';
 import { State } from './states.js';
 import { makeRng } from './core/rng.js';
 import { floorInfo, nextIsBoss, resolveDeath } from './core/progression.js';
@@ -49,6 +49,12 @@ export class Game {
     this.lives = LIVES.max;
     this.checkpointRoom = 0;
     this.godMode = false; // debug menu toggle
+
+    this.coop = false;
+    this.players = []; // [p1] or [p1, p2]
+    this.player = null; // = players[0]
+    this.player2 = null;
+    this.ally = null; // AI dad (single-player only)
     this.state = State.BOOT;
   }
 
@@ -57,18 +63,58 @@ export class Game {
     this.particles = new Particles(this.scene);
     this.juice = new Juice();
     this.bullets = new Bullets(this.scene);
-    this.player = new Player(this.scene);
-    this.ally = new Ally(this.scene);
-    this.startRun();
+    // players are created in startRun (which the start menu calls)
   }
 
-  startRun() {
+  startRun(coop = false) {
+    this.coop = coop;
     this.rng = makeRng((Math.random() * 1e9) | 0);
     this.lives = LIVES.max;
     this.checkpointRoom = 0;
-    this.player.reset(0, ARENA.depth / 2 - 4); // full reset: hearts, weapon, buffs
-    this.ally.reset(2, ARENA.depth / 2 - 3);
+
+    this._teardownActors();
+    this.player = new Player(this.scene, {
+      color: PALETTE.player,
+      modelKey: 'player',
+      device: coop ? 'kb' : 'both',
+    });
+    if (coop) {
+      this.player2 = new Player(this.scene, {
+        color: PALETTE.ally,
+        modelKey: 'ally',
+        device: 'pad',
+      });
+      this.players = [this.player, this.player2];
+    } else {
+      this.ally = new Ally(this.scene);
+      this.players = [this.player];
+    }
+    hud.setCoop(coop);
     this.loadRoom(0);
+  }
+
+  _teardownActors() {
+    if (this.player) this.scene.remove(this.player.mesh);
+    if (this.player2) this.scene.remove(this.player2.mesh);
+    if (this.ally) this.scene.remove(this.ally.mesh);
+    this.player = null;
+    this.player2 = null;
+    this.ally = null;
+  }
+
+  /** closest living player to a point (null if everyone is down) */
+  nearestPlayer(x, z) {
+    let best = null;
+    let bd = Infinity;
+    for (const p of this.players) {
+      if (!p.alive) continue;
+      const d = (p.x - x) ** 2 + (p.z - z) ** 2;
+      if (d < bd) {
+        bd = d;
+        best = p;
+      }
+    }
+    return best;
   }
 
   loadRoom(index) {
@@ -94,11 +140,14 @@ export class Game {
     this.room = buildRoom(this.scene, this.rng);
     this.walls = this.room.walls;
 
-    // place player at the bottom-center entrance
-    this.player.x = 0;
-    this.player.z = ARENA.depth / 2 - 4;
-    this.player.mesh.position.set(this.player.x, 0, this.player.z);
-    this.ally.reset(2, ARENA.depth / 2 - 3);
+    // place players at the bottom entrance (spread out in co-op)
+    this.players.forEach((pl, i) => {
+      pl.x = this.players.length > 1 ? (i === 0 ? -2.5 : 2.5) : 0;
+      pl.z = ARENA.depth / 2 - 4;
+      pl.mesh.position.set(pl.x, 0, pl.z);
+      pl.mesh.visible = true;
+    });
+    if (this.ally) this.ally.reset(2, ARENA.depth / 2 - 3);
 
     populateRoom(this, index);
     this.boss = this.enemies.find((e) => e.isBoss) || null;
@@ -119,6 +168,7 @@ export class Game {
   refreshHud() {
     const info = floorInfo(this.roomIndex);
     hud.setHearts(this.player.hearts, PLAYER.maxHearts);
+    if (this.coop && this.player2) hud.setHearts2(this.player2.hearts, PLAYER.maxHearts);
     hud.setLives(this.lives);
     hud.setRoom(info, this.player.weaponName);
   }
@@ -127,23 +177,23 @@ export class Game {
     this.enemies.push(e);
   }
 
-  /** spawn a pickup the player can walk over to grab */
+  /** spawn a pickup a player can walk over to grab */
   spawnPickup(type, x, z) {
     this.pickups.push(new Pickup(this.scene, type, x, z));
   }
 
   update(dt) {
-    this.input.update(); // poll gamepad once per tick (edges for E/Q/R)
+    this.input.update(); // poll gamepad once per tick
 
     // restart from a finished run
     if ((this.state === State.DEAD || this.state === State.WIN) && this.input.consumeRestart()) {
-      this.startRun();
+      this.startRun(this.coop);
       return;
     }
 
     if (this.state === State.PLAYING) {
-      this.player.update(dt, this);
-      this.ally.update(dt, this);
+      for (const pl of this.players) if (pl.alive) pl.update(dt, this);
+      if (this.ally) this.ally.update(dt, this);
       for (const e of this.enemies) e.update(dt, this);
       this.bullets.update(dt, this);
       this._handlePickups();
@@ -164,11 +214,12 @@ export class Game {
       if (this.boss && !this.boss.dead)
         hud.setBossHp(this.boss.hp / this.boss.maxHp, this.boss.name);
 
-      if (!this.player.alive) this._onDeath();
+      const wipe = !this.players.some((p) => p.alive);
+      if (this.coop ? wipe : !this.player.alive) this._onDefeat();
       else if (this.enemies.length === 0) this._onRoomClear();
     } else if (this.state === State.ROOM_CLEAR) {
-      this.player.update(dt, this);
-      this.ally.update(dt, this);
+      for (const pl of this.players) if (pl.alive) pl.update(dt, this);
+      if (this.ally) this.ally.update(dt, this);
       this.bullets.update(dt, this);
       this._handlePickups();
       this._handleSurvivors(dt); // survivors stay helpable after the fight is over
@@ -180,12 +231,14 @@ export class Game {
   }
 
   _handlePickups() {
-    const p = this.player;
     for (const item of this.pickups) {
       if (item.dead) continue;
       item.update(1 / 60);
-      if (circleVsCircle(p.x, p.z, p.radius, item.x, item.z, item.radius)) {
-        item.collect(this);
+      for (const pl of this.players) {
+        if (pl.alive && circleVsCircle(pl.x, pl.z, pl.radius, item.x, item.z, item.radius)) {
+          item.collect(this, pl);
+          break;
+        }
       }
     }
     this.pickups = this.pickups.filter((i) => !i.dead);
@@ -195,18 +248,18 @@ export class Game {
     let near = null;
     for (const n of this.npcs) {
       n.update(dt);
-      if (!near && n.inRange(this.player)) near = n;
+      if (!near && this.players.some((p) => p.alive && n.inRange(p))) near = n;
     }
     this.activeNpc = near;
 
     if (near) {
       prompts.show(`${near.name} is trapped!   [E] Help   ·   [Q] Leave`);
-      if (this.input.consumeHelp()) this._resolveSurvivor(near, 'HELP');
-      else if (this.input.consumeLeave()) this._resolveSurvivor(near, 'LEAVE');
+      if (this.input.consumeHelp('both')) this._resolveSurvivor(near, 'HELP');
+      else if (this.input.consumeLeave('both')) this._resolveSurvivor(near, 'LEAVE');
     } else {
       prompts.hide();
-      this.input.consumeHelp(); // drop stray presses
-      this.input.consumeLeave();
+      this.input.consumeHelp('both'); // drop stray presses
+      this.input.consumeLeave('both');
     }
   }
 
@@ -223,7 +276,8 @@ export class Game {
         this.addEnemy(new Enemy(this.scene, 'chaser', ox, oz));
       }
     } else {
-      this.player.applyEffect(outcome.effect, outcome.magnitude, this);
+      const pl = this.nearestPlayer(npc.x, npc.z) || this.player;
+      pl.applyEffect(outcome.effect, outcome.magnitude, this);
     }
 
     // big, lingering feedback so the choice never goes unnoticed
@@ -236,6 +290,12 @@ export class Game {
   }
 
   _onRoomClear() {
+    // co-op: revive any downed teammate now that it's safe
+    if (this.coop) {
+      for (const pl of this.players) if (!pl.alive) pl.revive(pl.x, pl.z);
+      this.refreshHud();
+    }
+
     this.bullets.clearEnemyBullets();
     this.room.openDoor();
     audio.play('doorOpen');
@@ -246,6 +306,7 @@ export class Game {
     if (info.isBossRoom) {
       hud.hideBossHp();
       audio.play('bossDie');
+      this.input.rumble(0.8, 0.6, 300); // boss-down rumble
       // checkpoint: respawn at the next floor if you die from here on
       if (!info.isLastRoom) this.checkpointRoom = this.roomIndex + 1;
       hud.banner(info.isLastRoom ? 'BOSS DOWN — FINAL EXIT!' : 'BOSS DOWN — CHECKPOINT SAVED!');
@@ -261,20 +322,23 @@ export class Game {
   }
 
   _checkDoor() {
-    const p = this.player;
-    if (this.room.door.active && circleVsBox(p.x, p.z, p.radius, this.room.door.box)) {
+    const atDoor =
+      this.room.door.active &&
+      this.players.some((p) => p.alive && circleVsBox(p.x, p.z, p.radius, this.room.door.box));
+    if (atDoor) {
       if (floorInfo(this.roomIndex).isLastRoom) this._onWin();
       else this.loadRoom(this.roomIndex + 1);
     }
   }
 
-  _onDeath() {
+  /** a player went down (1P) or the whole team wiped (co-op) */
+  _onDefeat() {
     const result = resolveDeath(this.lives, this.checkpointRoom);
     this.lives = result.lives;
     audio.play(result.action === 'GAMEOVER' ? 'gameover' : 'lifeLost');
 
     if (result.action === 'RESPAWN') {
-      hud.banner(`LIFE LOST — ${this.lives} left`);
+      hud.banner(`${this.coop ? 'TEAM DOWN' : 'LIFE LOST'} — ${this.lives} left`);
       setTimeout(() => hud.hideBanner(), 1400);
       this._respawnAtCheckpoint(result.room);
     } else {
@@ -286,10 +350,7 @@ export class Game {
   }
 
   _respawnAtCheckpoint(room) {
-    this.player.alive = true;
-    this.player.hearts = PLAYER.maxHearts;
-    this.player.invuln = 1.4;
-    this.player.mesh.visible = true;
+    for (const pl of this.players) pl.revive(0, 0);
     this.loadRoom(room);
   }
 

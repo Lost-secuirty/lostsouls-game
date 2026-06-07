@@ -71,7 +71,7 @@ export function initDebugMenu(game) {
     .add(
       {
         restart() {
-          game.startRun();
+          game.startRun(game.coop);
         },
       },
       'restart',

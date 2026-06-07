@@ -94,14 +94,14 @@ export class Pickup {
     this.shape.rotation.y += dt * 2.5;
   }
 
-  collect(game) {
+  collect(game, player = game.player) {
     if (this.dead) return;
     this.dead = true;
     this.scene.remove(this.mesh);
 
     const look = LOOK[this.type] || LOOK.HEAL;
     if (look.weapon) {
-      game.player.setWeapon(this.type.toLowerCase());
+      player.setWeapon(this.type.toLowerCase());
       audio.play('weapon');
     } else {
       const mag = {
@@ -110,7 +110,7 @@ export class Pickup {
         FIRE_RATE_UP: PICKUPS.fireRateMul,
         SPEED_UP: PICKUPS.speedUpAmount,
       }[this.type];
-      game.player.applyEffect(this.type, mag, game);
+      player.applyEffect(this.type, mag, game);
       audio.play('pickup');
     }
     hud.toast(look.label, true);

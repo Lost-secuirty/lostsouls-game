@@ -9,6 +9,7 @@ import { Game } from './game.js';
 import { startLoop } from './core/loop.js';
 import { MODELS } from './config.js';
 import * as audio from './systems/audio.js';
+import { showStartMenu } from './ui/startmenu.js';
 
 (async () => {
   const { renderer, scene, camera, baseCam, resize } = createScene(document.getElementById('app'));
@@ -57,8 +58,9 @@ import * as audio from './systems/audio.js';
     addEventListener(ev, unlock, { once: true });
   }
 
-  // hide the loading splash
+  // hide the loading splash, then show the start menu (pick 1P or 2P)
   document.getElementById('boot')?.classList.add('hide');
+  showStartMenu((coop) => game.startRun(coop));
 
   startLoop({
     step: 1 / 60,
