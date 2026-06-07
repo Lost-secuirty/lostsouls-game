@@ -1,7 +1,7 @@
 {
   "name": "my-sons-game",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "A 3D bullet-hell twin-stick shooter (Binding of Isaac x Doom) — survive a ruined city overrun by monsters. Built by a dad and his son.",
   "scripts": {
@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "express": "^4.21.2",
-    "howler": "^2.2.4",
     "three": "^0.180.0"
   },
   "devDependencies": {

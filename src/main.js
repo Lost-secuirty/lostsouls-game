@@ -8,6 +8,7 @@ import { Input } from './systems/input.js';
 import { Game } from './game.js';
 import { startLoop } from './core/loop.js';
 import { MODELS } from './config.js';
+import * as audio from './systems/audio.js';
 
 (async () => {
   const { renderer, scene, camera, baseCam, resize } = createScene(document.getElementById('app'));
@@ -19,7 +20,16 @@ import { MODELS } from './config.js';
   const game = new Game({ renderer, scene, camera, baseCam, input });
   game.init();
 
+  // debug handle (poke the game from the dev console, e.g. window.__game.loadRoom(5))
+  window.__game = game;
+
   window.addEventListener('resize', resize);
+
+  // browsers block audio until a user gesture — unlock + start music on the first one
+  const unlock = () => audio.unlock();
+  for (const ev of ['click', 'keydown', 'touchstart']) {
+    addEventListener(ev, unlock, { once: true });
+  }
 
   // hide the loading splash
   document.getElementById('boot')?.classList.add('hide');
