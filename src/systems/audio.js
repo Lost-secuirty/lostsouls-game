@@ -17,6 +17,11 @@ export function unlock() {
   sfx.unlock();
 }
 
+/** raise the music intensity per floor */
+export function setMusicFloor(floorIndex) {
+  sfx.setMusicFloor(floorIndex);
+}
+
 /** kept for call-site compatibility; the synth needs no pre-registration */
 export function registerDefaultSounds() {
   // procedural — nothing to load.

@@ -9,6 +9,8 @@
 let ctx = null;
 let master = null;
 let musicOn = false;
+let musicVoices = []; // { osc, base } for the drone, so we can shift pitch per floor
+let musicFloor = 0; // current floor (raises the drone a couple semitones each floor)
 
 function ensure() {
   if (ctx) return ctx;
@@ -102,6 +104,28 @@ const SOUNDS = {
   lifeLost: () => tone({ freq: 330, slideTo: 60, type: 'triangle', dur: 0.4, vol: 0.3 }),
   gameover: () => [300, 240, 180, 120].forEach((f, i) => tone({ freq: f, type: 'sawtooth', dur: 0.3, vol: 0.28, delay: i * 0.18 })),
   win: () => [523, 659, 784, 1047].forEach((f, i) => tone({ freq: f, dur: 0.18, vol: 0.25, delay: i * 0.12 })),
+  // expansion 2: more variety
+  rocketLaunch: () => {
+    noise({ dur: 0.22, vol: 0.2, freq: 1200 });
+    tone({ freq: 180, slideTo: 90, type: 'sawtooth', dur: 0.22, vol: 0.18 });
+  },
+  explosion: () => {
+    noise({ dur: 0.5, vol: 0.4, freq: 500, q: 2 });
+    tone({ freq: 120, slideTo: 30, type: 'sawtooth', dur: 0.5, vol: 0.3 });
+  },
+  doorOpen: () => tone({ freq: 120, slideTo: 320, type: 'square', dur: 0.25, vol: 0.14 }),
+  roomClear: () => [659, 784, 988].forEach((f, i) => tone({ freq: f, dur: 0.12, vol: 0.18, delay: i * 0.1 })),
+  bossRoar: () => {
+    noise({ dur: 0.7, vol: 0.35, freq: 300, q: 3 });
+    tone({ freq: 90, slideTo: 50, type: 'sawtooth', dur: 0.7, vol: 0.3 });
+    tone({ freq: 60, type: 'sawtooth', dur: 0.7, vol: 0.18 });
+  },
+  bossShoot: () => tone({ freq: 300, slideTo: 120, type: 'square', dur: 0.1, vol: 0.14 }),
+  bossRing: () => tone({ freq: 200, slideTo: 720, type: 'sawtooth', dur: 0.4, vol: 0.16 }),
+  lowHealth: () => {
+    tone({ freq: 80, type: 'sine', dur: 0.12, vol: 0.3 });
+    tone({ freq: 70, type: 'sine', dur: 0.14, vol: 0.28, delay: 0.16 });
+  },
 };
 
 export function play(name) {
@@ -117,13 +141,15 @@ export function startMusic() {
   g.gain.value = 0.06;
   g.connect(master);
 
-  // two detuned low voices
-  for (const f of [55, 82.5]) {
+  // two detuned low voices (kept so we can shift their pitch per floor)
+  musicVoices = [];
+  for (const base of [55, 82.5]) {
     const o = ctx.createOscillator();
     o.type = 'sine';
-    o.frequency.value = f;
+    o.frequency.value = base;
     o.connect(g);
     o.start();
+    musicVoices.push({ osc: o, base });
   }
   // a slow LFO swelling the volume for an uneasy feel
   const lfo = ctx.createOscillator();
@@ -132,4 +158,20 @@ export function startMusic() {
   lfoGain.gain.value = 0.04;
   lfo.connect(lfoGain).connect(g.gain);
   lfo.start();
+
+  applyMusicFloor(); // honor any floor set before the music started
+}
+
+/** raise the drone ~2 semitones per floor so it gets tenser as you descend */
+export function setMusicFloor(floorIndex) {
+  musicFloor = floorIndex || 0;
+  applyMusicFloor();
+}
+
+function applyMusicFloor() {
+  if (!ready() || !musicVoices.length) return;
+  const ratio = Math.pow(2, (musicFloor * 2) / 12); // 2 semitones / floor
+  for (const v of musicVoices) {
+    v.osc.frequency.exponentialRampToValueAtTime(v.base * ratio, ctx.currentTime + 0.6);
+  }
 }

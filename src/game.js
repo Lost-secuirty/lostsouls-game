@@ -108,6 +108,7 @@ export class Game {
     this.refreshHud();
 
     const info = floorInfo(index);
+    audio.setMusicFloor(info.floorIndex); // music gets tenser each floor
     if (info.isBossRoom && this.boss) {
       hud.banner(`${this.boss.name.toUpperCase()} — KILL IT`);
       setTimeout(() => hud.hideBanner(), 1600);
@@ -234,6 +235,7 @@ export class Game {
   _onRoomClear() {
     this.bullets.clearEnemyBullets();
     this.room.openDoor();
+    audio.play('doorOpen');
     this.state = State.ROOM_CLEAR;
     prompts.hide();
     const info = floorInfo(this.roomIndex);
@@ -249,6 +251,7 @@ export class Game {
       this.spawnPickup(dropRandomPickup(this.rng, true), 2, 0);
     } else {
       // normal room: drop a reward in the middle, warn if the boss is next
+      audio.play('roomClear');
       this.spawnPickup(dropRandomPickup(this.rng, false), 0, 0);
       hud.banner(nextIsBoss(this.roomIndex) ? '⚠  BOSS AHEAD  ⚠' : 'ROOM CLEAR — RUN!');
     }
