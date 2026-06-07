@@ -10,10 +10,14 @@ around… but not all of them are friendly, and you can't always tell who is.
   right trigger shoot).
 - 🏙️ **Floors of 5 rooms + a boss.** Clear five rooms, get a **⚠ BOSS AHEAD** warning,
   then fight the 🕷️ **spider boss**. Beat it to reach the next floor.
+- 🕷️ **The spider has real attack patterns** (designed by Caden): a pistol-like **base
+  attack**, a telegraphed **bullet ring** you dodge through, and **baby spiders** that swarm
+  in once it drops below half health.
 - ❤️ **3 lives + checkpoints.** Beat a boss and you respawn at the next floor if you
   die. Run out of all 3 lives and it's back to the start.
 - 🔫 **Weapons & power-ups you walk over to grab** — shotgun, machine gun, rocket
-  launcher, plus heart / damage / speed / fire-rate boosts.
+  launcher, plus heart / damage / speed / fire-rate boosts. (The starting pistol is weak on
+  purpose, so every upgrade feels great.)
 - 🩸 **Blood, screen-shake, hit-stop, and sound** — all made in code, fast and punchy.
 - 🤝 **Survivors you can help or leave.** Walk up, press **E** (or **A** on a pad), and
   choose. The outcome is **random** — helping might heal you… or be a trap. You never

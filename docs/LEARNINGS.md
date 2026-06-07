@@ -28,3 +28,18 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
   scenarios deterministically (spawn a pickup, jump to the boss room, etc.).
 - Boss/enemies share one interface (`x,z,radius,hp,dead,update,hurt(dmg,game),die(game)`)
   so the existing pooled-bullet collision works on the boss with no special-casing.
+
+## 2026-06-07 — Expansion 2 (Caden's boss patterns + polish)
+
+- Caden beat the whole game first try (died twice); difficulty "medium = good", keep it.
+- His terminology: **"P# = an attack pattern"**, not a health phase. Boss attacks rebuilt as
+  P1 (aimed burst) / P2 (telegraphed bullet ring, scales by floor) / P3 (HP-gated spiderling
+  spawns via the pure, tested `spiderlingTarget(hpFrac)`).
+- Web research takeaway baked in: **telegraph attacks** (a wind-up before the ring) is the #1
+  fairness rule — keep hit-stop tiny (~20–60ms), reserve big shake for explosions/boss death.
+- "Starting weapon should be weak" is real design wisdom — slowed the pistol (cooldown
+  0.16→0.26) so pickups feel powerful. Confirmed via roguelite-progression sources.
+- More procedural SFX added in `sfx.js` (rocket launch/boom, door/room-clear, boss roar +
+  attack cues, low-health heartbeat) and the drone music rises ~2 semitones per floor.
+- Tag boss adds with `isSpiderling` so the boss can count its own live spawns to maintain
+  the HP-gated target.
