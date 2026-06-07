@@ -17,6 +17,13 @@ import { hud } from '../ui/hud.js';
 const DEADZONE = 0.15;
 const dz = (v) => (Math.abs(v) < DEADZONE ? 0 : v);
 
+/** is the event target a text field / menu control (so we shouldn't treat keys as game input)? */
+function isEditable(el) {
+  if (!el || !el.tagName) return false;
+  const t = el.tagName;
+  return t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT' || el.isContentEditable;
+}
+
 export class Input {
   constructor(domElement) {
     this.dom = domElement;
@@ -41,14 +48,31 @@ export class Input {
     this._ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     this._hit = new THREE.Vector3();
 
-    addEventListener('keydown', (e) => {
-      const k = e.key.toLowerCase();
-      this.keys.add(k);
-      if (k === 'e') this._help = true;
-      if (k === 'q') this._leave = true;
-      if (k === 'r') this._restart = true;
-    });
-    addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
+    // Capture phase so we always see key releases first — even if a menu control
+    // (lil-gui) would otherwise swallow them (the "stuck key" bug).
+    addEventListener(
+      'keydown',
+      (e) => {
+        if (isEditable(e.target)) return; // typing in the debug menu isn't game input
+        const k = e.key.toLowerCase();
+        this.keys.add(k);
+        if (k === 'e') this._help = true;
+        if (k === 'q') this._leave = true;
+        if (k === 'r') this._restart = true;
+      },
+      { capture: true },
+    );
+    addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()), { capture: true });
+
+    // Clicking anything that isn't the game canvas (e.g. the debug panel) releases
+    // held keys, so movement can't get stuck when you poke a menu.
+    addEventListener(
+      'pointerdown',
+      (e) => {
+        if (this.dom && e.target !== this.dom && !this.dom.contains(e.target)) this.clearKeys();
+      },
+      { capture: true },
+    );
 
     domElement.addEventListener('mousemove', (e) => {
       this.mouseNdc.x = (e.clientX / window.innerWidth) * 2 - 1;
