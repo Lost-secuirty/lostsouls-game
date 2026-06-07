@@ -129,9 +129,15 @@ export class Bullets {
           continue;
         }
       } else {
-        const p = game.player;
-        if (p.alive && circleVsCircle(b.x, b.z, BULLET.radius, p.x, p.z, p.radius)) {
-          p.hurt(b.damage, game);
+        let hitPlayer = false;
+        for (const p of game.players) {
+          if (p.alive && circleVsCircle(b.x, b.z, BULLET.radius, p.x, p.z, p.radius)) {
+            p.hurt(b.damage, game);
+            hitPlayer = true;
+            break;
+          }
+        }
+        if (hitPlayer) {
           this._kill(b);
           continue;
         }

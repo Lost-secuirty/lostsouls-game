@@ -67,7 +67,7 @@ export class Boss {
 
   update(dt, game) {
     if (this.dead) return;
-    const p = game.player;
+    const p = game.nearestPlayer(this.x, this.z) || game.player;
     this.t += dt;
     this.contactTimer -= dt;
     const rage = this.rage;

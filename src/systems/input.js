@@ -1,13 +1,13 @@
 // =====================================================================
-// input.js — turns keyboard + mouse + an Xbox gamepad into a simple "intent"
-// the game reads each tick.
+// input.js — keyboard + mouse + Xbox gamepad -> a simple "intent".
 //
-//   move      : {x, z} from WASD / left stick
-//   aim       : {x, z} toward the mouse, or the right stick if it's being used
-//   shoot     : mouse held / right trigger or bumper
-//   edges     : E or (A) = help · Q or (B) = leave · R or (Start) = restart
+// Device-aware so two players can share one Input:
+//   'kb'   = keyboard + mouse        (Player 1)
+//   'pad'  = the Xbox controller     (Player 2)
+//   'both' = either (solo play)
 //
-// call update() once per tick (game does this) to poll the pad + button edges.
+// move(device) · aim(device,cam,x,z) · shoot(device) · consumeHelp/Leave(device)
+// consumeRestart() is global (R or Start). call update() once per tick.
 // =====================================================================
 
 import * as THREE from 'three';
@@ -28,21 +28,23 @@ export class Input {
   constructor(domElement) {
     this.dom = domElement;
     this.keys = new Set();
-    this.shoot = false;
     this.mouseNdc = new THREE.Vector2(0, 0);
-
     this._mouseDown = false;
     this._touchDown = false;
 
-    // edge-triggered presses (consumed once)
-    this._help = false;
-    this._leave = false;
-    this._restart = false;
+    // edge-triggered presses, per device (consumed once)
+    this._kbHelp = false;
+    this._kbLeave = false;
+    this._kbRestart = false;
+    this._padHelp = false;
+    this._padLeave = false;
+    this._padRestart = false;
 
     // gamepad state
     this._padIndex = null;
-    this._padPrev = {}; // previous button pressed states (for edges)
-    this.pad = { moveX: 0, moveZ: 0, aimX: 0, aimZ: 0, active: false, aiming: false };
+    this._padPrev = {};
+    this.pad = { moveX: 0, moveZ: 0, aimX: 0, aimZ: 0, active: false, aiming: false, shoot: false };
+    this._padAim = { x: 0, z: -1 }; // right-stick aim persists when the stick is idle
 
     this._raycaster = new THREE.Raycaster();
     this._ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -56,9 +58,9 @@ export class Input {
         if (isEditable(e.target)) return; // typing in the debug menu isn't game input
         const k = e.key.toLowerCase();
         this.keys.add(k);
-        if (k === 'e') this._help = true;
-        if (k === 'q') this._leave = true;
-        if (k === 'r') this._restart = true;
+        if (k === 'e') this._kbHelp = true;
+        if (k === 'q') this._kbLeave = true;
+        if (k === 'r') this._kbRestart = true;
       },
       { capture: true },
     );
@@ -90,9 +92,8 @@ export class Input {
     addEventListener('gamepaddisconnected', () => (this._padIndex = null));
   }
 
-  /** poll the gamepad once per tick; compute button edges + shoot state */
+  /** poll the gamepad once per tick; compute aim/shoot + button edges */
   update() {
-    let padShoot = false;
     const pads = navigator.getGamepads ? navigator.getGamepads() : [];
     const gp = this._padIndex != null ? pads[this._padIndex] : null;
 
@@ -107,18 +108,21 @@ export class Input {
       this.pad.aiming = ax !== 0 || az !== 0;
       this.pad.aimX = ax;
       this.pad.aimZ = az;
-
+      if (this.pad.aiming) {
+        const n = normalize(ax, az);
+        this._padAim.x = n.x;
+        this._padAim.z = n.z;
+      }
       const btn = (i) => !!(gp.buttons[i] && gp.buttons[i].pressed);
-      padShoot = btn(7) || btn(5); // RT or RB
-      this._edge('a', btn(0), () => (this._help = true));
-      this._edge('b', btn(1), () => (this._leave = true));
-      this._edge('start', btn(9), () => (this._restart = true));
+      this.pad.shoot = btn(7) || btn(5); // RT or RB
+      this._edge('a', btn(0), () => (this._padHelp = true));
+      this._edge('b', btn(1), () => (this._padLeave = true));
+      this._edge('start', btn(9), () => (this._padRestart = true));
     } else {
       this.pad.active = false;
       this.pad.aiming = false;
+      this.pad.shoot = false;
     }
-
-    this.shoot = this._mouseDown || this._touchDown || padShoot;
   }
 
   _edge(name, pressed, onPress) {
@@ -126,24 +130,42 @@ export class Input {
     this._padPrev[name] = pressed;
   }
 
-  /** drop all held inputs — call on window blur / tab hide so a missed keyup
-   *  can't leave the player stuck moving (e.g. "stuck going up"). */
+  /** drop all held keyboard/mouse inputs (window blur / tab hide / click off canvas) */
   clearKeys() {
     this.keys.clear();
     this._mouseDown = false;
     this._touchDown = false;
-    this.shoot = false;
+  }
+
+  /** rumble the controller — feature-detected, silent no-op where unsupported */
+  rumble(strong = 0.4, weak = 0.2, ms = 120) {
+    const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    const gp = this._padIndex != null ? pads[this._padIndex] : null;
+    const act = gp && gp.vibrationActuator;
+    if (act && act.playEffect) {
+      try {
+        act.playEffect('dual-rumble', {
+          duration: ms,
+          strongMagnitude: strong,
+          weakMagnitude: weak,
+        });
+      } catch {
+        /* some browsers throw on unknown effects — ignore */
+      }
+    }
   }
 
   /** WASD / left stick -> {x, z}. Screen "up" (W) moves away from the camera (-z). */
-  move() {
+  move(device = 'both') {
     let x = 0;
     let z = 0;
-    if (this.keys.has('w') || this.keys.has('arrowup')) z -= 1;
-    if (this.keys.has('s') || this.keys.has('arrowdown')) z += 1;
-    if (this.keys.has('a') || this.keys.has('arrowleft')) x -= 1;
-    if (this.keys.has('d') || this.keys.has('arrowright')) x += 1;
-    if (this.pad.active) {
+    if (device !== 'pad') {
+      if (this.keys.has('w') || this.keys.has('arrowup')) z -= 1;
+      if (this.keys.has('s') || this.keys.has('arrowdown')) z += 1;
+      if (this.keys.has('a') || this.keys.has('arrowleft')) x -= 1;
+      if (this.keys.has('d') || this.keys.has('arrowright')) x += 1;
+    }
+    if (device !== 'kb' && this.pad.active) {
       x += this.pad.moveX;
       z += this.pad.moveZ;
     }
@@ -151,28 +173,52 @@ export class Input {
     return l > 1 ? { x: x / l, z: z / l } : { x, z };
   }
 
-  /** aim toward the mouse on the ground — or the right stick when it's in use. */
-  aim(camera, fromX, fromZ) {
-    if (this.pad.aiming) return normalize(this.pad.aimX, this.pad.aimZ);
+  /** aim toward the mouse, or the right stick (which keeps its last direction for the pad). */
+  aim(device, camera, fromX, fromZ) {
+    if (device !== 'kb' && this.pad.aiming) return { ...this._padAim };
+    if (device === 'pad') return { ...this._padAim }; // pad-only: keep last aim while stick is idle
     this._raycaster.setFromCamera(this.mouseNdc, camera);
     const hit = this._raycaster.ray.intersectPlane(this._ground, this._hit);
     if (!hit) return { x: 0, z: -1 };
     return normalize(hit.x - fromX, hit.z - fromZ);
   }
 
-  consumeHelp() {
-    const v = this._help;
-    this._help = false;
+  shoot(device = 'both') {
+    const kb = this._mouseDown || this._touchDown;
+    const pad = this.pad.shoot;
+    if (device === 'kb') return kb;
+    if (device === 'pad') return pad;
+    return kb || pad;
+  }
+
+  consumeHelp(device = 'both') {
+    let v = false;
+    if (device !== 'pad' && this._kbHelp) {
+      v = true;
+      this._kbHelp = false;
+    }
+    if (device !== 'kb' && this._padHelp) {
+      v = true;
+      this._padHelp = false;
+    }
     return v;
   }
-  consumeLeave() {
-    const v = this._leave;
-    this._leave = false;
+  consumeLeave(device = 'both') {
+    let v = false;
+    if (device !== 'pad' && this._kbLeave) {
+      v = true;
+      this._kbLeave = false;
+    }
+    if (device !== 'kb' && this._padLeave) {
+      v = true;
+      this._padLeave = false;
+    }
     return v;
   }
   consumeRestart() {
-    const v = this._restart;
-    this._restart = false;
+    const v = this._kbRestart || this._padRestart;
+    this._kbRestart = false;
+    this._padRestart = false;
     return v;
   }
 }
