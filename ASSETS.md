@@ -8,8 +8,10 @@ here with their source and license. **Only use CC0 or free-for-games assets.**
 
 - **Model:** put a `.glb` file in `public/models/`, then reference its key in
   `src/config.js` (see `MODELS`). Missing file → the game uses a primitive shape.
-- **Sound:** put an audio file in `public/audio/`, then register it in
-  `src/systems/audio.js` (see `register`). Missing file → silent (no error).
+- **Sound:** sound is **generated in code** in `src/systems/sfx.js` (Web Audio, no
+  files). Edit the sound recipes there to change how things sound. If you'd rather use
+  recorded audio files, you can wire them in behind the `audio.play()` facade in
+  `src/systems/audio.js`.
 
 ## Where to get free assets
 

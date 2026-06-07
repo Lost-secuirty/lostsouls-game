@@ -14,6 +14,31 @@ export function len(x, z) {
   return Math.hypot(x, z);
 }
 
+/** rotate a vector (x, z) by `rad` radians on the XZ plane */
+export function rotate(x, z, rad) {
+  const c = Math.cos(rad);
+  const s = Math.sin(rad);
+  return { x: x * c - z * s, z: x * s + z * c };
+}
+
+/**
+ * Fan a number of unit directions out around an aim direction (for shotguns).
+ * pellets=1 -> just the aim. Otherwise evenly spread across `spreadDeg` degrees.
+ * @returns {{x:number,z:number}[]}
+ */
+export function spreadDirs(aimX, aimZ, pellets, spreadDeg) {
+  const base = normalize(aimX, aimZ);
+  if (pellets <= 1 || spreadDeg <= 0) return [base];
+  const span = (spreadDeg * Math.PI) / 180;
+  const out = [];
+  for (let i = 0; i < pellets; i++) {
+    const t = pellets === 1 ? 0.5 : i / (pellets - 1); // 0..1
+    const ang = -span / 2 + t * span;
+    out.push(rotate(base.x, base.z, ang));
+  }
+  return out;
+}
+
 /** return a unit-length {x, z} pointing the same way (zero stays zero) */
 export function normalize(x, z) {
   const l = Math.hypot(x, z);

@@ -48,6 +48,50 @@
         font-size: 28px;
         letter-spacing: 2px;
       }
+      #lives {
+        position: absolute;
+        top: 52px;
+        left: 18px;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        color: #ffd25a;
+      }
+      #bossbar {
+        position: absolute;
+        top: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 56%;
+        max-width: 620px;
+        height: 16px;
+        background: rgba(0, 0, 0, 0.55);
+        border: 2px solid #ff4d4d;
+        border-radius: 8px;
+        overflow: hidden;
+        display: none;
+      }
+      #bossbar.show {
+        display: block;
+      }
+      #bossbar-fill {
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(90deg, #ff2a2a, #ff7a2a);
+        transition: width 0.1s linear;
+      }
+      #bossbar-name {
+        position: absolute;
+        top: 18px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #ff8a8a;
+      }
       #room {
         position: absolute;
         top: 16px;
@@ -168,7 +212,9 @@
 
     <div id="hud">
       <div id="hearts"></div>
+      <div id="lives"></div>
       <div id="room"></div>
+      <div id="bossbar"><div id="bossbar-fill"></div><div id="bossbar-name"></div></div>
       <div id="banner"></div>
       <div id="prompt"></div>
       <div id="toast"></div>
