@@ -1,0 +1,23 @@
+node_modules/
+dist/
+*.log
+
+# verification screenshots
+shot-*.png
+
+# local agent observability log (hook events)
+.claude/logs/
+
+# Secrets / credential carriers — never commit
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.keystore
+id_rsa*
+credentials*
+
+# OS junk
+.DS_Store
+Thumbs.db
