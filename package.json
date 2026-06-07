@@ -1,0 +1,31 @@
+{
+  "name": "my-sons-game",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A 3D bullet-hell twin-stick shooter (Binding of Isaac x Doom) — survive a ruined city overrun by monsters. Built by a dad and his son.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node server.js",
+    "lint": "eslint src server.js",
+    "format": "prettier --write \"**/*.{js,mjs,html,css,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,mjs,html,css,json,md}\"",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "howler": "^2.2.4",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8"
+  }
+}
