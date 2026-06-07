@@ -16,3 +16,4 @@ below).
 | [0008](0008-gamepad-input.md)                      | Basic gamepad (Xbox controller) input                 | Accepted |
 | [0009](0009-boss-attack-patterns.md)               | Spider boss attack patterns (Caden's card)            | Accepted |
 | [0010](0010-debug-menu-and-probability.md)         | Debug menu (lil-gui) + probability verification       | Accepted |
+| [0011](0011-coop-and-start-menu.md)                | 2-player local co-op + start menu                     | Accepted |

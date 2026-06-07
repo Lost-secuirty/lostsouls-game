@@ -64,3 +64,21 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
   (deterministic, no flake). Methodology ported from `testing-kits` harness patterns.
 - Drive recon: the April Dokkan docs are mostly unit stats; only the RNG/probability section
   was useful (independent-probability formula, ±3% variance). Looked, used the bit that fit.
+
+## 2026-06-07 — Expansion 4 (2-player co-op + start menu)
+
+- **Stuck-key bug round 2:** the Exp-3 blur fix didn't catch clicking the lil-gui panel
+  (window keeps focus, so the keyup is swallowed by the control). Real fix: capture-phase
+  key listeners (see releases first), ignore keys when an editable element is the target, and
+  release held keys on any `pointerdown` outside the canvas. Verified headlessly.
+- Input is now **device-aware** (`'kb'|'pad'|'both'`) so two players share one Input; right-
+  stick aim persists. `Player` takes `{color, modelKey, device}`; co-op uses the green "dad"
+  mesh as P2 and skips the AI `Ally`.
+- Co-op targeting via `game.nearestPlayer(x,z)`; enemies/boss/bullets/pickups/survivors all
+  go through `game.players`. **Revive-on-room-clear**, full-wipe spends a shared life.
+- Start menu = a plain DOM overlay (`#startmenu` + `ui/startmenu.js`); `game.init()` no longer
+  auto-starts — the menu calls `game.startRun(coop)`. Clicking a button also unlocks audio.
+- Gamepad rumble via `vibrationActuator.playEffect('dual-rumble', …)`, feature-detected.
+  Confirmed W3C standard Xbox mapping is current (One S+/Series identical).
+- Headless can't feed real gamepad input, so we verified the device split + co-op logic
+  (players array, nearest-target, down/continue, revive, team-death) by driving `window.__game`.

@@ -25,7 +25,9 @@ around… but not all of them are friendly, and you can't always tell who is.
 - 🤝 **Survivors you can help or leave.** Walk up, press **E** (or **A** on a pad), and
   choose. The outcome is **random** — helping might heal you… or be a trap. You never
   know until it happens.
-- 👨‍👦 **Dad is an AI buddy** who fights with you. (Two-player co-op is planned.)
+- 👨‍👦 **Play solo or 2-player co-op.** Solo, Dad is an AI buddy. In co-op, **Player 2 takes
+  over Dad on an Xbox controller** — pick 1 or 2 players on the start screen. If one of you
+  goes down, you revive when the room is cleared; it's only Game Over if you both fall.
 
 > It runs out of the box with simple colored shapes — no downloads needed. You can
 > swap in cooler monsters and sounds whenever you want (see **Make it your own** below).
@@ -48,6 +50,9 @@ To run the "real" (built) version through the game server:
 npm run build    # bundle the game into dist/
 npm start        # serve it at http://localhost:3000
 ```
+
+At the **start screen** pick **1 Player** or **2 Players**. In 2-player, P1 uses the
+keyboard/mouse and P2 uses an Xbox controller (it also rumbles).
 
 **Controls:** `WASD` move · mouse aim · click/hold shoot · `E` help a survivor ·
 `Q` leave a survivor · `R` restart. **Xbox pad:** left stick move · right stick aim ·
