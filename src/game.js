@@ -10,10 +10,10 @@
 // revives when the room is cleared; Game Over only on a full wipe.
 // =====================================================================
 
-import { PLAYER, CAMERA, JUICE, ARENA, LIVES, PALETTE } from './config.js';
+import { PLAYER, CAMERA, JUICE, ARENA, CAPS, PALETTE } from './config.js';
 import { State } from './states.js';
 import { makeRng } from './core/rng.js';
-import { floorInfo, nextIsBoss, resolveDeath } from './core/progression.js';
+import { floorInfo, nextIsBoss, resolveDeath, weaponSlotsForBosses } from './core/progression.js';
 import { Player } from './entities/player.js';
 import { Ally } from './entities/ally.js';
 import { Enemy } from './entities/enemies.js';
@@ -46,8 +46,9 @@ export class Game {
     this.boss = null;
     this.room = null;
     this.roomIndex = 0;
-    this.lives = LIVES.max;
+    this.lives = CAPS.lives.start;
     this.checkpointRoom = 0;
+    this.bossesBeaten = 0; // drives weapon-slot unlocks
     this.godMode = false; // debug menu toggle
 
     this.coop = false;
@@ -69,8 +70,9 @@ export class Game {
   startRun(coop = false) {
     this.coop = coop;
     this.rng = makeRng((Math.random() * 1e9) | 0);
-    this.lives = LIVES.max;
+    this.lives = CAPS.lives.start;
     this.checkpointRoom = 0;
+    this.bossesBeaten = 0;
 
     this._teardownActors();
     this.player = new Player(this.scene, {
@@ -170,7 +172,13 @@ export class Game {
     hud.setHearts(this.player.hearts, PLAYER.maxHearts);
     if (this.coop && this.player2) hud.setHearts2(this.player2.hearts, PLAYER.maxHearts);
     hud.setLives(this.lives);
-    hud.setRoom(info, this.player.weaponName);
+    hud.setRoom(info, this._weaponLabel(this.player));
+  }
+
+  _weaponLabel(p) {
+    return p.slotsUnlocked > 1
+      ? `${p.weaponName} [${p.slotIndex + 1}/${p.slotsUnlocked}]`
+      : p.weaponName;
   }
 
   addEnemy(e) {
@@ -235,7 +243,10 @@ export class Game {
       if (item.dead) continue;
       item.update(1 / 60);
       for (const pl of this.players) {
-        if (pl.alive && circleVsCircle(pl.x, pl.z, pl.radius, item.x, item.z, item.radius)) {
+        if (!pl.alive) continue;
+        // a full-health player can't pick up a heart (leave it for a hurt teammate)
+        if (item.type === 'HEAL' && pl.hearts >= PLAYER.maxHearts) continue;
+        if (circleVsCircle(pl.x, pl.z, pl.radius, item.x, item.z, item.radius)) {
           item.collect(this, pl);
           break;
         }
@@ -307,6 +318,7 @@ export class Game {
       hud.hideBossHp();
       audio.play('bossDie');
       this.input.rumble(0.8, 0.6, 300); // boss-down rumble
+      this._countBossBeaten();
       // checkpoint: respawn at the next floor if you die from here on
       if (!info.isLastRoom) this.checkpointRoom = this.roomIndex + 1;
       hud.banner(info.isLastRoom ? 'BOSS DOWN — FINAL EXIT!' : 'BOSS DOWN — CHECKPOINT SAVED!');
@@ -352,6 +364,16 @@ export class Game {
   _respawnAtCheckpoint(room) {
     for (const pl of this.players) pl.revive(0, 0);
     this.loadRoom(room);
+  }
+
+  /** a boss fell — bump the count and unlock a weapon slot at the right milestones */
+  _countBossBeaten() {
+    this.bossesBeaten += 1;
+    const slots = weaponSlotsForBosses(this.bossesBeaten);
+    if (slots > this.player.slotsUnlocked) {
+      for (const pl of this.players) pl.setSlotsUnlocked(slots);
+      hud.toast(`WEAPON SLOT UNLOCKED! (${slots})`, true);
+    }
   }
 
   _onWin() {

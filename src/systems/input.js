@@ -40,6 +40,10 @@ export class Input {
     this._padLeave = false;
     this._padRestart = false;
 
+    // weapon switching: keyboard picks a slot (0-2); pad cycles
+    this._kbSlot = null;
+    this._padCycle = false;
+
     // gamepad state
     this._padIndex = null;
     this._padPrev = {};
@@ -61,6 +65,9 @@ export class Input {
         if (k === 'e') this._kbHelp = true;
         if (k === 'q') this._kbLeave = true;
         if (k === 'r') this._kbRestart = true;
+        if (k === '1') this._kbSlot = 0;
+        if (k === '2') this._kbSlot = 1;
+        if (k === '3') this._kbSlot = 2;
       },
       { capture: true },
     );
@@ -117,6 +124,7 @@ export class Input {
       this.pad.shoot = btn(7) || btn(5); // RT or RB
       this._edge('a', btn(0), () => (this._padHelp = true));
       this._edge('b', btn(1), () => (this._padLeave = true));
+      this._edge('y', btn(3), () => (this._padCycle = true)); // Y cycles weapons
       this._edge('start', btn(9), () => (this._padRestart = true));
     } else {
       this.pad.active = false;
@@ -220,5 +228,19 @@ export class Input {
     this._kbRestart = false;
     this._padRestart = false;
     return v;
+  }
+
+  /** weapon switch request for a device: {slot} (keyboard) or {cycle:true} (pad), else null */
+  consumeWeaponSwitch(device = 'both') {
+    if (device !== 'pad' && this._kbSlot != null) {
+      const slot = this._kbSlot;
+      this._kbSlot = null;
+      return { slot };
+    }
+    if (device !== 'kb' && this._padCycle) {
+      this._padCycle = false;
+      return { cycle: true };
+    }
+    return null;
   }
 }

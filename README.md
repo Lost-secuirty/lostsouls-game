@@ -54,9 +54,13 @@ npm start        # serve it at http://localhost:3000
 At the **start screen** pick **1 Player** or **2 Players**. In 2-player, P1 uses the
 keyboard/mouse and P2 uses an Xbox controller (it also rumbles).
 
-**Controls:** `WASD` move · mouse aim · click/hold shoot · `E` help a survivor ·
-`Q` leave a survivor · `R` restart. **Xbox pad:** left stick move · right stick aim ·
-`RT` shoot · `A` help · `B` leave · `Start` restart.
+**Controls:** `WASD` move · mouse aim · click/hold shoot · `1/2/3` switch weapon ·
+`E` help a survivor · `Q` leave a survivor · `R` restart. **Xbox pad:** left stick move ·
+right stick aim · `RT` shoot · `Y` switch weapon · `A` help · `B` leave · `Start` restart.
+
+You **carry up to 3 weapons** (extra slots unlock as you beat bosses) and switch between them.
+Stat boosts are **capped** (so the game stays fair), and a full-health player leaves hearts for
+a hurt teammate.
 
 **Debug menu (for grown-ups):** press the **backtick** key (`` ` ``) or add `?debug=1` to the
 URL to open a dev panel — jump to any floor/room, spawn the boss, give weapons/pickups, god

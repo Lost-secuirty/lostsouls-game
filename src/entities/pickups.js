@@ -101,7 +101,7 @@ export class Pickup {
 
     const look = LOOK[this.type] || LOOK.HEAL;
     if (look.weapon) {
-      player.setWeapon(this.type.toLowerCase());
+      player.addWeapon(this.type.toLowerCase());
       audio.play('weapon');
     } else {
       const mag = {

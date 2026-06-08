@@ -82,3 +82,14 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
   Confirmed W3C standard Xbox mapping is current (One S+/Series identical).
 - Headless can't feed real gamepad input, so we verified the device split + co-op logic
   (players array, nearest-target, down/continue, revive, team-death) by driving `window.__game`.
+
+## 2026-06-08 — Expansion 5 Stage 1 (weapon slots + caps)
+
+- `Player` now carries weapons in `slots[]` (capacity `slotsUnlocked`, grows via bosses);
+  pickups `addWeapon` (fill empty slot, else replace active); switch P1 `1/2/3`, P2 controller Y.
+- All stat upgrades are capped in `config.CAPS` (lives 3→5, damage ×1.5, fire-rate floor 0.5,
+  speed ×1.5; ~3 stacks each). Damage became a multiplier (`damageMul`); base weapon damage
+  unchanged. Survivor DAMAGE_UP retuned to +20% to match.
+- Full-health players skip HEAL pickups (left for a hurt teammate). `weaponSlotsForBosses` is a
+  pure, unit-tested helper (unlock at 2/10/20, cap 3). Verified caps/slots/HEAL headlessly.
+- Staging Expansion 5: this is Stage 1; next = human decision-boss, then data-driven endless.

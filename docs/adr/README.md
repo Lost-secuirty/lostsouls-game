@@ -17,3 +17,4 @@ below).
 | [0009](0009-boss-attack-patterns.md)               | Spider boss attack patterns (Caden's card)            | Accepted |
 | [0010](0010-debug-menu-and-probability.md)         | Debug menu (lil-gui) + probability verification       | Accepted |
 | [0011](0011-coop-and-start-menu.md)                | 2-player local co-op + start menu                     | Accepted |
+| [0012](0012-weapon-slots-and-caps.md)              | Weapon slots + global stat caps                       | Accepted |

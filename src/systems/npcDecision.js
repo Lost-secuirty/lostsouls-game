@@ -15,7 +15,7 @@
 const GOOD_EFFECTS = [
   { effect: 'HEAL', magnitude: 2, message: 'They patch you up! +2 hearts' },
   { effect: 'FIRE_RATE_UP', magnitude: 0.7, message: 'They tune your gun! Faster shots' },
-  { effect: 'DAMAGE_UP', magnitude: 1, message: 'They sharpen your aim! +1 damage' },
+  { effect: 'DAMAGE_UP', magnitude: 0.2, message: 'They sharpen your aim! +20% damage' },
 ];
 
 // Bad things that can happen.
