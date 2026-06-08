@@ -8,7 +8,17 @@
 //   ...
 // =====================================================================
 
-import { PROGRESSION } from '../config.js';
+import { PROGRESSION, CAPS } from '../config.js';
+
+/**
+ * How many weapon slots are unlocked after beating `bossesBeaten` bosses. PURE.
+ * Starts at 1, +1 at each threshold in CAPS.slotUnlockBosses, capped at
+ * CAPS.maxWeaponSlots. (Scott's cadence: unlock at boss 2, 10, 20; max 3.)
+ */
+export function weaponSlotsForBosses(bossesBeaten) {
+  const unlocked = CAPS.slotUnlockBosses.filter((n) => bossesBeaten >= n).length;
+  return Math.min(CAPS.maxWeaponSlots, 1 + unlocked);
+}
 
 /** rooms per floor including the boss room */
 export function roomsPerFloor() {

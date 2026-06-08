@@ -153,8 +153,14 @@ export const PROGRESSION = {
 };
 
 // ---- lives + checkpoints ----
-export const LIVES = {
-  max: 3, // die this many times total -> start all over
+// ---- lives + global stat caps (so upgrades can't run away) ----
+export const CAPS = {
+  lives: { start: 3, max: 5 }, // start with 3, can grow to 5
+  damageMul: 1.5, // max +50% damage (reached in ~3 stacks)
+  fireRateMin: 0.5, // cooldown floor = max +50% faster
+  speedMul: 1.5, // max +50% move speed
+  maxWeaponSlots: 3, // carry up to 3 weapons
+  slotUnlockBosses: [2, 10, 20], // a slot unlocks after these boss counts
 };
 
 // ---- the spider boss ----
@@ -253,9 +259,10 @@ export const PICKUPS = {
     { type: 'MACHINEGUN', weight: 2 },
     { type: 'ROCKET', weight: 1 },
   ],
-  speedUpAmount: 1.5, // units/sec added by SPEED_UP
-  damageUpAmount: 1,
-  fireRateMul: 0.82, // multiplies cooldown (lower = faster)
+  // step sizes tuned so ~3 stacks reach the caps in CAPS
+  speedUpAmount: 1.8, // units/sec added by SPEED_UP (clamped to CAPS.speedMul)
+  damageUpAmount: 0.2, // +20% damage per pickup (damageMul, clamped to CAPS.damageMul)
+  fireRateMul: 0.82, // multiplies cooldown (lower = faster; clamped to CAPS.fireRateMin)
   healAmount: 2,
 };
 

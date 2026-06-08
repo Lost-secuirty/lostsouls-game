@@ -1,11 +1,12 @@
 // =====================================================================
 // player.js — a player. Player 1 = keyboard/mouse (blue); Player 2 (co-op) =
-// Xbox controller (green). Both are the same class with a different `device`
-// and look. Move, aim + shoot, lose hearts, grab items + weapons.
+// Xbox controller (green). Carries up to a few weapons in SLOTS (unlocked by
+// beating bosses) and switches between them. Stat upgrades are capped (see
+// config.CAPS) so power can't run away.
 // =====================================================================
 
 import * as THREE from 'three';
-import { PLAYER, WEAPONS, PALETTE } from '../config.js';
+import { PLAYER, WEAPONS, PALETTE, CAPS } from '../config.js';
 import { makeCharacter } from './characterMesh.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { spreadDirs } from '../core/math2d.js';
@@ -23,6 +24,7 @@ export class Player {
     scene.add(this.mesh);
     this.radius = PLAYER.radius;
     this._baseColor = new THREE.Color(color);
+    this.slotsUnlocked = 1; // grows as bosses are beaten (set by game)
     this.reset(0, 0);
   }
 
@@ -33,16 +35,17 @@ export class Player {
     this.alive = true;
     this.fireTimer = 0;
     this.invuln = 0;
-    this._beatTimer = 0; // low-health heartbeat cue
-    this.speed = PLAYER.speed; // SPEED_UP raises this
-    this.damageBonus = 0; // DAMAGE_UP raises this
-    this.fireRateMul = 1; // FIRE_RATE_UP lowers this (faster)
-    this.setWeapon('pistol');
+    this._beatTimer = 0;
+    this.speed = PLAYER.speed; // SPEED_UP raises this (capped)
+    this.damageMul = 1; // DAMAGE_UP raises this (capped CAPS.damageMul)
+    this.fireRateMul = 1; // FIRE_RATE_UP lowers this (floor CAPS.fireRateMin)
+    this.slots = ['pistol']; // weapons you carry; slotsUnlocked is the capacity
+    this.slotIndex = 0;
+    this._refreshWeapon();
     this.mesh.position.set(x, 0, z);
     this.mesh.visible = true;
   }
 
-  /** bring a downed player back (co-op revive) */
   revive(x, z) {
     this.x = x;
     this.z = z;
@@ -53,15 +56,59 @@ export class Player {
     this.mesh.visible = true;
   }
 
-  setWeapon(type) {
-    this.weapon = type;
-    this.weaponDef = WEAPONS[type] || WEAPONS.pistol;
+  _refreshWeapon() {
+    this.weapon = this.slots[this.slotIndex];
+    this.weaponDef = WEAPONS[this.weapon] || WEAPONS.pistol;
     this.weaponName = this.weaponDef.name;
+  }
+
+  /** capacity for carried weapons (bumped by the game as bosses fall) */
+  setSlotsUnlocked(n) {
+    this.slotsUnlocked = Math.min(CAPS.maxWeaponSlots, n);
+  }
+
+  /** debug/explicit: set the active slot's weapon */
+  setWeapon(type) {
+    this.slots[this.slotIndex] = type;
+    this._refreshWeapon();
+  }
+
+  /** a weapon pickup: fill the next empty slot (and equip it), else replace the active one */
+  addWeapon(type) {
+    if (this.slots.length < this.slotsUnlocked) {
+      this.slots.push(type);
+      this.slotIndex = this.slots.length - 1;
+    } else {
+      this.slots[this.slotIndex] = type;
+    }
+    this._refreshWeapon();
+  }
+
+  switchTo(i) {
+    if (i >= 0 && i < this.slots.length) {
+      this.slotIndex = i;
+      this._refreshWeapon();
+    }
+  }
+
+  cycleWeapon() {
+    if (this.slots.length > 1) {
+      this.slotIndex = (this.slotIndex + 1) % this.slots.length;
+      this._refreshWeapon();
+    }
   }
 
   update(dt, game) {
     if (!this.alive) return;
     const { input, camera } = game;
+
+    // --- weapon switching ---
+    const sw = input.consumeWeaponSwitch(this.device);
+    if (sw) {
+      if (sw.cycle) this.cycleWeapon();
+      else this.switchTo(sw.slot);
+      game.refreshHud();
+    }
 
     // --- move ---
     const m = input.move(this.device);
@@ -84,14 +131,13 @@ export class Player {
       audio.play(
         this.weapon === 'shotgun' ? 'shotgun' : this.weapon === 'rocket' ? 'rocketLaunch' : 'shoot',
       );
-      // a little controller buzz on the punchier weapons (no-op for keyboard / no pad)
       if (this.device !== 'kb' && this.weaponDef.cooldown >= 0.15) input.rumble(0.12, 0.08, 50);
     }
 
     // --- i-frames + hit flash ---
     if (this.invuln > 0) {
       this.invuln -= dt;
-      this.mesh.visible = Math.floor(this.invuln * 20) % 2 === 0; // blink
+      this.mesh.visible = Math.floor(this.invuln * 20) % 2 === 0;
     } else {
       this.mesh.visible = true;
     }
@@ -112,7 +158,7 @@ export class Player {
 
   _fireWeapon(game, aim) {
     const w = this.weaponDef;
-    const dmg = w.damage + this.damageBonus;
+    const dmg = w.damage * this.damageMul; // base unchanged; multiplier is capped
     const dirs = spreadDirs(aim.x, aim.z, w.pellets, w.spreadDeg);
     for (const d of dirs) {
       game.bullets.spawnPlayer(this.x, this.z, d.x, d.z, {
@@ -133,32 +179,32 @@ export class Player {
     game.particles.burst(this.x, this.z, 10, this._baseColor.getHex());
     hud.flashSplatter();
     audio.play('hurt');
-    if (this.device !== 'kb') game.input.rumble(0.6, 0.4, 200); // controller takes a hit
+    if (this.device !== 'kb') game.input.rumble(0.6, 0.4, 200);
     if (this.hearts <= 0) {
       this.hearts = 0;
       this.alive = false;
-      this.mesh.visible = false; // "down"
+      this.mesh.visible = false;
     }
     game.refreshHud();
   }
 
-  /** apply a survivor outcome or pickup buff/debuff */
+  /** apply a survivor outcome or pickup buff/debuff (all capped) */
   applyEffect(effect, magnitude, game) {
     switch (effect) {
       case 'HEAL':
         this.hearts = Math.min(PLAYER.maxHearts, this.hearts + magnitude);
         break;
       case 'FIRE_RATE_UP':
-        this.fireRateMul = Math.max(0.25, this.fireRateMul * magnitude);
+        this.fireRateMul = Math.max(CAPS.fireRateMin, this.fireRateMul * magnitude);
         break;
       case 'DAMAGE_UP':
-        this.damageBonus += magnitude;
+        this.damageMul = Math.min(CAPS.damageMul, this.damageMul + magnitude);
         break;
       case 'SPEED_UP':
-        this.speed += magnitude;
+        this.speed = Math.min(PLAYER.speed * CAPS.speedMul, this.speed + magnitude);
         break;
       case 'TAKE_DAMAGE':
-        this.invuln = 0; // make sure the trap actually lands
+        this.invuln = 0;
         this.hurt(magnitude, game);
         break;
       // SPAWN_ENEMIES is handled by the game (it owns spawning)

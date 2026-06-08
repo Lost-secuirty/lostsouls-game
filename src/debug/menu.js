@@ -7,7 +7,7 @@
 // =====================================================================
 
 import GUI from 'lil-gui';
-import { PLAYER, WEAPONS, PROGRESSION } from '../config.js';
+import { PLAYER, WEAPONS, PROGRESSION, CAPS } from '../config.js';
 import { roomsPerFloor, floorCount, floorInfo } from '../core/progression.js';
 
 const PICKUP_TYPES = [
@@ -97,7 +97,7 @@ export function initDebugMenu(game) {
   pl.add(
     {
       life() {
-        game.lives += 1;
+        game.lives = Math.min(CAPS.lives.max, game.lives + 1);
         game.refreshHud();
       },
     },
