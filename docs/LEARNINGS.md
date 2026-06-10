@@ -122,3 +122,22 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
 - Vitest coverage thresholds (40/40/30/40) came in with the proof-backed CI gate
   (PR #7, 2026-06-09) and only gate the pure-logic `include` list — documented in a comment.
   Current coverage sits just above the floors (42/35/50/42), so they're a real regression gate.
+
+## 2026-06-10 — research fold-in: seeded runs + determinism (ADR-0013)
+
+- Four Gemini "deep dive" docs were reviewed for useful additions. Three (AI-dev
+  trustworthiness, solo-repo security, advanced testing) cite **unverifiable,
+  future-dated sources** (`arXiv:2603.*`, "ICLR 2026", tools like *ClaimCheck/
+  Lore*) — treated as **RESEARCH_ONLY**, judged by concept not citation. The
+  gaming-math doc's sources are real (GLI-19, NIST, `scipy.stats.binomtest`).
+- **The research mostly VALIDATED what's already here** — don't "rediscover" it:
+  seeded `mulberry32` (`core/rng.js`); the drop-rate chi-square test with a
+  **planted-bias proof control** (`droprate.proof.test.js`); a fixed-timestep,
+  decoupled loop (`core/loop.js`). The genuine gaps were (a) no way to pin a
+  run's seed and (b) no cross-system determinism check.
+- Added: optional `seed` on `startRun` (default unchanged) so a run is replayable
+  via `window.__game.startRun(false, N)`; and `tests/determinism.test.js` driving
+  the real pure rng seams (`dropRandomPickup`, `resolveDecision`, spawn rolls)
+  through one shared rng. `populateRoom` is render-coupled (builds Enemy/Boss/Npc
+  with the scene), so the full `Game` step stays out of the headless test — the
+  guarantee covers the random *logic*, which is what reproducibility needs.
