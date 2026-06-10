@@ -114,5 +114,4 @@ This is a **hybrid** project: fast and fun, but it keeps a real rulebook.
 Tech: Three.js + Vite + Express, with procedural Web Audio sound and a lil-gui debug menu. No physics engine
 (custom collision). MIT licensed.
 
-
-Note from Lostsoulfs:This is special to me. 
+Note from Lostsoulfs:This is special to me.

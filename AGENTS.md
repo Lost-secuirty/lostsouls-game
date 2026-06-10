@@ -26,8 +26,9 @@ npm test           # vitest run (pure-logic unit tests)
 
 ## Project structure
 
-- **Stack:** Three.js (WebGL) + Vite + vanilla ES modules (no TypeScript). howler.js
-  for audio. Express (`server.js`) serves the production build. Custom circle/AABB
+- **Stack:** Three.js (WebGL) + Vite + vanilla ES modules (no TypeScript). Procedural
+  Web Audio for sound (`systems/sfx.js`, ADR-0006 — no audio deps). Express
+  (`server.js`) serves the production build. Custom circle/AABB
   collision on the XZ plane — **no physics engine** (ADR-0003).
 - **`src/`** — small one-job modules:
   - `main.js` (boot + start loop), `game.js` (orchestrator + state machine),
