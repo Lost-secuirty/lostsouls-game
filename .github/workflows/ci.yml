@@ -7,6 +7,10 @@ on:
     branches: [main, 'claude/**']
   pull_request:
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -14,12 +18,32 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - run: npm run test:proof
+      - run: npm run test:coverage
       - run: npm run build
+      - run: npm run smoke:prod
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser smoke with trace
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 &
+          node scripts/browser-smoke.mjs
+      - name: Upload smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: my-sons-game-smoke
+          path: artifacts/playwright
+      - name: Upload build artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: my-sons-game-dist
+          path: dist
