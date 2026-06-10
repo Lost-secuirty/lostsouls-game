@@ -67,9 +67,11 @@ export class Game {
     // players are created in startRun (which the start menu calls)
   }
 
-  startRun(coop = false) {
+  startRun(coop = false, seed = (Math.random() * 1e9) | 0) {
     this.coop = coop;
-    this.rng = makeRng((Math.random() * 1e9) | 0);
+    // Seed defaults to random per run; pass a fixed seed to make a run
+    // reproducible (e.g. window.__game.startRun(false, 12345)) — ADR-0013.
+    this.rng = makeRng(seed);
     this.lives = CAPS.lives.start;
     this.checkpointRoom = 0;
     this.bossesBeaten = 0;
