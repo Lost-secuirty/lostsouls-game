@@ -93,3 +93,32 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
 - Full-health players skip HEAL pickups (left for a hurt teammate). `weaponSlotsForBosses` is a
   pure, unit-tested helper (unlock at 2/10/20, cap 3). Verified caps/slots/HEAL headlessly.
 - Staging Expansion 5: this is Stage 1; next = human decision-boss, then data-driven endless.
+
+## 2026-06-10 — maintenance pass (deps, ESLint 10, action pins, SECURITY.md)
+
+- `npm update` won't cross minors on `^0.x` deps (semver treats `^0.x` like `~0.x`) —
+  three needed an explicit range bump `^0.180.0 → ^0.184.0`. Game code needed zero changes
+  for three r184; all 47 unit + 7 proof tests and the build pass unchanged.
+- **ESLint 9 → 10 was a no-op here**: v10 requires flat config, which this repo already had,
+  so `eslint@10.4.1` + `@eslint/js@10.0.1` lint clean with the existing `eslint.config.js`
+  (no `globals` changes needed). ESLint 9.x is EOL 2026-08-06. Kept at ^10.
+- Workflow action pins refreshed (Node-20-era v4 actions are deprecated; runners default to
+  Node 24 from 2026-06-16): checkout v4→v6.0.3, setup-node v4→v6.4.0, upload-artifact
+  v4→v7.0.1, codeql-action →v4.36.2, dependency-review-action v4.0.0→v5.0.0. Gotcha:
+  `git ls-remote ... refs/tags/vX.Y.Z` may return an annotated tag object — pin the peeled
+  `^{}` SHA when present (checkout, codeql-action); lightweight tags point at the commit
+  directly (setup-node, upload-artifact, dependency-review).
+- `uvx zizmor` flagged all three workflows for `artipacked` (checkout defaults to
+  `persist-credentials: true`); fixed with `persist-credentials: false` — nothing here pushes
+  back to the repo. Remaining zizmor findings only appear at auditor/pedantic personas
+  (undocumented-permissions comments, unnamed jobs, one excessive-permissions) — left as-is.
+- Vite chunk-size warning quieted via `build.chunkSizeWarningLimit: 1024` — the Three.js
+  bundle (~604 kB / 157 kB gzip) is intentionally one chunk for a single-page game.
+- Added `.node-version` (22) alongside `.nvmrc` (some tools only read one), and a minimal
+  `SECURITY.md` (private vulnerability reporting via the Security tab; no-auth no-PII game).
+- AGENTS.md still claimed howler.js for audio — stale since Expansion 1 dropped it for the
+  procedural synth (`systems/sfx.js`, ADR-0006). Fixed; lesson: stack lists in AGENTS.md
+  drift silently when deps change.
+- Vitest coverage thresholds (40/40/30/40) came in with the proof-backed CI gate
+  (PR #7, 2026-06-09) and only gate the pure-logic `include` list — documented in a comment.
+  Current coverage sits just above the floors (42/35/50/42), so they're a real regression gate.
