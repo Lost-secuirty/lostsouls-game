@@ -19,7 +19,10 @@ try {
   if (!title || title.length < 2) throw new Error('missing document title');
   await page.context().tracing.stop({ path: `${artifactDir}/trace.zip` });
 } catch (err) {
-  await page.context().tracing.stop({ path: `${artifactDir}/trace.zip` }).catch(() => {});
+  await page
+    .context()
+    .tracing.stop({ path: `${artifactDir}/trace.zip` })
+    .catch(() => {});
   throw err;
 } finally {
   await browser.close();

@@ -5,7 +5,7 @@
 
 ## Context
 
-The brief referenced both *Binding of Isaac* (top-down) and *Doom* (first-person), and
+The brief referenced both _Binding of Isaac_ (top-down) and _Doom_ (first-person), and
 "based around me and my son" (could be co-op). We need one clear v1 to actually ship
 something fun, without painting ourselves into a corner.
 
