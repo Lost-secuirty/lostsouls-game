@@ -19,18 +19,18 @@
     "smoke:prod": "node scripts/prod-health-proof.mjs"
   },
   "dependencies": {
-    "express": "^4.21.2",
+    "express": "^5.2.1",
     "lil-gui": "^0.21.0",
-    "three": "^0.180.0"
+    "three": "^0.184.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.18.0",
+    "@eslint/js": "^10.0.1",
     "@vitest/coverage-v8": "^4.1.8",
-    "eslint": "^9.18.0",
+    "eslint": "^10.4.1",
     "eslint-config-prettier": "^10.0.1",
-    "globals": "^15.14.0",
+    "globals": "^17.6.0",
     "playwright": "^1.60.0",
-    "prettier": "^3.4.2",
+    "prettier": "^3.8.4",
     "vite": "^8.0.16",
     "vitest": "^4.1.8"
   }
