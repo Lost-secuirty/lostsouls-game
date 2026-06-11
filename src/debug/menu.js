@@ -1,5 +1,5 @@
 // =====================================================================
-// debug/menu.js — Scott's dev menu (lil-gui). Lazy-loaded only when asked
+// debug/menu.js — the project owner's dev menu (lil-gui). Lazy-loaded only when asked
 // (?debug=1 or the backtick key), so it never loads during normal play.
 //
 // Everything drives the live game via window.__game, reusing existing methods
@@ -21,7 +21,7 @@ const PICKUP_TYPES = [
 ];
 
 export function initDebugMenu(game) {
-  const gui = new GUI({ title: '🛠 Debug (Scott)' });
+  const gui = new GUI({ title: '🛠 Debug (the project owner)' });
 
   const state = {
     godMode: false,

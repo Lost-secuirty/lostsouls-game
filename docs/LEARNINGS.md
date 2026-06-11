@@ -6,7 +6,7 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
 ## 2026-06-07 — project bootstrapped
 
 - Stack chosen and recorded in `docs/adr/0001`–`0005`.
-- Three.js `CapsuleGeometry` exists in modern three (≥ r142) — used for the player/dad.
+- Three.js `CapsuleGeometry` exists in modern three (≥ r142) — used for the player/ally.
 - Pure-logic modules (`core/rng.js`, `core/math2d.js`, `systems/npcDecision.js`) import
   **nothing** from `three`, so Vitest runs them in plain Node with no DOM/WebGL.
 - Asset seam: the game must run with an empty `public/models` + `public/audio`. Always
@@ -29,9 +29,9 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
 - Boss/enemies share one interface (`x,z,radius,hp,dead,update,hurt(dmg,game),die(game)`)
   so the existing pooled-bullet collision works on the boss with no special-casing.
 
-## 2026-06-07 — Expansion 2 (Caden's boss patterns + polish)
+## 2026-06-07 — Expansion 2 (the co-designer's boss patterns + polish)
 
-- Caden beat the whole game first try (died twice); difficulty "medium = good", keep it.
+- the co-designer beat the whole game first try (died twice); difficulty "medium = good", keep it.
 - His terminology: **"P# = an attack pattern"**, not a health phase. Boss attacks rebuilt as
   P1 (aimed burst) / P2 (telegraphed bullet ring, scales by floor) / P3 (HP-gated spiderling
   spawns via the pure, tested `spiderlingTarget(hpFrac)`).
@@ -59,7 +59,7 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
   `depthTest:false`) + distinct shapes — readable with no pickup key.
 - Debug menu = `lil-gui`, lazy-loaded only on `?debug=1`/backtick (never in normal play);
   drives `window.__game`. God mode = a `game.godMode` flag checked in `Player.hurt`.
-- Probability: `core/probability.js` `atLeastOne` (1−∏(1−p)) is from Scott's Dokkan notes;
+- Probability: `core/probability.js` `atLeastOne` (1−∏(1−p)) is from the project owner's Dokkan notes;
   `droprate.test.js` verifies the real drop table with seeded sampling + chi-square + ±10%
   (deterministic, no flake). Methodology ported from `testing-kits` harness patterns.
 - Drive recon: the April Dokkan docs are mostly unit stats; only the RNG/probability section
@@ -72,7 +72,7 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
   key listeners (see releases first), ignore keys when an editable element is the target, and
   release held keys on any `pointerdown` outside the canvas. Verified headlessly.
 - Input is now **device-aware** (`'kb'|'pad'|'both'`) so two players share one Input; right-
-  stick aim persists. `Player` takes `{color, modelKey, device}`; co-op uses the green "dad"
+  stick aim persists. `Player` takes `{color, modelKey, device}`; co-op uses the green "ally"
   mesh as P2 and skips the AI `Ally`.
 - Co-op targeting via `game.nearestPlayer(x,z)`; enemies/boss/bullets/pickups/survivors all
   go through `game.players`. **Revive-on-room-clear**, full-wipe spends a shared life.

@@ -5,7 +5,7 @@
 
 ## Context
 
-Caden prefers an Xbox controller. The input layer was already abstracted
+the co-designer prefers an Xbox controller. The input layer was already abstracted
 (`move()`/`aim()`/`shoot`/`consume*`), so adding a pad is low-risk and high-value.
 
 ## Decision
@@ -25,5 +25,5 @@ A/B/Start → help/leave/restart (edge-detected). 0.15 deadzone; a toast on
 
 ## Alternatives considered
 
-- **Skip until co-op** — but Caden wanted it now, and it was cheap given the existing
+- **Skip until co-op** — but the co-designer wanted it now, and it was cheap given the existing
   abstraction.

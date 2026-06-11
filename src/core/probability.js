@@ -2,7 +2,7 @@
 // probability.js — small PURE probability helpers (easy to unit-test).
 //
 // Used to reason about / verify the game's "% chances". The independent-
-// probability rule here is taken from Scott's old Dokkan reference notes:
+// probability rule here is taken from the project owner's old Dokkan reference notes:
 //   "Independent Probability: 1 - [(1 - Passive %) * (1 - HiPo %)]"
 // i.e. the chance that AT LEAST ONE of several independent rolls succeeds.
 // =====================================================================

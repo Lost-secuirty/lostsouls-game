@@ -29,7 +29,7 @@ export const PALETTE = {
   wall: 0x2c2230,
   wallTop: 0x4a3a52,
   player: 0x49b3ff, // you = blue
-  ally: 0x6cff8a, // dad = green
+  ally: 0x6cff8a, // ally = green
   enemyChaser: 0x8b1a1a, // dark red demon
   enemyShooter: 0x9b2fb0, // purple caster
   playerBullet: 0xffe24a, // yellow
@@ -49,7 +49,7 @@ export const PLAYER = {
   invuln: 0.8, // i-frames after a hit (seconds)
 };
 
-// ---- dad (AI ally) ----
+// ---- ally (AI ally) ----
 export const ALLY = {
   radius: 0.7,
   height: 1.8,
@@ -164,7 +164,7 @@ export const CAPS = {
 };
 
 // ---- the spider boss ----
-// Caden's design card: P# = an ATTACK PATTERN (not a health phase).
+// the co-designer's design card: P# = an ATTACK PATTERN (not a health phase).
 //   P1 = base attack (pistol mimic)   P2 = dodgeable bullet ring
 //   P3 = baby-spider spawns, HP-gated (see spiderlingTarget in progression.js)
 export const BOSS = {

@@ -5,7 +5,7 @@
 
 ## Context
 
-Scott wanted a real in-game **debug menu** for himself, and asked to **verify the game's
+the project owner wanted a real in-game **debug menu** for himself, and asked to **verify the game's
 "% chances"** (drop rates) — pointing at his `testing-kits` harnesses and old Dokkan Battle
 notes as references.
 
@@ -13,7 +13,7 @@ notes as references.
 
 **Debug menu** — add `lil-gui` (~30KB, MIT, the GUI three.js's own examples use). A new
 `src/debug/menu.js` `initDebugMenu(game)` is **lazy-loaded only on `?debug=1` or the backtick
-key**, so it never loads during Caden's normal play. It drives the live game through
+key**, so it never loads during the co-designer's normal play. It drives the live game through
 `window.__game` (jump to floor/room, jump to boss, kill-all, restart, god mode, full heal,
 +1 life, set weapon, drop any pickup, FPS monitor). God mode is a one-line `game.godMode`
 flag honored in `Player.hurt`.
@@ -34,7 +34,7 @@ RNG is deterministic.
 
 ## Notes / provenance
 
-The `atLeastOne` formula is taken from Scott's April-2026 Dokkan reference notes
+The `atLeastOne` formula is taken from the project owner's April-2026 Dokkan reference notes
 (_"Independent Probability: 1 − [(1 − Passive %) × (1 − HiPo %)]"_) — the correct way to
 combine independent rolls (e.g. the EX-Super-Attack 77% example). The test methodology
 (seeded sampling + ratio tolerance + property checks) is ported from the `testing-kits`

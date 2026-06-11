@@ -1,5 +1,5 @@
 // =====================================================================
-// characterMesh.js — builds a humanoid mesh (player / dad / survivor).
+// characterMesh.js — builds a humanoid mesh (player / ally / survivor).
 //
 // If a real model is loaded for `modelKey`, we use it. Otherwise we build a
 // simple capsule body with a little "nose" cone so you can tell which way it

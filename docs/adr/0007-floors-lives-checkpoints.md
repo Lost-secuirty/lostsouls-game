@@ -5,7 +5,7 @@
 
 ## Context
 
-v1 was a flat run of 6 rooms with a single life. Scott + Caden asked for structure:
+v1 was a flat run of 6 rooms with a single life. project collaborators asked for structure:
 5 normal rooms then a boss, a "boss ahead" warning, and stakes — 3 lives, a checkpoint
 after each boss, and "die 3 times → start all over."
 

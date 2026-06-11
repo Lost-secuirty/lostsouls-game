@@ -7,7 +7,7 @@ bits.
 
 ## This repo's vibe
 
-A dad-and-son game project. It's a **hybrid**: move fast and have fun, but the
+A co-designed game project. It's a **hybrid**: move fast and have fun, but the
 Boundaries + Working Agreement in `AGENTS.md` still apply, and **significant
 decisions get an ADR** (`docs/adr/`, scaffold one with `/adr <title>`). Don't
 over-document — code + ADRs + a light `docs/LEARNINGS.md` is enough.

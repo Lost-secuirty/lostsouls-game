@@ -21,7 +21,7 @@ No physics-engine dependency.
 
 ## Consequences
 
-- Tiny, readable, and fast — easy for a kid to follow ("bullets are circles, walls are
+- Tiny, readable, and fast — easy for a player to follow ("bullets are circles, walls are
   boxes").
 - Pure functions → unit-testable without a browser.
 - Responsive, game-y feel (we tune it) instead of "physically correct."

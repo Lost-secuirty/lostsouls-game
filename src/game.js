@@ -5,8 +5,8 @@
 //   BOOT -> (start menu) -> PLAYING -> ROOM_CLEAR -> ... -> WIN
 //                                  \-> DEAD (out of lives -> start over)
 //
-// Single-player: you (blue) + an AI dad (green). Co-op: P1 = you (keyboard,
-// blue), P2 = the dad (Xbox controller, green). In co-op a downed player
+// Single-player: you (blue) + an AI ally (green). Co-op: P1 = you (keyboard,
+// blue), P2 = the ally (Xbox controller, green). In co-op a downed player
 // revives when the room is cleared; Game Over only on a full wipe.
 // =====================================================================
 
@@ -55,7 +55,7 @@ export class Game {
     this.players = []; // [p1] or [p1, p2]
     this.player = null; // = players[0]
     this.player2 = null;
-    this.ally = null; // AI dad (single-player only)
+    this.ally = null; // AI ally (single-player only)
     this.state = State.BOOT;
   }
 

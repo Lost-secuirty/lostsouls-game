@@ -6,7 +6,7 @@
 ## Context
 
 The operator's other repos are stability-first (zero-deps, heavy docs, drift audits).
-This one is different on purpose: a fun dad-and-son game where the priority is
+This one is different on purpose: a fun co-designed game where the priority is
 "runnable and cool," **not** perfection. But it should still not be trash, and the
 operator's core rules must carry over.
 
@@ -32,7 +32,7 @@ A **hybrid** posture:
 
 ## Alternatives considered
 
-- **Full stability rig** (like the other repos) — too much ceremony for a kid's game;
+- **Full stability rig** (like the other repos) — too much ceremony for a player's game;
   kills the fun/speed.
 - **No rules at all** — risks "trash"; loses the boundaries + decision trail the
   operator wants kept.

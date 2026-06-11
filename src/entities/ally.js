@@ -1,5 +1,5 @@
 // =====================================================================
-// ally.js — Dad. An AI buddy who tags along and shoots nearby monsters.
+// ally.js — Ally. An AI buddy who tags along and shoots nearby monsters.
 // (Two-player co-op would replace this with a second Player later.)
 // =====================================================================
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { weaponSlotsForBosses } from '../src/core/progression.js';
 import { CAPS } from '../src/config.js';
 
-describe('weaponSlotsForBosses (Caden/Scott: unlock at boss 2/10/20, max 3)', () => {
+describe('weaponSlotsForBosses (the co-designer/the project owner: unlock at boss 2/10/20, max 3)', () => {
   it('starts with 1 slot', () => {
     expect(weaponSlotsForBosses(0)).toBe(1);
     expect(weaponSlotsForBosses(1)).toBe(1);

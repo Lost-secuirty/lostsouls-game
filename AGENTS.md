@@ -5,8 +5,8 @@ Claude reads `CLAUDE.md`, which points here. Keep this lean — every line shoul
 change behavior.
 
 **"City of Monsters"** — a 3D bullet-hell twin-stick shooter (Binding of Isaac ×
-Doom) for an 11-year-old. You're stuck in a ruined city overrun by monsters; your
-dad fights beside you; other survivors may help you or turn on you. **This repo is a
+Doom). You're stuck in a ruined city overrun by monsters; your
+ally fights beside you; other survivors may help you or turn on you. **This repo is a
 hybrid: fast vibe-coding + the rules below.** Dependencies are welcome. Don't
 over-document. But the **Boundaries, Agent safety, and Working Agreement are not
 optional**, and **significant decisions get an ADR** (`docs/adr/`, `/adr`).
@@ -36,7 +36,7 @@ npm test           # vitest run (pure-logic unit tests)
   - `core/` — `loop.js` (fixed-timestep), `scene.js` (Three setup + camera),
     `rng.js` (seeded PRNG — pure), `math2d.js` (XZ vectors + collision — pure),
     `assets.js` (model cache; falls back to primitives).
-  - `entities/` — `player.js`, `ally.js` (dad), `enemies.js`, `bullets.js`,
+  - `entities/` — `player.js`, `ally.js` (ally), `enemies.js`, `bullets.js`,
     `npc.js` (survivors you help-or-leave).
   - `systems/` — `input.js`, `spawner.js`, `rooms.js`, `collision.js`,
     `npcDecision.js` (**pure, seeded** good/bad resolver), `particles.js`,
@@ -53,7 +53,7 @@ npm test           # vitest run (pure-logic unit tests)
 - ES modules only. Keep **pure logic** (no Three.js import: `rng`, `math2d`,
   `npcDecision`) separate from render code so it stays unit-testable.
 - **All tunables go in `config.js`** — never hard-code feel numbers in modules.
-  (This is also the kid's main knob: change a number, feel it.)
+  (This is also the player's main knob: change a number, feel it.)
 - Game logic uses plain `{x, z}` vectors; convert to `THREE.Vector3` only at render.
 
 ## Boundaries — do NOT touch without explicit sign-off

@@ -13,7 +13,7 @@ import { PROGRESSION, CAPS } from '../config.js';
 /**
  * How many weapon slots are unlocked after beating `bossesBeaten` bosses. PURE.
  * Starts at 1, +1 at each threshold in CAPS.slotUnlockBosses, capped at
- * CAPS.maxWeaponSlots. (Scott's cadence: unlock at boss 2, 10, 20; max 3.)
+ * CAPS.maxWeaponSlots. (the project owner's cadence: unlock at boss 2, 10, 20; max 3.)
  */
 export function weaponSlotsForBosses(bossesBeaten) {
   const unlocked = CAPS.slotUnlockBosses.filter((n) => bossesBeaten >= n).length;
@@ -62,7 +62,7 @@ export function nextIsBoss(roomIndex) {
 
 /**
  * Spider boss P3: how many baby spiders to keep alive, gated by the boss's HP.
- * PURE. From Caden's card: none above 50% HP, keep 2–3 under 50%, keep 3 under 25%.
+ * PURE. From the co-designer's card: none above 50% HP, keep 2–3 under 50%, keep 3 under 25%.
  * `min` = spawn more when fewer than this are alive; `max` = top up to this (hard cap).
  * @param {number} hpFrac boss hp / maxHp (0..1)
  * @returns {{min:number, max:number}}
