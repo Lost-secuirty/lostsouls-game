@@ -12,6 +12,9 @@ fi
 
 cd "$CLAUDE_PROJECT_DIR"
 
+# Activate the pre-commit secret/PII gate (idempotent; see .githooks/pre-commit).
+git config core.hooksPath .githooks 2>/dev/null || true
+
 # `npm install` (not `ci`) so cached container state is reused and partial
 # installs self-heal. Idempotent.
 npm install
