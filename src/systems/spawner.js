@@ -11,7 +11,7 @@ import { Npc } from '../entities/npc.js';
 import { circleVsBox } from '../core/math2d.js';
 
 const SURVIVOR_NAMES = [
-  'a kid',
+  'a player',
   'an old man',
   'a soldier',
   'a nurse',

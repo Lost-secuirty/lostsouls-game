@@ -5,7 +5,7 @@
 
 ## Context
 
-We want a **3D** browser game (an 11-year-old asked for 3D specifically), shipped as an
+We want a **3D** browser game, shipped as an
 **Express project**, that's fun fast and easy to iterate on. Candidates for rendering:
 Three.js, Babylon.js, react-three-fiber.
 
@@ -21,7 +21,7 @@ Three.js, Babylon.js, react-three-fiber.
 
 ## Consequences
 
-- Fast iteration loop (change a number, see it instantly) — ideal for a kid + ADHD.
+- Fast iteration loop (change a number, see it instantly) — ideal for a player + ADHD.
 - We own the game loop and rendering directly (more control, a little more code).
 - Two run modes to remember: `npm run dev` (play/dev) vs `npm run build && npm start`
   (prod). Documented in the README.

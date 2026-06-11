@@ -5,7 +5,7 @@
 
 ## Context
 
-Expansion 5, Stage 1. Caden's "unlock a new weapon slot" idea + Scott's tuning: carry more
+Expansion 5, Stage 1. the co-designer's "unlock a new weapon slot" idea + the project owner's tuning: carry more
 than one weapon, and **cap every stat** so upgrades can't run away (the old additive damage /
 unbounded speed felt limitless).
 

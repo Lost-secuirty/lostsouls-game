@@ -1,7 +1,7 @@
 // =====================================================================
 // npcDecision.js — what happens when you HELP or LEAVE a survivor (PURE).
 //
-// The whole point (the kid's idea): you walk up to a survivor and choose to
+// The whole point (the player's idea): you walk up to a survivor and choose to
 // help them or leave them. EITHER choice can turn out good OR bad — and you
 // don't know which until after you choose. It's random... but seeded, so it's
 // reproducible and testable.

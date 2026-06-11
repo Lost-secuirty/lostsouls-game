@@ -1,18 +1,18 @@
-# ADR-0009: Spider boss attack patterns (Caden's design card)
+# ADR-0009: Spider boss attack patterns (the co-designer's design card)
 
 - **Status:** Accepted
 - **Date:** 2026-06-07
 
 ## Context
 
-After beating Expansion 1, Caden (11) designed the spider boss's moves on paper. His
+After beating Expansion 1, the co-designer (11) designed the spider boss's moves on paper. His
 terminology: **"P1/P2/P3" = an ATTACK PATTERN**, not a health phase ("Phase = attack
 pattern"). The Expansion 1 boss just sprayed a dense ring + aimed spread on one timer and
 spawned spiderlings on an always-on timer — functional but not his vision.
 
 ## Decision
 
-Rebuild the boss's attacks in `src/entities/boss.js` as Caden's three named patterns,
+Rebuild the boss's attacks in `src/entities/boss.js` as the co-designer's three named patterns,
 config-driven in `BOSS.spider`:
 
 - **P1 — Base Attack ("pistol mimic"):** frequent quick **aimed burst** (reuses the pure
@@ -37,5 +37,5 @@ so weapon pickups feel like a real jump, and **more procedural SFX** were added.
 ## Alternatives considered
 
 - **True health-gated phases** (swap movesets at HP thresholds) — heavier and not what
-  Caden asked for; his P3 is the only HP-gated piece, which we honored. Easy to extend later
+  the co-designer asked for; his P3 is the only HP-gated piece, which we honored. Easy to extend later
   for unique per-floor bosses.

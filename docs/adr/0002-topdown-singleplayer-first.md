@@ -1,4 +1,4 @@
-# ADR-0002: Top-down camera, single-player first (dad as AI ally)
+# ADR-0002: Top-down camera, single-player first (ally as AI ally)
 
 - **Status:** Accepted
 - **Date:** 2026-06-07
@@ -6,14 +6,14 @@
 ## Context
 
 The brief referenced both _Binding of Isaac_ (top-down) and _Doom_ (first-person), and
-"based around me and my son" (could be co-op). We need one clear v1 to actually ship
+"based around me and a collaborator" (could be co-op). We need one clear v1 to actually ship
 something fun, without painting ourselves into a corner.
 
 ## Decision
 
 - **Top-down 3/4 camera** (Isaac-style) over the XZ plane for v1 — best for reading
   bullet-hell patterns and dodging, easiest to control with mouse-aim.
-- **Single-player first.** You play the kid; **dad is an AI ally** who fights beside
+- **Single-player first.** You play the player; **ally is an AI ally** who fights beside
   you.
 - Build clean **seams** for the alternatives instead of building them now:
   - Co-op: players live in an array; a second input source fills `intents[1]`.
@@ -24,11 +24,11 @@ something fun, without painting ourselves into a corner.
 
 - A focused, genuinely fun v1 instead of a half-built everything.
 - Co-op and FP are additive later, not rewrites.
-- The "dad" fantasy is present from day one via the ally.
+- The "ally" fantasy is present from day one via the ally.
 
 ## Alternatives considered
 
 - **First-person (Doom) v1** — more intense but bullet-hell is hard to read/dodge in FP,
   and it's more work to feel good. Deferred to a camera-mode seam.
-- **2-player co-op now** — sweet for a dad/son game, but more to build before the core
+- **2-player co-op now** — sweet for a ally/son game, but more to build before the core
   loop is fun. Deferred to the players-array seam.

@@ -7,7 +7,7 @@
 
 The game shipped silent. We want satisfying sound (shooting, hits, pickups, boss,
 music) but downloads are blocked in the build sandbox, and we don't want to ship or
-manage audio files for a fast kid's game.
+manage audio files for a fast player's game.
 
 ## Decision
 
@@ -29,6 +29,6 @@ Removed the unused `howler` dependency.
 ## Alternatives considered
 
 - **ZzFX / ZzFXM libraries** — excellent and tiny, but a hand-rolled synth has no
-  dependency/version risk and is easy to read/tune for a kid.
+  dependency/version risk and is easy to read/tune for a player.
 - **Downloaded sound files (howler)** — blocked by the sandbox and adds asset/licensing
   management we don't want here.

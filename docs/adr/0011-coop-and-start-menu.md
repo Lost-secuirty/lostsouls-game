@@ -5,8 +5,8 @@
 
 ## Context
 
-The long-planned co-op phase: Scott on keyboard/mouse, Caden on an Xbox controller, same
-screen. Scott also wanted a basic start menu, and the key-sticking bug (clicking the debug
+The long-planned co-op phase: the project owner on keyboard/mouse, the co-designer on an Xbox controller, same
+screen. the project owner also wanted a basic start menu, and the key-sticking bug (clicking the debug
 menu froze movement) needed a real fix.
 
 ## Decision
@@ -17,7 +17,7 @@ menu froze movement) needed a real fix.
 - **Device-aware input** — `src/systems/input.js` methods take a device: `'kb'`, `'pad'`, or
   `'both'`. P1 = keyboard/mouse, P2 = the gamepad; solo uses `'both'`. Right-stick aim persists.
 - **Two players** — `Player` takes `{ color, modelKey, device }`. P1 = blue, P2 = the green
-  "dad" mesh (now player-controlled; the AI `Ally` is skipped in co-op). `game.players` is the
+  "ally" mesh (now player-controlled; the AI `Ally` is skipped in co-op). `game.players` is the
   array; enemies/boss/bullets target/affect the **nearest living player**
   (`game.nearestPlayer`); pickups + survivors work for either.
 - **Revive-on-room-clear** — per-player hearts; at 0 a player is "down" (hidden). If anyone is
@@ -32,13 +32,13 @@ menu froze movement) needed a real fix.
 ## Consequences
 
 - Couch co-op with no split-screen (the whole arena is already on screen). No friendly fire.
-- Single-player is unchanged (you + the AI dad).
+- Single-player is unchanged (you + the AI ally).
 - Confirmed current W3C "standard" Xbox mapping (One S+ / Series X|S identical): A=0/B=1,
   RT=7/RB=5, Start=9; left stick axes 0/1, right stick 2/3.
 
 ## Alternatives considered
 
-- **Auto-enable co-op on controller connect** — simpler, but Scott wanted an explicit start
+- **Auto-enable co-op on controller connect** — simpler, but the project owner wanted an explicit start
   menu, which also gives a clean home for future options.
-- **Shared health / shared 3 lives only** — rejected in favor of revive-on-clear so a kid who
+- **Shared health / shared 3 lives only** — rejected in favor of revive-on-clear so a player who
   dies a lot stays in the action; the shared-lives pool still gates a true team wipe.

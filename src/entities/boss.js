@@ -2,7 +2,7 @@
 // boss.js — the SPIDER BOSS. 🕷️
 //
 // A big procedural spider (body + 8 animated legs + glowing eyes). Its attacks
-// are Caden's three design-card patterns (P# = an attack pattern, not a phase):
+// are the co-designer's three design-card patterns (P# = an attack pattern, not a phase):
 //   P1 — base attack: a quick aimed burst, like a pistol.
 //   P2 — bullet ring: a telegraphed "circle of small dots" (few on floor 1,
 //        denser on later floors); the wind-up makes it fair/dodgeable.

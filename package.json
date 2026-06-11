@@ -1,9 +1,9 @@
 {
-  "name": "my-sons-game",
+  "name": "lostsouls-game",
   "private": true,
   "version": "0.6.0",
   "type": "module",
-  "description": "A 3D bullet-hell twin-stick shooter (Binding of Isaac x Doom) — survive a ruined city overrun by monsters. Built by a dad and his son.",
+  "description": "A 3D bullet-hell twin-stick shooter with co-op, procedural systems, deterministic tests, and production smoke checks.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -19,7 +19,8 @@
     "smoke:prod": "node scripts/prod-health-proof.mjs"
   },
   "dependencies": {
-    "express": "^4.21.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
     "lil-gui": "^0.21.0",
     "three": "^0.184.0"
   },

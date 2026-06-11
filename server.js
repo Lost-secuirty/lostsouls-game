@@ -10,6 +10,7 @@
 // =====================================================================
 
 import express from 'express';
+import { rateLimit } from 'express-rate-limit';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -19,6 +20,15 @@ const PORT = process.env.PORT || 3000;
 
 const app = express();
 
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 300,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+  }),
+);
+
 // Health check (useful for "is it up?" + future deploy probes).
 app.get('/healthz', (_req, res) => res.send('ok'));
 
@@ -26,9 +36,9 @@ app.get('/healthz', (_req, res) => res.send('ok'));
 app.use(express.static(DIST));
 
 // SPA-style fallback: anything else returns the game shell.
-app.get('*', (_req, res) => res.sendFile(join(DIST, 'index.html')));
+app.get('/{*splat}', (_req, res) => res.sendFile(join(DIST, 'index.html')));
 
 app.listen(PORT, () => {
-  console.log(`🎮  My Son's Game running at http://localhost:${PORT}`);
+  console.log(`Lostsouls running at http://localhost:${PORT}`);
   console.log(`    (run "npm run build" first if you see a blank page)`);
 });
