@@ -141,3 +141,14 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
   through one shared rng. `populateRoom` is render-coupled (builds Enemy/Boss/Npc
   with the scene), so the full `Game` step stays out of the headless test — the
   guarantee covers the random *logic*, which is what reproducibility needs.
+
+## 2026-06-11 — secret/PII gate added (cross-repo hardening pass)
+
+- This repo now carries the PII-blocking scanner variant (public-repo policy):
+  `tools/scan_staged.py` + `.githooks/pre-commit` + `.github/workflows/scan.yml`.
+  The SessionStart hook activates `core.hooksPath` on web sessions.
+- Verified end-to-end, not just self-test: a planted AWS key staged in this
+  repo was blocked by the real pre-commit hook (exit 1), then cleaned up.
+- The scanner family diverges deliberately across repos: public repos BLOCK
+  PII, private-tier repos WARN only — read the module docstring before
+  "fixing" the difference.
