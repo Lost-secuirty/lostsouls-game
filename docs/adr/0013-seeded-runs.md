@@ -9,8 +9,8 @@ The game's randomness already runs through a seeded `mulberry32`
 (`core/rng.js`), and the loop is a fixed-timestep, decoupled update/render
 (`core/loop.js`) — so the logic is deterministic in principle. But `startRun`
 seeded the run from `Math.random()` with no way to pin it, and while drops and
-survivor outcomes each have their own tests, nothing checked that the *whole
-run's* random logic is reproducible end-to-end. A research pass on testing
+survivor outcomes each have their own tests, nothing checked that the _whole
+run's_ random logic is reproducible end-to-end. A research pass on testing
 strategy (`docs/LEARNINGS.md`, 2026-06-10) called deterministic, seedable
 randomness the foundation for replay and non-flaky tests.
 
@@ -34,7 +34,7 @@ are.
 - A regression that makes the run order- or state-dependent on something other
   than the seed fails the determinism test — deterministically, no flake.
 - The full `Game.update` path stays render-coupled and is not headless-tested;
-  the determinism guarantee covers the random *logic*, which is the part that
+  the determinism guarantee covers the random _logic_, which is the part that
   matters for reproducibility.
 
 ## Alternatives considered

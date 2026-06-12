@@ -1,8 +1,8 @@
 # AGENTS.md
 
-Canonical contract for any AI coding agent (and human) working in this repo.
-Claude reads `CLAUDE.md`, which points here. Keep this lean — every line should
-change behavior.
+Universal instruction source for every human, agent, and automation system working
+in this repo. Read it together with `CLAUDE.md`; both files apply regardless of tool.
+Keep this lean — every line should change behavior.
 
 **"City of Monsters"** — a 3D bullet-hell twin-stick shooter (Binding of Isaac ×
 Doom). You're stuck in a ruined city overrun by monsters; your
@@ -124,7 +124,7 @@ When sources disagree, trust them in this order — and never silently pick a si
 the conflict:
 
 1. Live repo state, passing tests, and CI output.
-2. `AGENTS.md`, then `SECURITY.md`, then tool-specific files such as `CLAUDE.md`.
+2. `AGENTS.md`, `CLAUDE.md`, and `SECURITY.md` together; the most restrictive applicable rule wins.
 3. Repo docs — `README.md`, `STATUS.md`, `docs/adr/`, `docs/LEARNINGS.md`.
 4. External docs and web research, cited when used.
 5. Chat history and memory — candidate context only.
