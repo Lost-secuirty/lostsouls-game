@@ -127,8 +127,8 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
 
 - Four Gemini "deep dive" docs were reviewed for useful additions. Three (AI-dev
   trustworthiness, solo-repo security, advanced testing) cite **unverifiable,
-  future-dated sources** (`arXiv:2603.*`, "ICLR 2026", tools like *ClaimCheck/
-  Lore*) — treated as **RESEARCH_ONLY**, judged by concept not citation. The
+  future-dated sources** (`arXiv:2603.*`, "ICLR 2026", tools like _ClaimCheck/
+  Lore_) — treated as **RESEARCH_ONLY**, judged by concept not citation. The
   gaming-math doc's sources are real (GLI-19, NIST, `scipy.stats.binomtest`).
 - **The research mostly VALIDATED what's already here** — don't "rediscover" it:
   seeded `mulberry32` (`core/rng.js`); the drop-rate chi-square test with a
@@ -140,4 +140,15 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
   the real pure rng seams (`dropRandomPickup`, `resolveDecision`, spawn rolls)
   through one shared rng. `populateRoom` is render-coupled (builds Enemy/Boss/Npc
   with the scene), so the full `Game` step stays out of the headless test — the
-  guarantee covers the random *logic*, which is what reproducibility needs.
+  guarantee covers the random _logic_, which is what reproducibility needs.
+
+## 2026-06-11 — secret/PII gate added (cross-repo hardening pass)
+
+- This repo now carries the PII-blocking scanner variant (public-repo policy):
+  `tools/scan_staged.py` + `.githooks/pre-commit` + `.github/workflows/scan.yml`.
+  The SessionStart hook activates `core.hooksPath` on web sessions.
+- Verified end-to-end, not just self-test: a planted AWS key staged in this
+  repo was blocked by the real pre-commit hook (exit 1), then cleaned up.
+- The scanner family diverges deliberately across repos: public repos BLOCK
+  PII, private-tier repos WARN only — read the module docstring before
+  "fixing" the difference.

@@ -1,5 +1,10 @@
 dist
 node_modules
+coverage
 package-lock.json
 public/models
 public/audio
+.pre-commit-config.yaml
+.yamllint.yml
+.gitleaks.toml
+.github

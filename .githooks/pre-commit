@@ -1,0 +1,32 @@
+#!/bin/sh
+# Pre-commit secret/PII gate for this repo.
+#
+# Activate once per clone:   git config core.hooksPath .githooks
+# Intentional one-off bypass: git commit --no-verify   (use sparingly)
+#
+# Blocks the commit (exit 1) if staged content looks like a secret or PII.
+# See tools/scan_staged.py and AGENTS.md.
+root=$(git rev-parse --show-toplevel)
+if [ "$#" -gt 0 ]; then
+  script=$1
+  shift
+else
+  script=tools/scan_staged.py
+  set -- --staged
+fi
+
+case "$script" in
+/*) ;;
+*) script="$root/$script" ;;
+esac
+
+if command -v python3 >/dev/null 2>&1; then
+  exec python3 "$script" "$@"
+elif command -v python >/dev/null 2>&1; then
+  exec python "$script" "$@"
+elif command -v py >/dev/null 2>&1; then
+  exec py -3 "$script" "$@"
+fi
+
+echo "pre-commit: no Python 3 interpreter found; secret/PII gate cannot run." >&2
+exit 1

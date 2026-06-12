@@ -1,10 +1,12 @@
 import js from '@eslint/js';
 import globals from 'globals';
 import prettier from 'eslint-config-prettier';
+import security from 'eslint-plugin-security';
 
 export default [
   { ignores: ['dist', 'node_modules', 'public/models', 'public/audio'] },
   js.configs.recommended,
+  security.configs.recommended,
   {
     files: ['**/*.{js,mjs}'],
     languageOptions: {
@@ -15,6 +17,8 @@ export default [
     rules: {
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'no-console': 'off',
+      // Entity/system registries use constrained game-state keys, not user input.
+      'security/detect-object-injection': 'off',
     },
   },
   prettier,
