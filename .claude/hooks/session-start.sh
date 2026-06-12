@@ -10,7 +10,7 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi
 
-cd "$CLAUDE_PROJECT_DIR"
+cd "${CLAUDE_PROJECT_DIR:-$PWD}"
 
 # Activate the pre-commit secret/PII gate (idempotent; see .githooks/pre-commit).
 git config core.hooksPath .githooks 2>/dev/null || true

@@ -19,7 +19,8 @@ self-contained and zero-dependency. DOB / bare-date detection from that harness 
 intentionally OMITTED: dated frontmatter (date: YYYY-MM-DD) is legitimate and
 everywhere in these repos, so it would flag every commit.
 
-Escape hatch: a line containing the marker  allowlist secret  is skipped.
+Escape hatch: a line containing the marker  allowlist secret  skips secret
+detection only. PII detection always runs.
 One-off bypass for an intentional commit:  git commit --no-verify  (use sparingly).
 """
 from __future__ import annotations
@@ -69,16 +70,15 @@ _SECRET_RES = [
     ),
 ]
 
-# All findings block in public repositories.
-_PII_KINDS = set()
+# All findings block in public repositories; this set only classifies fixtures.
+_PII_KINDS = {"EMAIL", "SSN", "CREDIT_CARD", "PHONE"}
 
 _PERSONAL_PATH_RE = re.compile(r"(^|/)(PERSONAL_JOURNAL[^/]*$|private/)")
 
 
 def scan_line(line: str) -> list[str]:
     """Return finding-type labels for one added line of content."""
-    if "allowlist secret" in line:  # intentional escape hatch
-        return []
+    allowlist_secret = "allowlist secret" in line
     hits: list[str] = []
     if _EMAIL_RE.search(line):
         hits.append("EMAIL")
@@ -91,19 +91,34 @@ def scan_line(line: str) -> list[str]:
             break
     if _PHONE_RE.search(line):
         hits.append("PHONE")
-    for name, rx in _SECRET_RES:
-        if rx.search(line):
-            hits.append(name)
+    if not allowlist_secret:
+        for name, rx in _SECRET_RES:
+            if rx.search(line):
+                hits.append(name)
     return hits
 
 
 def _git(args: list[str]) -> str:
-    out = subprocess.run(["git"] + args, capture_output=True, text=True, check=False)
+    out = subprocess.run(["git", *args], capture_output=True, text=True, check=False)
+    if out.returncode != 0:
+        raise RuntimeError(out.stderr.strip() or "git command failed")
     return out.stdout
 
 
-def _changed_paths(diff_args: list[str]) -> list[str]:
-    return [p for p in _git(["diff", "--name-only"] + diff_args).splitlines() if p]
+def _changed_paths(diff_args: list[str]) -> list[tuple[str, str]]:
+    rows = []
+    for line in _git(["diff", "--name-status", *diff_args]).splitlines():
+        if not line.strip():
+            continue
+        parts = line.split("\t")
+        if len(parts) < 2:
+            raise RuntimeError(f"unexpected git diff --name-status row: {line!r}")
+        rows.append((parts[0], parts[-1]))
+    return rows
+
+
+def _blocks_personal_path(status: str, path: str) -> bool:
+    return not status.startswith("D") and bool(_PERSONAL_PATH_RE.search(path))
 
 
 def _added_lines(diff_args: list[str]):
@@ -134,8 +149,8 @@ def _fmt(rows) -> None:
 
 def _scan(diff_args: list[str]) -> int:
     blocks = []
-    for p in _changed_paths(diff_args):
-        if _PERSONAL_PATH_RE.search(p):
+    for status, p in _changed_paths(diff_args):
+        if _blocks_personal_path(status, p):
             blocks.append((p, 0, "PERSONAL/PRIVATE PATH (Drive-tier only)"))
     for path, no, text in _added_lines(diff_args):
         for hit in scan_line(text):
@@ -146,8 +161,8 @@ def _scan(diff_args: list[str]) -> int:
     _fmt(blocks)
     print(
         "\nThe raw value is not printed. Remove it (secrets never belong in git; personal\n"
-        "data belongs in the Drive vault). For an intentional, reviewed line add the marker\n"
-        "'allowlist secret', or bypass once with 'git commit --no-verify'."
+        "data belongs in the Drive vault). For an intentional, reviewed secret add the marker\n"
+        "'allowlist secret'. PII cannot be allowlisted; bypass once with 'git commit --no-verify'."
     )
     return 1
 
@@ -166,6 +181,8 @@ def _run_self_test() -> int:
     card = " ".join(["4242"] * 4)  # passes Luhn
     email = "alice" + "@" + "example.com"
     must_pii = [ssn, card, email]
+    allowlisted_pii = f"allowlist secret owner={email}"
+    allowlisted_secret = f"allowlist secret token={ghp}"
 
     must_clean = [
         "Beverly Hills 90210",                       # ZIP, not PII
@@ -188,6 +205,25 @@ def _run_self_test() -> int:
         if not labels:
             fails += 1
             print("  FAIL: expected PII block was not detected")
+    if "EMAIL" not in scan_line(allowlisted_pii):
+        fails += 1
+        print("  FAIL: secret allowlist bypassed PII detection")
+    if any(label not in _PII_KINDS for label in scan_line(allowlisted_secret)):
+        fails += 1
+        print("  FAIL: secret allowlist did not suppress secret detection")
+    if _blocks_personal_path("D", "private/cleanup.txt"):
+        fails += 1
+        print("  FAIL: deleting a private path was blocked")
+    if not _blocks_personal_path("M", "private/still-present.txt"):
+        fails += 1
+        print("  FAIL: present private path was not blocked")
+    try:
+        _git(["--definitely-invalid-control-audit-option"])
+    except RuntimeError:
+        pass
+    else:
+        fails += 1
+        print("  FAIL: git command failure did not fail closed")
     for s in must_clean:
         labels = scan_line(s)
         if labels:
