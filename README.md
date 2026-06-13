@@ -54,6 +54,21 @@ npm run smoke:browser
 CI also runs CodeQL and dependency review. See `docs/adr/` for technical
 decisions and `docs/LEARNINGS.md` for implementation notes.
 
+## Repo map (the six-slot model)
+
+The same skeleton repeats across the connected repos — **rules → memory →
+decisions → agent-tooling → verification → product** — but this one runs it
+_light by design_ (ADR-0005: fast vibe-coding + the rules):
+
+- **Rules** — `AGENTS.md` (contract) · `CLAUDE.md` (pointer) · `SECURITY.md` · `ASSETS.md` (CC0 asset hygiene). No `GOLDEN_RULES.md` — kept lean.
+- **Memory** — `docs/LEARNINGS.md` (light, on purpose). No `docs/kb` — dropped by ADR-0005.
+- **Decisions** — `docs/adr/` (significant calls get an ADR; `/adr` scaffolds one).
+- **Agent tooling** — `.claude/` (the `/adr` command + hooks; no predefined agent roles).
+- **Verification** — a light CI gate: `npm run lint` · `npm test` + `test:proof` + `test:coverage` · `npm run smoke:prod` (`/healthz`) · `npm run smoke:browser` · CodeQL + dependency review. "Feel" is verified by _playing_, not CI.
+- **Product** — `src/{core,entities,systems,ui,debug}` (the Three.js game) + `server.js` (Express).
+
+Plain-language **and** technical walk-through: [`docs/WALKTHROUGH.md`](docs/WALKTHROUGH.md).
+
 ## License
 
 MIT
