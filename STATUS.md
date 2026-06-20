@@ -28,6 +28,10 @@ This file is the lifecycle source-of-truth for the repo. The detailed running hi
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Expansion 6 Stage 3** — the **Dog/Cat duo** 🐶🐱, the first **multi-boss** fight
+  (`game.bosses[]`, two separate HP bars, a pure `DuoController` with alternating aggression +
+  enrage-on-partner-death, ADR-0018). Fang pounces, Whisker zones with cross-swipes and summons
+  kittens; animated CC0 beasts (Quaternius Shiba + Cat).
 - **Expansion 6 Stage 2** — the **mushroom boss** 🍄 (spore ring with a dodge gap, telegraphed
   poison pools via a new ground-hazard system ADR-0016, HP-gated puffballs) with **animated
   CC0 GLB monsters** (Quaternius Mushroom King + Mushnub minions) and an animation system
@@ -41,7 +45,7 @@ two-player co-op (keyboard/mouse/gamepad). Most recent work:
 - **Cross-repo hardening** — secret/PII pre-commit + CI scanner (public-repo BLOCK policy),
   ESLint 10, pinned actions.
 
-17 ADRs (0001–0017). Verification: probability/proof tests, coverage gate, production smoke +
+18 ADRs (0001–0018). Verification: probability/proof tests, coverage gate, production smoke +
 browser smoke, OpenSSF scorecard, dependency review, control audit.
 
 ## Scope (unchanged)

@@ -13,6 +13,7 @@ import { getModel, getAnimated } from '../core/assets.js';
 import { AnimModel } from '../core/animModel.js';
 import { buildSpiderMesh } from './spiderMesh.js';
 import { buildMushroomMesh } from './mushroomMesh.js';
+import { buildBeastMesh } from './beastMesh.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { normalize, dist, circleVsCircle } from '../core/math2d.js';
 import * as audio from '../systems/audio.js';
@@ -31,6 +32,26 @@ function makeEnemyMesh(type, theme) {
       return { group: wrap, anim };
     }
     const g = buildMushroomMesh(ENEMY[type].radius * 1.3, theme.palette || {}, {
+      simple: true,
+    }).group;
+    return { group: g, anim: null };
+  }
+
+  // themed beasts on the duo floor: pups (warm) + kittens (cool) match their bosses.
+  // theme.boss is 'duo' for normal-room minions (alternate by enemy type) or
+  // 'dog'/'cat' for the kittens a boss summons.
+  if (theme && (theme.boss === 'dog' || theme.boss === 'cat' || theme.boss === 'duo')) {
+    const kind = theme.boss === 'duo' ? (type === 'shooter' ? 'cat' : 'dog') : theme.boss;
+    const m = getAnimated(kind); // 'dog' / 'cat' model keys
+    if (m) {
+      const anim = new AnimModel(m.scene, m.clips).fitTo(ENEMY[type].radius * 1.9);
+      anim.play('Walk');
+      const wrap = new THREE.Group(); // base-1 wrapper (hit-pop / spawn scaling)
+      wrap.add(anim.group);
+      return { group: wrap, anim };
+    }
+    const g = buildBeastMesh(ENEMY[type].radius * 1.2, theme.palette || {}, {
+      kind,
       simple: true,
     }).group;
     return { group: g, anim: null };
@@ -94,6 +115,10 @@ export class Enemy {
     this.phase = Math.random() * Math.PI * 2;
     this.isSpider = !!(theme && theme.boss === 'spider');
     this.isMushroom = !!(theme && theme.boss === 'mushroom');
+    this.isBeast = !!(
+      theme &&
+      (theme.boss === 'dog' || theme.boss === 'cat' || theme.boss === 'duo')
+    );
     const built = makeEnemyMesh(type, theme);
     this.mesh = built.group;
     this.anim = built.anim; // AnimModel for GLB minions, else null
@@ -145,8 +170,8 @@ export class Enemy {
     const s = this.mesh.scale.x;
     if (s !== 1) this.mesh.scale.setScalar(s + (1 - s) * Math.min(1, dt * 12));
 
-    // spiders face the player; blobs do a slow menacing spin
-    if (this.isSpider || this.isMushroom)
+    // themed monsters face the player; generic blobs do a slow menacing spin
+    if (this.isSpider || this.isMushroom || this.isBeast)
       this.mesh.rotation.y = Math.atan2(p.x - this.x, p.z - this.z);
     else this.mesh.rotation.y += dt * 1.5;
     this.anim?.update(dt); // advance the GLB animation clip, if any

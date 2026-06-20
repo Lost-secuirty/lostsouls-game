@@ -23,3 +23,4 @@ below).
 | [0015](0015-weapon-behaviors-and-floors.md)        | New bullet behaviors, 5 new guns, 9-room floors        | Accepted |
 | [0016](0016-ground-hazards.md)                     | Ground hazards system (telegraphed poison pools)       | Accepted |
 | [0017](0017-animated-models.md)                    | Animated CC0 GLB models + animation system             | Accepted |
+| [0018](0018-multi-boss-duo.md)                     | Multi-boss fights (`game.bosses[]`) + the Dog/Cat duo  | Accepted |

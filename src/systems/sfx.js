@@ -147,6 +147,17 @@ const SOUNDS = {
     tone({ freq: 400, type: 'square', dur: 0.12, vol: 0.16, delay: 0.16 });
   },
   bounce: () => tone({ freq: 900, slideTo: 1400, type: 'square', dur: 0.04, vol: 0.07 }),
+  // expansion 6 stage 3 — the dog/cat duo
+  bossPounce: () => {
+    // a low growl that swoops up into the lunge
+    tone({ freq: 70, slideTo: 240, type: 'sawtooth', dur: 0.3, vol: 0.22 });
+    noise({ dur: 0.12, vol: 0.14, freq: 500, q: 2 });
+  },
+  bossSwipe: () => {
+    // a hiss-y claw swipe
+    noise({ dur: 0.16, vol: 0.18, freq: 2600, q: 1.5 });
+    tone({ freq: 1400, slideTo: 500, type: 'square', dur: 0.1, vol: 0.08 });
+  },
 };
 
 export function play(name) {
