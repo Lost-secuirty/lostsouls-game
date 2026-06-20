@@ -81,7 +81,8 @@ export const spider = {
     if (alive >= tgt.min) return;
 
     for (let i = alive; i < tgt.max; i++) {
-      const a = Math.random() * Math.PI * 2;
+      // seeded RNG (ADR-0013) so spawns are reproducible — also avoids Math.random
+      const a = game.rng.next() * Math.PI * 2;
       const lx = boss.x + Math.cos(a) * boss.radius * 1.5;
       const lz = boss.z + Math.sin(a) * boss.radius * 1.5;
       game.particles.burst(lx, lz, 5, PALETTE.blood); // little spawn puff (telegraph)
