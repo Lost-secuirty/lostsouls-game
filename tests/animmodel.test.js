@@ -14,7 +14,7 @@ describe('AnimModel', () => {
       makeClip('CharacterArmature|Walk'),
       makeClip('Idle'),
     ]);
-    expect(Object.keys(am.actions).sort()).toEqual(['Idle', 'Walk']);
+    expect(Object.keys(am.actions).sort((a, b) => a.localeCompare(b))).toEqual(['Idle', 'Walk']);
   });
 
   it('play() sets the current action and update() advances the mixer', () => {
