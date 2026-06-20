@@ -149,6 +149,21 @@ export const PROGRESSION = {
         eye: 0x6ad8ff,
       },
     },
+    {
+      // Expansion 6 Stage 2 — Caden's mushroom boss + matching fungal minions.
+      // (Final boss order spider→human→mushroom→duo→skeleton is set in a later
+      // stage once those bosses exist; for now the mushroom caps off the run.)
+      name: 'The Fungal Depths',
+      boss: 'mushroom',
+      diff: 1.9,
+      palette: {
+        body: 0xb83a2a, // cap red
+        emissive: 0xff6a4a, // cap glow
+        leg: 0xe8d8a8, // stem / gills (pale)
+        legEmissive: 0x6a8a2a, // spore green accent
+        eye: 0xffe66a,
+      },
+    },
   ],
 };
 
@@ -190,6 +205,52 @@ export const BOSS = {
     // P3 — spiderling spawns (count gated by HP in spiderlingTarget())
     spawnInterval: 2.4, // how often it tops up toward the target count
   },
+
+  // ---- the mushroom boss (Caden's pick) — Expansion 6 Stage 2 ----
+  // P1 = slow spore spit · P2 = spore ring with a guaranteed dodge GAP ·
+  // P3 = lingering poison pools (telegraphed, see systems/hazards.js) ·
+  // P4 = HP-gated puffball spawns (puffballTarget(); pop into a pool on death).
+  mushroom: {
+    hp: 80,
+    radius: 3.0,
+    speed: 3.2, // slow and chunky
+    contactDamage: 1,
+    contactCooldown: 0.9,
+
+    // P1 — spore spit: a slow, fat aimed cone (reads as drifting gas)
+    p1Interval: 1.6,
+    p1Burst: 4,
+    p1Spread: 16,
+    p1BulletSpeed: 9,
+
+    // P2 — spore ring: telegraphed, with `ringGap` adjacent slots left empty
+    p2Interval: 4.2,
+    telegraph: 0.55,
+    ringBullets: 10, // base on floor 1 (scaled by floor diff in code)
+    ringBulletSpeed: 7,
+    ringGap: 2, // guaranteed dodge lane (seeded position)
+
+    // P3 — lingering poison pools dropped at the player's feet
+    poolInterval: 3.6,
+    poolRadius: 3.0,
+    poolWarn: 0.8, // harmless telegraph window (fair warning)
+    poolLive: 2.6, // seconds the pool is dangerous
+    poolDamage: 1,
+    puffPoolRadius: 2.2, // smaller pool left by a dying puffball
+
+    // P4 — puffball spawns (count gated by HP in puffballTarget())
+    spawnInterval: 3.0,
+  },
+};
+
+// ---- ground hazards: lingering, telegraphed damage zones (spore/poison pools) ----
+// A small pool mirroring BULLET/PARTICLES. Per-pool size/timings/damage come from
+// the spawner (config.BOSS.mushroom.pool*), so one system serves many sources.
+export const HAZARD = {
+  poolSize: 24, // max simultaneous zones
+  tickInterval: 0.5, // seconds between damage ticks while you stand in a live pool
+  warnColor: 0xc8ff3a, // telegraph ring (harmless)
+  liveColor: 0x66c000, // active poison
 };
 
 // ---- juice (the "feel good" knobs) ----
@@ -353,4 +414,7 @@ export const MODELS = {
   spider: null,
   spiderling: null,
   npc: null,
+  // expansion 6: animated CC0 monster models (null => procedural fallback mesh)
+  mushroom: 'models/mushroom-king.glb', // Quaternius "Mushroom King" (CC0)
+  sporeling: 'models/mushnub.glb', // Quaternius "Mushnub" (CC0) — mushroom minions
 };

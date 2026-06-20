@@ -25,8 +25,10 @@ here with their source and license. **Only use CC0 or free-for-games assets.**
 
 ## Credits
 
-_(none yet — the current build uses procedural shapes and no audio files)_
+Audio is procedural (no files). Models below are **CC0 (Public Domain)** — no
+attribution is required, but we credit the author anyway.
 
-| File | Source | Author | License |
-| ---- | ------ | ------ | ------- |
-| —    | —      | —      | —       |
+| File                              | Source                                        | Author     | License |
+| --------------------------------- | --------------------------------------------- | ---------- | ------- |
+| `public/models/mushroom-king.glb` | [Poly Pizza](https://poly.pizza/m/grnFTziU8u) | Quaternius | CC0 1.0 |
+| `public/models/mushnub.glb`       | [Poly Pizza](https://poly.pizza/m/LWKmS30Xxl) | Quaternius | CC0 1.0 |

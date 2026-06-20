@@ -6,8 +6,10 @@
 // =====================================================================
 
 import { spider } from './spider.js';
+import { mushroom } from './mushroom.js';
 
 export const BEHAVIORS = {
   spider,
-  // expansion 6 (added per stage): mushroom, dog, cat, skeleton, human
+  mushroom,
+  // expansion 6 (added per stage): dog, cat, skeleton, human
 };

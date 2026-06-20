@@ -182,3 +182,34 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
 - **Verified:** lint/format clean; 54 unit tests; coverage 43/37/51/44 (> floor);
   build + prod smoke; a Playwright drive fired all 5 guns, ticked bullets, spawned
   the refactored spider, and confirmed zero console errors.
+
+## 2026-06-20 — Expansion 6 Stage 2 (mushroom boss 🍄 + ground hazards + animated GLB models)
+
+- **Mushroom boss (ADR-0014 pattern):** `bosses/mushroom.js` — P1 spore spit, P2
+  spore ring with a seeded dodge gap (`game.rng.int(n)`), P3 telegraphed poison
+  pools, P4 HP-gated puffballs via pure `puffballTarget()` (unit-tested) that pop
+  into a pool on death (new generic `Enemy.onDeath` hook). New "The Fungal Depths"
+  floor; mini-mushroom minions via `enemies.js` theme branch.
+- **Ground hazards (ADR-0016):** `systems/hazards.js`, pooled like bullets;
+  telegraph→lethal flat discs; owned by Game, cleared on room load/clear.
+- **Animated GLB models (ADR-0017) — two non-obvious skinned-mesh gotchas, both
+  found by DRIVING the real build with Playwright (not unit tests):**
+  1. **Invisible #1 — frustum culling:** skinned meshes keep a bind-pose bounding
+     sphere that doesn't follow the bones, so three.js culls them off-screen.
+     Fix: `frustumCulled = false` on the model's meshes (in `AnimModel`).
+  2. **Invisible #2 — `Box3.setFromObject` lies on skinned models:** it read the
+     bind/bone extents as ~206 units, so `fitTo` shrank the mushroom to a
+     **0.05-unit speck**. Fix: measure the union of MESH `geometry.boundingBox`
+     transformed by world matrix instead. After both fixes the boss renders ~3–5
+     units and minions ~1.9.
+  - **Cloning:** animated/skinned GLBs MUST use `SkeletonUtils.clone`
+    (`three/addons/utils/SkeletonUtils.js`), never `Object3D.clone` (the clone
+    won't rebind to its own skeleton). Each instance needs its own mixer; clips
+    come from the original `gltf.animations`. Quaternius clip names are prefixed
+    `CharacterArmature|` — strip it.
+  - Models: Quaternius **Mushroom King** + **Mushnub**, CC0, in `public/models/`,
+    credited in `ASSETS.md` (committed; ~500 KB, under the 1 MB hook limit).
+- **Verified:** lint/format; 61 unit tests (added `puffball`, `animmodel`);
+  coverage 47/41/54/48; build + prod + browser smoke; a Playwright drive confirmed
+  the mushroom boss + 6 themed minions render & animate, pools + puffballs spawn,
+  spider unchanged, zero console errors; full security gauntlet green.

@@ -18,6 +18,7 @@ import { Player } from './entities/player.js';
 import { Ally } from './entities/ally.js';
 import { Enemy } from './entities/enemies.js';
 import { Bullets } from './entities/bullets.js';
+import { Hazards } from './systems/hazards.js';
 import { dropRandomPickup, Pickup } from './entities/pickups.js';
 import { Particles } from './systems/particles.js';
 import { Juice } from './systems/juice.js';
@@ -64,6 +65,7 @@ export class Game {
     this.particles = new Particles(this.scene);
     this.juice = new Juice();
     this.bullets = new Bullets(this.scene);
+    this.hazards = new Hazards(this.scene);
     // players are created in startRun (which the start menu calls)
   }
 
@@ -139,6 +141,7 @@ export class Game {
     this.pickups = [];
     this.activeNpc = null;
     this.bullets.clearAll();
+    this.hazards.clearAll();
     if (this.room) this.room.dispose();
 
     this.room = buildRoom(this.scene, this.rng);
@@ -206,6 +209,7 @@ export class Game {
       if (this.ally) this.ally.update(dt, this);
       for (const e of this.enemies) e.update(dt, this);
       this.bullets.update(dt, this);
+      this.hazards.update(dt, this);
       this._handlePickups();
       this._handleSurvivors(dt);
 
@@ -310,6 +314,7 @@ export class Game {
     }
 
     this.bullets.clearEnemyBullets();
+    this.hazards.clearAll();
     this.room.openDoor();
     audio.play('doorOpen');
     this.state = State.ROOM_CLEAR;
