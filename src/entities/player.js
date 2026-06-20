@@ -136,6 +136,7 @@ export class Player {
     if (this.weaponDef.orbital) {
       this._updateOrbital(dt, game);
     } else if (this.weaponDef.charge) {
+      this.fireTimer -= dt;
       this._updateCharge(dt, game, aim);
     } else {
       this.fireTimer -= dt;
@@ -210,7 +211,7 @@ export class Player {
       const bx = this.x + Math.sin(a) * def.radius;
       const bz = this.z + Math.cos(a) * def.radius;
       const m = orb.blades[i];
-      m.position.set(bx, 1.0, bz);
+      m.position.set(bx, 1, bz);
       m.rotation.y += dt * 6;
       m.visible = true;
       for (const e of game.enemies) {
@@ -235,6 +236,7 @@ export class Player {
   // --- Charge Cannon: hold to charge, release a bigger/stronger cannonball ---
   _updateCharge(dt, game, aim) {
     const aiming = aim.x !== 0 || aim.z !== 0;
+    if (this.fireTimer > 0) return; // respect the weapon cooldown between charge shots
     if (game.input.shoot(this.device) && aiming) {
       this._charge = Math.min(this.weaponDef.charge.maxTime, (this._charge || 0) + dt);
       // auto-fire at full charge so a kid who just holds it still shoots
@@ -257,6 +259,7 @@ export class Player {
       scale: lerp(1, c.maxScale),
       color: c.color,
     });
+    this.fireTimer = this.weaponDef.cooldown * this.fireRateMul; // cap charge cadence
     game.juice.shake(game.JUICE.shakeOnShoot + 0.2 * f);
     audio.play(f > 0.6 ? 'chargeShot' : 'shoot');
     if (this.device !== 'kb') game.input.rumble(0.2 + 0.4 * f, 0.1, 60 + f * 80);

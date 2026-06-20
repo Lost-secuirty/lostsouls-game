@@ -309,7 +309,7 @@ export const WEAPONS = {
     orbital: true, // player-side: blades circle you and hit on contact (no aiming)
     count: 2, // how many blades orbit
     radius: 2.6, // orbit radius
-    spin: 3.0, // rad/sec
+    spin: 3, // rad/sec
     damage: 1,
     hitCooldown: 0.4, // per-enemy seconds between hits from a blade
     color: 0x66ffd0,
