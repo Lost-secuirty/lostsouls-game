@@ -15,11 +15,11 @@ import { resolveDecision } from '../src/systems/npcDecision.js';
 // rng-consuming production seams the run actually uses: dropRandomPickup and
 // resolveDecision, plus the shooter/chaser spawn roll (rng.chance(0.4)).
 
-function runTranscript(seed, { rooms = 18 } = {}) {
+function runTranscript(seed, { rooms = 20 } = {}) {
   const rng = makeRng(seed);
   const log = [];
   for (let r = 0; r < rooms; r++) {
-    const isBoss = (r + 1) % 6 === 0; // floor = 5 normal + 1 boss (progression.js)
+    const isBoss = (r + 1) % 10 === 0; // floor = 9 normal + 1 boss (progression.js)
     if (isBoss) {
       log.push(`boss-reward:${dropRandomPickup(rng, true)}`);
     } else {

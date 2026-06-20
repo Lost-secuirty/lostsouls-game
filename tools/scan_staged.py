@@ -99,7 +99,17 @@ def scan_line(line: str) -> list[str]:
 
 
 def _git(args: list[str]) -> str:
-    out = subprocess.run(["git", *args], capture_output=True, text=True, check=False)
+    # git output is UTF-8; decode it as such on every platform. Without an explicit
+    # encoding, text=True uses the OS default (cp1252 on Windows), which crashes on
+    # any non-cp1252 byte (e.g. an emoji in a diff). errors='replace' is belt-and-braces.
+    out = subprocess.run(
+        ["git", *args],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
     if out.returncode != 0:
         raise RuntimeError(out.stderr.strip() or "git command failed")
     return out.stdout

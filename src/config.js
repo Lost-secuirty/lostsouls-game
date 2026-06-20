@@ -100,16 +100,16 @@ export const NPC = {
 // ---- per-room tunables (counts/obstacles) ----
 export const ROOMS = {
   baseEnemies: 3, // enemies in the first room of a floor
-  enemiesPerRoom: 1.2, // extra enemies added per room deeper in the floor
-  shooterFromRoom: 2, // shooters start appearing at this room-in-floor (1-based)
+  enemiesPerRoom: 0.8, // extra enemies added per room deeper in the floor (9 rooms now)
+  shooterFromRoom: 3, // shooters start appearing at this room-in-floor (1-based)
   obstaclesMin: 2, // rubble boxes
   obstaclesMax: 5,
-  survivorRoomsInFloor: [1, 3], // which normal rooms (0-based) hold a survivor
+  survivorRoomsInFloor: [2, 5, 7], // which normal rooms (0-based) hold a survivor
 };
 
-// ---- progression: floors of 5 rooms + 1 boss room each ----
+// ---- progression: floors of 9 rooms + 1 boss room each ----
 export const PROGRESSION = {
-  roomsPerFloor: 5, // normal rooms before the boss
+  roomsPerFloor: 9, // normal rooms before the boss
   // each floor: a boss type + difficulty + a color palette shared by the boss
   // AND that floor's monsters (so the monsters "reflect" their boss).
   floors: [
@@ -244,6 +244,76 @@ export const WEAPONS = {
     explosive: true,
     explodeRadius: 4.5,
   },
+
+  // --- Expansion 6 guns ---
+  // New bullet flags (handled in bullets.js): pierce (pass through N enemies),
+  // homing + turnRate (curve toward nearest enemy), bounces (ricochet off walls
+  // N times), plus per-bullet life/scale/color overrides. charge + orbital are
+  // handled player-side (player.js) because they don't fire on a fixed cooldown.
+  homing: {
+    name: 'Homing Missiles',
+    cooldown: 0.55,
+    damage: 3,
+    pellets: 1,
+    spreadDeg: 0,
+    bulletSpeed: 18, // slow so the curve is visible/dramatic
+    homing: true,
+    turnRate: 5, // rad/sec — low enough that a perpendicular juke loses it
+    explosive: true,
+    explodeRadius: 3.2,
+  },
+  railgun: {
+    name: 'Railgun',
+    cooldown: 0.4,
+    damage: 2,
+    pellets: 1,
+    spreadDeg: 0,
+    bulletSpeed: 44, // fast bolt that reads as a beam
+    pierce: 6, // punches through a whole line of monsters
+    life: 2.6,
+    color: 0x66e0ff,
+    scale: 1.3,
+  },
+  bouncer: {
+    name: 'Bouncer',
+    cooldown: 0.26,
+    damage: 1,
+    pellets: 1,
+    spreadDeg: 0,
+    bulletSpeed: 26,
+    bounces: 3, // ricochet off walls this many times
+    life: 3.5, // live long enough for the bounces to matter
+    color: 0x9b7bff,
+  },
+  charge: {
+    name: 'Charge Cannon',
+    cooldown: 0.12,
+    damage: 1,
+    pellets: 1,
+    spreadDeg: 0,
+    bulletSpeed: 24,
+    // hold to charge; tap = weak fast shot, full = big slow piercing cannonball
+    charge: {
+      maxTime: 0.8,
+      minDamage: 1,
+      maxDamage: 7,
+      minSpeed: 24,
+      maxSpeed: 18,
+      maxScale: 2.6,
+      pierce: 3,
+      color: 0xffd23a,
+    },
+  },
+  orbital: {
+    name: 'Orbital Blade',
+    orbital: true, // player-side: blades circle you and hit on contact (no aiming)
+    count: 2, // how many blades orbit
+    radius: 2.6, // orbit radius
+    spin: 3.0, // rad/sec
+    damage: 1,
+    hitCooldown: 0.4, // per-enemy seconds between hits from a blade
+    color: 0x66ffd0,
+  },
 };
 
 // ---- pickups you walk over to grab ----
@@ -258,6 +328,11 @@ export const PICKUPS = {
     { type: 'SHOTGUN', weight: 2 },
     { type: 'MACHINEGUN', weight: 2 },
     { type: 'ROCKET', weight: 1 },
+    { type: 'HOMING', weight: 1 },
+    { type: 'RAILGUN', weight: 1 },
+    { type: 'BOUNCER', weight: 1 },
+    { type: 'CHARGE', weight: 1 },
+    { type: 'ORBITAL', weight: 1 },
   ],
   // step sizes tuned so ~3 stacks reach the caps in CAPS
   speedUpAmount: 1.8, // units/sec added by SPEED_UP (clamped to CAPS.speedMul)

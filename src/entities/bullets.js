@@ -3,13 +3,19 @@
 //
 // A fixed pool of small glowing spheres. spawnPlayer/spawnEnemy launch one;
 // update() flies them, kills them on walls or after a lifetime, and checks
-// hits (player bullets -> enemies, enemy bullets -> you). Rockets explode
-// for area damage.
+// hits (player bullets -> enemies, enemy bullets -> you).
+//
+// Behaviors (all optional, set per-shot from a weapon def — see config.WEAPONS):
+//   explosive + explodeRadius — rocket-style area damage on impact.
+//   pierce (int)              — pass THROUGH this many enemies before dying.
+//   homing (bool) + turnRate  — curve toward the nearest enemy (capped turn).
+//   bounces (int)             — ricochet off walls this many times.
+//   life / scale / color      — per-bullet overrides of the shared defaults.
 // =====================================================================
 
 import * as THREE from 'three';
 import { BULLET, PALETTE } from '../config.js';
-import { circleVsCircle } from '../core/math2d.js';
+import { circleVsCircle, turnAngle } from '../core/math2d.js';
 import { hitsAnyWall } from '../systems/collision.js';
 import * as audio from '../systems/audio.js';
 
@@ -20,6 +26,7 @@ export class Bullets {
     this.playerMat = new THREE.MeshBasicMaterial({ color: PALETTE.playerBullet });
     this.enemyMat = new THREE.MeshBasicMaterial({ color: PALETTE.enemyBullet });
     this.rocketMat = new THREE.MeshBasicMaterial({ color: 0xff7722 });
+    this._mats = new Map(); // color -> material (for tinted bullets like the railgun)
     for (let i = 0; i < BULLET.poolSize; i++) {
       const mesh = new THREE.Mesh(geo, this.playerMat);
       mesh.visible = false;
@@ -31,17 +38,25 @@ export class Bullets {
         z: 0,
         vx: 0,
         vz: 0,
+        speed: 0,
         life: 0,
+        age: 0,
         team: 'player',
         damage: 1,
         explosive: false,
         explodeRadius: 0,
+        pierce: 0,
+        homing: false,
+        turnRate: 0,
+        bounces: 0,
+        hitSet: new Set(),
       });
     }
     this._next = 0;
   }
 
-  // opts: { damage, speed, explosive, explodeRadius }  (or a bare number = damage)
+  // opts: { damage, speed, explosive, explodeRadius, pierce, homing, turnRate,
+  //         bounces, life, scale, color }   (or a bare number = damage)
   spawnPlayer(x, z, dx, dz, opts = {}) {
     const o = typeof opts === 'number' ? { damage: opts } : opts;
     this._spawn(x, z, dx, dz, 'player', {
@@ -49,6 +64,13 @@ export class Bullets {
       damage: o.damage ?? BULLET.player.damage,
       explosive: !!o.explosive,
       explodeRadius: o.explodeRadius ?? 0,
+      pierce: o.pierce ?? 0,
+      homing: !!o.homing,
+      turnRate: o.turnRate ?? 0,
+      bounces: o.bounces ?? 0,
+      life: o.life,
+      scale: o.scale,
+      color: o.color,
     });
   }
 
@@ -58,7 +80,25 @@ export class Bullets {
       damage: BULLET.enemy.damage,
       explosive: false,
       explodeRadius: 0,
+      pierce: 0,
+      homing: false,
+      turnRate: 0,
+      bounces: 0,
     });
+  }
+
+  _matFor(team, o) {
+    if (o.explosive) return this.rocketMat;
+    if (team === 'enemy') return this.enemyMat;
+    if (o.color != null) {
+      let m = this._mats.get(o.color);
+      if (!m) {
+        m = new THREE.MeshBasicMaterial({ color: o.color });
+        this._mats.set(o.color, m);
+      }
+      return m;
+    }
+    return this.playerMat;
   }
 
   _spawn(x, z, dx, dz, team, o) {
@@ -67,18 +107,21 @@ export class Bullets {
     b.team = team;
     b.x = x;
     b.z = z;
+    b.speed = o.speed;
     b.vx = dx * o.speed;
     b.vz = dz * o.speed;
-    b.life = BULLET.lifetime;
+    b.life = o.life ?? BULLET.lifetime;
+    b.age = 0;
     b.damage = o.damage;
     b.explosive = o.explosive;
     b.explodeRadius = o.explodeRadius;
-    b.mesh.material = b.explosive
-      ? this.rocketMat
-      : team === 'player'
-        ? this.playerMat
-        : this.enemyMat;
-    b.mesh.scale.setScalar(b.explosive ? 1.9 : 1);
+    b.pierce = o.pierce ?? 0;
+    b.homing = !!o.homing;
+    b.turnRate = o.turnRate ?? 0;
+    b.bounces = o.bounces ?? 0;
+    b.hitSet.clear();
+    b.mesh.material = this._matFor(team, o);
+    b.mesh.scale.setScalar(o.scale ?? (o.explosive ? 1.9 : 1));
     b.mesh.position.set(x, 1.0, z);
     b.mesh.visible = true;
   }
@@ -103,35 +146,85 @@ export class Bullets {
     for (const b of this.items) {
       if (!b.active) continue;
 
-      b.x += b.vx * dt;
-      b.z += b.vz * dt;
+      b.age += dt;
       b.life -= dt;
-
-      if (b.life <= 0 || hitsAnyWall(b.x, b.z, BULLET.radius, game.walls)) {
+      if (b.life <= 0) {
         if (b.explosive) this._explode(b, game);
         this._kill(b);
         continue;
       }
 
+      // homing: curve the velocity toward the nearest enemy (player guns only)
+      if (b.homing && b.team === 'player') this._steerHoming(b, dt, game);
+
+      // --- move (with optional wall bounce) ---
+      const r = BULLET.radius;
+      const nx = b.x + b.vx * dt;
+      const nz = b.z + b.vz * dt;
+      if (hitsAnyWall(nx, nz, r, game.walls)) {
+        if (b.bounces > 0) {
+          let bounced = false;
+          if (hitsAnyWall(nx, b.z, r, game.walls)) {
+            b.vx = -b.vx;
+            bounced = true;
+          }
+          if (hitsAnyWall(b.x, nz, r, game.walls)) {
+            b.vz = -b.vz;
+            bounced = true;
+          }
+          if (!bounced) {
+            b.vx = -b.vx;
+            b.vz = -b.vz;
+          }
+          b.bounces -= 1;
+          const ax = b.x + b.vx * dt;
+          const az = b.z + b.vz * dt;
+          if (hitsAnyWall(ax, az, r, game.walls)) {
+            this._kill(b); // wedged in a corner — give up rather than get stuck
+            continue;
+          }
+          b.x = ax;
+          b.z = az;
+          audio.play('bounce');
+        } else {
+          if (b.explosive) this._explode(b, game);
+          this._kill(b);
+          continue;
+        }
+      } else {
+        b.x = nx;
+        b.z = nz;
+      }
+
+      // --- collisions ---
       if (b.team === 'player') {
         let hit = null;
         for (const e of game.enemies) {
-          if (e.dead) continue;
-          if (circleVsCircle(b.x, b.z, BULLET.radius, e.x, e.z, e.radius)) {
+          if (e.dead || b.hitSet.has(e)) continue;
+          if (circleVsCircle(b.x, b.z, r, e.x, e.z, e.radius)) {
             hit = e;
             break;
           }
         }
         if (hit) {
-          if (b.explosive) this._explode(b, game);
-          else hit.hurt(b.damage, game);
-          this._kill(b);
-          continue;
+          if (b.explosive) {
+            this._explode(b, game);
+            this._kill(b);
+            continue;
+          }
+          hit.hurt(b.damage, game);
+          if (b.pierce > 0) {
+            b.pierce -= 1;
+            b.hitSet.add(hit); // don't re-hit the same enemy while passing through
+          } else {
+            this._kill(b);
+            continue;
+          }
         }
       } else {
         let hitPlayer = false;
         for (const p of game.players) {
-          if (p.alive && circleVsCircle(b.x, b.z, BULLET.radius, p.x, p.z, p.radius)) {
+          if (p.alive && circleVsCircle(b.x, b.z, r, p.x, p.z, p.radius)) {
             p.hurt(b.damage, game);
             hitPlayer = true;
             break;
@@ -145,6 +238,28 @@ export class Bullets {
 
       b.mesh.position.set(b.x, 1.0, b.z);
     }
+  }
+
+  /** curve a homing bullet toward the nearest living enemy (capped turn rate) */
+  _steerHoming(b, dt, game) {
+    let tx = null;
+    let tz = null;
+    let bd = Infinity;
+    for (const e of game.enemies) {
+      if (e.dead) continue;
+      const d = (e.x - b.x) ** 2 + (e.z - b.z) ** 2;
+      if (d < bd) {
+        bd = d;
+        tx = e.x;
+        tz = e.z;
+      }
+    }
+    if (tx === null) return;
+    const cur = Math.atan2(b.vx, b.vz);
+    const des = Math.atan2(tx - b.x, tz - b.z);
+    const a = turnAngle(cur, des, b.turnRate * dt);
+    b.vx = Math.sin(a) * b.speed;
+    b.vz = Math.cos(a) * b.speed;
   }
 
   /** rocket area-of-effect: damage every enemy within the blast radius */

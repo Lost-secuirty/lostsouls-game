@@ -3,9 +3,9 @@ import { floorInfo, nextIsBoss, resolveDeath, totalRooms } from '../src/core/pro
 
 describe('progression proof controls', () => {
   it('proves boss-room boundaries are exact and not off by one', () => {
-    expect(nextIsBoss(4)).toBe(true);
-    expect(floorInfo(5).isBossRoom).toBe(true);
-    expect(nextIsBoss(5)).toBe(false);
+    expect(nextIsBoss(8)).toBe(true);
+    expect(floorInfo(9).isBossRoom).toBe(true);
+    expect(nextIsBoss(9)).toBe(false);
   });
 
   it('proves only the final boss room is marked last room', () => {

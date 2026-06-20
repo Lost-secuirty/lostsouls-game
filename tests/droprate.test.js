@@ -1,10 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { atLeastOne, chiSquare } from '../src/core/probability.js';
 import { makeRng } from '../src/core/rng.js';
-import { dropRandomPickup } from '../src/entities/pickups.js';
+import { dropRandomPickup, WEAPON_TYPES } from '../src/entities/pickups.js';
 import { PICKUPS } from '../src/config.js';
-
-const WEAPONS = ['SHOTGUN', 'MACHINEGUN', 'ROCKET'];
 
 describe('probability helpers', () => {
   it('atLeastOne combines independent chances (1 - ∏(1-p))', () => {
@@ -23,7 +21,7 @@ describe('probability helpers', () => {
 describe('pickup drop table fairness (seeded, deterministic)', () => {
   it('observed drop rates match the configured weights', () => {
     const rng = makeRng(12345);
-    const N = 20000;
+    const N = 40000;
     const table = PICKUPS.dropTable;
     const total = table.reduce((s, e) => s + e.weight, 0);
 
@@ -34,8 +32,9 @@ describe('pickup drop table fairness (seeded, deterministic)', () => {
     const observed = table.map((e) => counts[e.type]);
     const expected = table.map((e) => (e.weight / total) * N);
 
-    // chi-square below the df=6, p=0.01 critical value (16.81) — generous + deterministic
-    expect(chiSquare(observed, expected)).toBeLessThan(16.81);
+    // chi-square below the df=11 (12 categories), p=0.01 critical value (24.725).
+    // generous + deterministic for the fixed seed.
+    expect(chiSquare(observed, expected)).toBeLessThan(24.725);
 
     // and every category is within 10% (relative) of its expected count
     for (let i = 0; i < table.length; i++) {
@@ -47,7 +46,7 @@ describe('pickup drop table fairness (seeded, deterministic)', () => {
   it('boss rewards are always weapons', () => {
     const rng = makeRng(999);
     for (let i = 0; i < 200; i++) {
-      expect(WEAPONS).toContain(dropRandomPickup(rng, true));
+      expect(WEAPON_TYPES).toContain(dropRandomPickup(rng, true));
     }
   });
 

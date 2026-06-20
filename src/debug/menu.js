@@ -9,16 +9,9 @@
 import GUI from 'lil-gui';
 import { PLAYER, WEAPONS, PROGRESSION, CAPS } from '../config.js';
 import { roomsPerFloor, floorCount, floorInfo } from '../core/progression.js';
+import { WEAPON_TYPES } from '../entities/pickups.js';
 
-const PICKUP_TYPES = [
-  'HEAL',
-  'DAMAGE_UP',
-  'FIRE_RATE_UP',
-  'SPEED_UP',
-  'SHOTGUN',
-  'MACHINEGUN',
-  'ROCKET',
-];
+const PICKUP_TYPES = ['HEAL', 'DAMAGE_UP', 'FIRE_RATE_UP', 'SPEED_UP', ...WEAPON_TYPES];
 
 export function initDebugMenu(game) {
   const gui = new GUI({ title: '🛠 Debug (the project owner)' });
@@ -27,7 +20,9 @@ export function initDebugMenu(game) {
     godMode: false,
     floor: 0,
     room: 0,
-    weapon: game.player.weapon,
+    // the menu can open on the start screen (?debug=1) before a run exists, so
+    // fall back to 'pistol' until startRun() creates the players.
+    weapon: game.player?.weapon ?? 'pistol',
     pickup: 'HEAL',
     fps: 0,
   };
@@ -35,7 +30,7 @@ export function initDebugMenu(game) {
   // ---- World ----
   const world = gui.addFolder('World');
   world.add(state, 'floor', 0, floorCount() - 1, 1).name('Floor');
-  world.add(state, 'room', 0, roomsPerFloor() - 1, 1).name('Room (5 = boss)');
+  world.add(state, 'room', 0, roomsPerFloor() - 1, 1).name('Room (last = boss)');
   world
     .add(
       {

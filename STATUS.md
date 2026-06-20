@@ -28,13 +28,16 @@ This file is the lifecycle source-of-truth for the repo. The detailed running hi
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Expansion 6 Stage 1** — data-driven bosses (behavior modules, ADR-0014), 5 new guns with
+  pierce/homing/bounce/charge/orbital behaviors, and 9-room floors (ADR-0015). First of a
+  staged expansion adding the human/mushroom/duo/skeleton bosses + animated CC0 models.
 - **Expansion 5 Stage 1** — weapon slots + global stat caps (ADR-0012).
 - **Seeded runs + determinism** — optional replayable seed on `startRun`, plus a cross-system
   determinism test over the pure RNG seams (ADR-0013).
 - **Cross-repo hardening** — secret/PII pre-commit + CI scanner (public-repo BLOCK policy),
   ESLint 10, pinned actions.
 
-13 ADRs (0001–0013). Verification: probability/proof tests, coverage gate, production smoke +
+15 ADRs (0001–0015). Verification: probability/proof tests, coverage gate, production smoke +
 browser smoke, OpenSSF scorecard, dependency review, control audit.
 
 ## Scope (unchanged)
