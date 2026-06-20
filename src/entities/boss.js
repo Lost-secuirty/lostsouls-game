@@ -45,7 +45,9 @@ export class Boss {
 
     const built = this.behavior.buildMesh(this, palette);
     this.mesh = built.mesh;
-    this.legs = built.legs || [];
+    this.legs = built.legs || []; // spider leg joints (procedural animate)
+    this.cap = built.cap || null; // mushroom procedural cap (pulsed in animate)
+    this.anim = built.anim || null; // animated GLB model (plays its own clip)
     this.mesh.position.set(x, 0, z);
     scene.add(this.mesh);
     audio.play(this.behavior.roar || 'bossRoar');
@@ -94,6 +96,7 @@ export class Boss {
     }
 
     this.behavior.animate?.(this, rage);
+    this.anim?.update(dt); // advance the GLB animation clip, if any
 
     // settle the hit-pop / telegraph scale back toward 1 (charge => puff up)
     const target = this.charge > 0 ? 1.25 : 1;

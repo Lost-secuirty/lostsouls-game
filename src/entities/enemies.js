@@ -9,22 +9,45 @@
 
 import * as THREE from 'three';
 import { ENEMY, BULLET, PALETTE, PARTICLES } from '../config.js';
-import { getModel } from '../core/assets.js';
+import { getModel, getAnimated } from '../core/assets.js';
+import { AnimModel } from '../core/animModel.js';
 import { buildSpiderMesh } from './spiderMesh.js';
+import { buildMushroomMesh } from './mushroomMesh.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { normalize, dist, circleVsCircle } from '../core/math2d.js';
 import * as audio from '../systems/audio.js';
 
+// Returns { group, anim } — `anim` is an AnimModel for GLB-backed minions
+// (whose mixer the Enemy advances each frame), else null.
 function makeEnemyMesh(type, theme) {
+  // themed mini-mushrooms on the fungal floor (minions match their boss)
+  if (theme && theme.boss === 'mushroom') {
+    const m = getAnimated('sporeling');
+    if (m) {
+      const anim = new AnimModel(m.scene, m.clips).fitTo(ENEMY[type].radius * 2.2);
+      anim.play('Walk');
+      const wrap = new THREE.Group(); // base-1 wrapper (hit-pop / spawn scaling)
+      wrap.add(anim.group);
+      return { group: wrap, anim };
+    }
+    const g = buildMushroomMesh(ENEMY[type].radius * 1.3, theme.palette || {}, {
+      simple: true,
+    }).group;
+    return { group: g, anim: null };
+  }
+
   const group = new THREE.Group();
   const model = getModel(type);
   if (model) {
     group.add(model);
-    return group;
+    return { group, anim: null };
   }
   // themed mini-spiders on spider floors (small, simplified for many on screen)
   if (theme && theme.boss === 'spider') {
-    return buildSpiderMesh(ENEMY[type].radius * 1.4, theme.palette || {}, { simple: true }).group;
+    const g = buildSpiderMesh(ENEMY[type].radius * 1.4, theme.palette || {}, {
+      simple: true,
+    }).group;
+    return { group: g, anim: null };
   }
   const cfg = ENEMY[type];
   const color = type === 'chaser' ? PALETTE.enemyChaser : PALETTE.enemyShooter;
@@ -53,7 +76,7 @@ function makeEnemyMesh(type, theme) {
     eye.position.set(sx * cfg.radius * 0.35, cfg.radius + 0.4, cfg.radius * 0.7);
     group.add(eye);
   }
-  return group;
+  return { group, anim: null };
 }
 
 export class Enemy {
@@ -70,7 +93,10 @@ export class Enemy {
     this.fireTimer = this.cfg.fireInterval ? this.cfg.fireInterval * Math.random() : 0;
     this.phase = Math.random() * Math.PI * 2;
     this.isSpider = !!(theme && theme.boss === 'spider');
-    this.mesh = makeEnemyMesh(type, theme);
+    this.isMushroom = !!(theme && theme.boss === 'mushroom');
+    const built = makeEnemyMesh(type, theme);
+    this.mesh = built.group;
+    this.anim = built.anim; // AnimModel for GLB minions, else null
     this.mesh.position.set(x, 0, z);
     scene.add(this.mesh);
   }
@@ -120,8 +146,10 @@ export class Enemy {
     if (s !== 1) this.mesh.scale.setScalar(s + (1 - s) * Math.min(1, dt * 12));
 
     // spiders face the player; blobs do a slow menacing spin
-    if (this.isSpider) this.mesh.rotation.y = Math.atan2(p.x - this.x, p.z - this.z);
+    if (this.isSpider || this.isMushroom)
+      this.mesh.rotation.y = Math.atan2(p.x - this.x, p.z - this.z);
     else this.mesh.rotation.y += dt * 1.5;
+    this.anim?.update(dt); // advance the GLB animation clip, if any
     this.mesh.position.set(this.x, 0, this.z);
   }
 
@@ -149,6 +177,7 @@ export class Enemy {
     game.juice.shake(game.JUICE.shakeOnKill);
     game.juice.hitStop(game.JUICE.hitStopOnKill);
     audio.play('kill');
+    if (this.onDeath) this.onDeath(this, game); // e.g. puffball -> poison pool
     this.scene.remove(this.mesh);
   }
 }
