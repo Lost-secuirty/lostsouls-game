@@ -24,7 +24,8 @@
     ".github/workflows/controls.yml",
     ".github/workflows/scan.yml",
     ".github/dependabot.yml",
-    "STATUS.md"
+    "STATUS.md",
+    "docs/BACKLOG.md"
   ],
   "required_workflows": [
     "repository-controls",
