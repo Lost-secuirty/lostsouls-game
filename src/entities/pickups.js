@@ -29,7 +29,18 @@ function shapeFor(type, weapon) {
   }
 }
 
-const WEAPON_TYPES = ['SHOTGUN', 'MACHINEGUN', 'ROCKET'];
+// every weapon pickup type (also the boss-reward pool). Exported so tests +
+// the debug menu stay in lockstep instead of hand-copying the list.
+export const WEAPON_TYPES = [
+  'SHOTGUN',
+  'MACHINEGUN',
+  'ROCKET',
+  'HOMING',
+  'RAILGUN',
+  'BOUNCER',
+  'CHARGE',
+  'ORBITAL',
+];
 
 const LOOK = {
   HEAL: { color: 0xff3b6b, label: '+2 HEARTS', weapon: false },
@@ -39,6 +50,11 @@ const LOOK = {
   SHOTGUN: { color: 0xff5a2a, label: 'SHOTGUN!', weapon: true },
   MACHINEGUN: { color: 0xc0c0ff, label: 'MACHINE GUN!', weapon: true },
   ROCKET: { color: 0xff2a2a, label: 'ROCKET LAUNCHER!', weapon: true },
+  HOMING: { color: 0xff8800, label: 'HOMING MISSILES!', weapon: true },
+  RAILGUN: { color: 0x66e0ff, label: 'RAILGUN!', weapon: true },
+  BOUNCER: { color: 0x9b7bff, label: 'BOUNCER!', weapon: true },
+  CHARGE: { color: 0xffd23a, label: 'CHARGE CANNON!', weapon: true },
+  ORBITAL: { color: 0x66ffd0, label: 'ORBITAL BLADE!', weapon: true },
 };
 
 /** weighted random pickup type. bossReward => always a weapon. */

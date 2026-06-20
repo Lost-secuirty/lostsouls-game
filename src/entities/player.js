@@ -9,9 +9,17 @@ import * as THREE from 'three';
 import { PLAYER, WEAPONS, PALETTE, CAPS } from '../config.js';
 import { makeCharacter } from './characterMesh.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
-import { spreadDirs } from '../core/math2d.js';
+import { spreadDirs, circleVsCircle } from '../core/math2d.js';
 import * as audio from '../systems/audio.js';
 import { hud } from '../ui/hud.js';
+
+// which procedural sound a weapon's normal shot plays (default: 'shoot')
+const SHOOT_SFX = {
+  shotgun: 'shotgun',
+  rocket: 'rocketLaunch',
+  homing: 'rocketLaunch',
+  railgun: 'railgun',
+};
 
 export class Player {
   constructor(scene, { color = PALETTE.player, modelKey = 'player', device = 'both' } = {}) {
@@ -60,6 +68,8 @@ export class Player {
     this.weapon = this.slots[this.slotIndex];
     this.weaponDef = WEAPONS[this.weapon] || WEAPONS.pistol;
     this.weaponName = this.weaponDef.name;
+    this._charge = 0; // drop any in-progress charge when the weapon changes
+    if (!this.weaponDef.orbital) this._hideOrbital(); // stash orbital blades
   }
 
   /** capacity for carried weapons (bumped by the game as bosses fall) */
@@ -123,15 +133,20 @@ export class Player {
     const aim = input.aim(this.device, camera, this.x, this.z);
     this.mesh.rotation.y = Math.atan2(aim.x, aim.z);
 
-    this.fireTimer -= dt;
-    if (input.shoot(this.device) && this.fireTimer <= 0 && (aim.x !== 0 || aim.z !== 0)) {
-      this._fireWeapon(game, aim);
-      this.fireTimer = this.weaponDef.cooldown * this.fireRateMul;
-      game.juice.shake(game.JUICE.shakeOnShoot);
-      audio.play(
-        this.weapon === 'shotgun' ? 'shotgun' : this.weapon === 'rocket' ? 'rocketLaunch' : 'shoot',
-      );
-      if (this.device !== 'kb' && this.weaponDef.cooldown >= 0.15) input.rumble(0.12, 0.08, 50);
+    if (this.weaponDef.orbital) {
+      this._updateOrbital(dt, game);
+    } else if (this.weaponDef.charge) {
+      this.fireTimer -= dt;
+      this._updateCharge(dt, game, aim);
+    } else {
+      this.fireTimer -= dt;
+      if (input.shoot(this.device) && this.fireTimer <= 0 && (aim.x !== 0 || aim.z !== 0)) {
+        this._fireWeapon(game, aim);
+        this.fireTimer = this.weaponDef.cooldown * this.fireRateMul;
+        game.juice.shake(game.JUICE.shakeOnShoot);
+        audio.play(SHOOT_SFX[this.weapon] || 'shoot');
+        if (this.device !== 'kb' && this.weaponDef.cooldown >= 0.15) input.rumble(0.12, 0.08, 50);
+      }
     }
 
     // --- i-frames + hit flash ---
@@ -166,8 +181,88 @@ export class Player {
         speed: w.bulletSpeed,
         explosive: w.explosive,
         explodeRadius: w.explodeRadius,
+        pierce: w.pierce,
+        homing: w.homing,
+        turnRate: w.turnRate,
+        bounces: w.bounces,
+        life: w.life,
+        scale: w.scale,
+        color: w.color,
       });
     }
+  }
+
+  // --- Orbital Blade: blades circle the player and hit on contact (no aiming) ---
+  _updateOrbital(dt, game) {
+    const def = this.weaponDef;
+    if (!this._orbital) this._orbital = { blades: [], angle: 0, cd: new Map() };
+    const orb = this._orbital;
+    while (orb.blades.length < def.count) {
+      const m = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.4, 0),
+        new THREE.MeshBasicMaterial({ color: def.color ?? 0x66ffd0 }),
+      );
+      game.scene.add(m);
+      orb.blades.push(m);
+    }
+    orb.angle += def.spin * dt;
+    for (let i = 0; i < def.count; i++) {
+      const a = orb.angle + (i / def.count) * Math.PI * 2;
+      const bx = this.x + Math.sin(a) * def.radius;
+      const bz = this.z + Math.cos(a) * def.radius;
+      const m = orb.blades[i];
+      m.position.set(bx, 1, bz);
+      m.rotation.y += dt * 6;
+      m.visible = true;
+      for (const e of game.enemies) {
+        if (e.dead || (orb.cd.get(e) || 0) > 0) continue;
+        if (circleVsCircle(bx, bz, 0.5, e.x, e.z, e.radius)) {
+          e.hurt(def.damage * this.damageMul, game);
+          orb.cd.set(e, def.hitCooldown);
+        }
+      }
+    }
+    for (const [e, t] of orb.cd) {
+      const nt = t - dt;
+      if (nt <= 0) orb.cd.delete(e);
+      else orb.cd.set(e, nt);
+    }
+  }
+
+  _hideOrbital() {
+    if (this._orbital) for (const m of this._orbital.blades) m.visible = false;
+  }
+
+  // --- Charge Cannon: hold to charge, release a bigger/stronger cannonball ---
+  _updateCharge(dt, game, aim) {
+    const aiming = aim.x !== 0 || aim.z !== 0;
+    if (this.fireTimer > 0) return; // respect the weapon cooldown between charge shots
+    if (game.input.shoot(this.device) && aiming) {
+      this._charge = Math.min(this.weaponDef.charge.maxTime, (this._charge || 0) + dt);
+      // auto-fire at full charge so a kid who just holds it still shoots
+      if (this._charge >= this.weaponDef.charge.maxTime) this._releaseCharge(game, aim);
+    } else if (this._charge > 0) {
+      this._releaseCharge(game, aim);
+    }
+  }
+
+  _releaseCharge(game, aim) {
+    const c = this.weaponDef.charge;
+    const f = Math.min(1, (this._charge || 0) / c.maxTime);
+    this._charge = 0;
+    if (aim.x === 0 && aim.z === 0) return;
+    const lerp = (a, b) => a + (b - a) * f;
+    game.bullets.spawnPlayer(this.x, this.z, aim.x, aim.z, {
+      damage: lerp(c.minDamage, c.maxDamage) * this.damageMul,
+      speed: lerp(c.minSpeed, c.maxSpeed),
+      pierce: Math.round(lerp(0, c.pierce)),
+      scale: lerp(1, c.maxScale),
+      color: c.color,
+    });
+    this.fireTimer = this.weaponDef.cooldown * this.fireRateMul; // cap charge cadence
+    game.juice.shake(game.JUICE.shakeOnShoot + 0.2 * f);
+    audio.play(f > 0.6 ? 'chargeShot' : 'shoot');
+    if (this.device !== 'kb') game.input.rumble(0.2 + 0.4 * f, 0.1, 60 + f * 80);
   }
 
   hurt(dmg, game) {

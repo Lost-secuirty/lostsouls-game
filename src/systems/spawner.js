@@ -41,7 +41,9 @@ export function populateRoom(game, roomIndex) {
 
   // ---- BOSS ROOM ----
   if (info.isBossRoom) {
-    game.addEnemy(new Boss(game.scene, 0, -ARENA.depth / 2 + 4, info.def.diff, info.def.palette));
+    game.addEnemy(
+      new Boss(game.scene, 0, -ARENA.depth / 2 + 4, info.def.boss, info.def.diff, info.def.palette),
+    );
     return;
   }
 

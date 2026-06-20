@@ -18,3 +18,6 @@ below).
 | [0010](0010-debug-menu-and-probability.md)         | Debug menu (lil-gui) + probability verification        | Accepted |
 | [0011](0011-coop-and-start-menu.md)                | 2-player local co-op + start menu                      | Accepted |
 | [0012](0012-weapon-slots-and-caps.md)              | Weapon slots + global stat caps                        | Accepted |
+| [0013](0013-seeded-runs.md)                        | Seeded runs + cross-system determinism                 | Accepted |
+| [0014](0014-data-driven-bosses.md)                 | Data-driven bosses (behavior modules)                  | Accepted |
+| [0015](0015-weapon-behaviors-and-floors.md)        | New bullet behaviors, 5 new guns, 9-room floors        | Accepted |

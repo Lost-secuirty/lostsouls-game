@@ -6,6 +6,12 @@
 #
 # Blocks the commit (exit 1) if staged content looks like a secret or PII.
 # See tools/scan_staged.py and AGENTS.md.
+
+# Run Python in UTF-8 mode so it decodes git's UTF-8 output regardless of the OS
+# locale. Without this, Windows defaults to cp1252 and the scanner crashes on any
+# emoji/unicode in a diff (CI is fine — Linux already defaults to UTF-8).
+export PYTHONUTF8=1
+
 root=$(git rev-parse --show-toplevel)
 if [ "$#" -gt 0 ]; then
   script=$1

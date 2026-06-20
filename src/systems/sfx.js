@@ -137,6 +137,16 @@ const SOUNDS = {
     tone({ freq: 80, type: 'sine', dur: 0.12, vol: 0.3 });
     tone({ freq: 70, type: 'sine', dur: 0.14, vol: 0.28, delay: 0.16 });
   },
+  // expansion 6: new guns
+  railgun: () => {
+    tone({ freq: 1200, slideTo: 300, type: 'sawtooth', dur: 0.12, vol: 0.16 });
+    noise({ dur: 0.05, vol: 0.08, freq: 3000 });
+  },
+  chargeShot: () => {
+    tone({ freq: 120, slideTo: 900, type: 'sawtooth', dur: 0.18, vol: 0.22 });
+    tone({ freq: 400, type: 'square', dur: 0.12, vol: 0.16, delay: 0.16 });
+  },
+  bounce: () => tone({ freq: 900, slideTo: 1400, type: 'square', dur: 0.04, vol: 0.07 }),
 };
 
 export function play(name) {

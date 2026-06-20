@@ -39,6 +39,20 @@ export function spreadDirs(aimX, aimZ, pellets, spreadDeg) {
   return out;
 }
 
+/**
+ * Smallest signed turn from angle `cur` toward `des`, capped at ±maxStep (radians).
+ * Used by homing bullets so they curve (capped turn rate = a perpendicular juke
+ * still loses them — fair for a young dodger). PURE.
+ */
+export function turnAngle(cur, des, maxStep) {
+  let diff = des - cur;
+  while (diff > Math.PI) diff -= 2 * Math.PI;
+  while (diff < -Math.PI) diff += 2 * Math.PI;
+  if (diff > maxStep) diff = maxStep;
+  else if (diff < -maxStep) diff = -maxStep;
+  return cur + diff;
+}
+
 /** return a unit-length {x, z} pointing the same way (zero stays zero) */
 export function normalize(x, z) {
   const l = Math.hypot(x, z);

@@ -152,3 +152,33 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
 - The scanner family diverges deliberately across repos: public repos BLOCK
   PII, private-tier repos WARN only — read the module docstring before
   "fixing" the difference.
+
+## 2026-06-20 — Expansion 6 Stage 1 (data-driven bosses + 5 guns + 9-room floors)
+
+- **Boss refactor (ADR-0014):** `boss.js` is now a generic, type-driven shell;
+  per-boss logic lives in `entities/bosses/<type>.js` (spider extracted verbatim,
+  plays identically). Add a boss = add `config.BOSS[type]` + a behavior module +
+  register in `bosses/index.js`. `spawner.js` passes `info.def.boss`. The duo
+  (two bosses) still needs `game.boss → game.bosses[]` — deferred to Stage 3.
+- **New bullet flags (ADR-0015):** `pierce` (with a per-bullet hit-set so it never
+  double-hits one enemy), `homing` + `turnRate` (steer via the new pure
+  `turnAngle()` — capped turn = a perpendicular juke escapes it), `bounces`
+  (axis-separated wall reflection), plus per-bullet `life`/`scale`/`color`. All in
+  the one pooled `update()`. Color needs a tiny material cache (shared mats can't
+  carry per-bullet color).
+- **Charge + Orbital are player-side, not fire-on-cooldown.** Charge tracks hold
+  time and auto-fires at full charge (kid can just hold). Orbital keeps contact
+  blades with a per-enemy hit cooldown. KNOWN: orbital blade meshes are world-space
+  scene children and aren't torn down on restart — minor leak, flagged for Stage 6.
+- **Tests had to change with the design:** floors went `5+1 → 9+1`
+  (`roomsPerFloor`), so the progression unit/proof tests and the determinism
+  transcript were updated to `9+1`. The drop-table now has 12 categories (df=11) —
+  bumped the χ² bound to 24.725 and N to 40000 for a stable seeded check. Exported
+  `WEAPON_TYPES` from `pickups.js` so the boss-reward test + debug menu stop
+  hand-copying the weapon list.
+- **Pre-existing bug fixed:** opening `?debug=1` at boot crashed `initDebugMenu`
+  (`game.player.weapon` read before `startRun` creates players). Guarded with
+  `game.player?.weapon ?? 'pistol'`. Found via a Playwright drive of `window.__game`.
+- **Verified:** lint/format clean; 54 unit tests; coverage 43/37/51/44 (> floor);
+  build + prod smoke; a Playwright drive fired all 5 guns, ticked bullets, spawned
+  the refactored spider, and confirmed zero console errors.
