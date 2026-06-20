@@ -4,6 +4,9 @@ Lostsouls is a browser-based 3D bullet-hell shooter built with Three.js, Vite,
 and Express. It supports solo play with an AI ally and local two-player co-op
 with keyboard, mouse, and gamepad controls.
 
+> **Status: growing, not frozen.** See [`STATUS.md`](STATUS.md) for the current
+> lifecycle and [`docs/BACKLOG.md`](docs/BACKLOG.md) for parked ideas.
+
 ## Features
 
 - Top-down twin-stick combat with procedural audio and custom collision logic.
