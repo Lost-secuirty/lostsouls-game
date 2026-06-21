@@ -4,6 +4,10 @@ coverage/
 artifacts/
 *.log
 
+# drift auditor: transient report + local PR-body input (history ndjson IS committed)
+audit-report.md
+.audit/
+
 # verification screenshots
 shot-*.png
 

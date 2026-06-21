@@ -589,3 +589,20 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
 - **Drive gotcha:** Howler `html5:true` streams via ranged `<audio>` requests; a crossfade/stop
   aborts the in-flight stream → Playwright `requestfailed` fires with `net::ERR_ABORTED`. That's
   benign, NOT a 404 — confirm with the served status (HEAD = 200) + that the track didn't fall back.
+
+## 2026-06-21 — Drift-audit bot port + a Windows execSync gotcha
+
+- Ported the deterministic drift auditor from `Lost-secuirty/Codex-Speed-Test` (`scripts/audit-drift.mjs`
+  - `audit-lib.mjs`, `.github/workflows/audit.yml`, `docs/DRIFT-AUDIT.md`). Compares logged intent vs
+    the diff; `--fix` is prettier-only (never edits logic to pass). CI-only `--run-checks` skipped —
+    `ci.yml` already gates lint/build (no doing it twice).
+- **Windows `execSync` gotcha:** Node's `execSync(cmd-string)` uses **cmd.exe** on Windows even when
+  you launched node from git-bash. cmd.exe treats `^` as an escape and `%` as a var, so
+  `git rev-parse ...^{commit}` and `git log --format=%s%x00%b` get mangled → the script's ref-check
+  failed locally (it works in CI/ubuntu/bash). Fix: run git via **`execFileSync('git', [args])`** (array
+  args, no shell) — robust on cmd.exe AND bash, and removes the shell-injection surface. Keep `execSync`
+  only for the few non-git commands that need a redirect (no `%`/`^` in those).
+- **Safety guard caught agent self-config:** committing a new `.claude/agents/auditor.md` (a sub-agent
+  with unrestricted Bash) + `.claude/commands/audit.md` was blocked as agent self-modification beyond
+  the user's approval. Correct call — shipped the CI bot (the part that audits every PR) and deferred
+  the local `.claude/` semantic layer pending explicit sign-off.

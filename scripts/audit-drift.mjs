@@ -20,7 +20,7 @@
 // unresolvable ref (exit 2). Pure logic lives in scripts/audit-lib.mjs (unit-tested).
 // =====================================================================
 
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { checkDeviationSection, hasHead, historyLine, learningsDistillDue } from './audit-lib.mjs';
 
@@ -39,6 +39,18 @@ function val(flag) {
   const i = argv.indexOf(flag);
   return i !== -1 && argv[i + 1] ? argv[i + 1] : null;
 }
+// git via execFileSync (array args, NO shell) so refs with `^` and formats with `%`
+// aren't mangled by cmd.exe on Windows (CI is bash, but local dev here is Windows) — and
+// no string-interpolation-into-a-shell injection surface. Returns '' on error.
+function git(args) {
+  try {
+    return execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  } catch {
+    return '';
+  }
+}
+// shell helper, for the few non-git commands that use redirects (no `%`/`^` in those,
+// so they're cmd.exe-safe too). Returns '' on error.
 function sh(cmd) {
   try {
     return execSync(cmd, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
@@ -56,7 +68,7 @@ const add = (id, severity, confidence, title, detail, evidence = []) =>
 // would yield an empty diff and a vacuous "no drift detected ✅" — the textbook
 // silent failure.
 function ensureRef(ref) {
-  if (!sh(`git rev-parse --verify --quiet ${ref}^{commit}`).trim()) {
+  if (!git(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]).trim()) {
     console.error(
       `audit: cannot resolve ref '${ref}' — refusing to report on an empty range. Fetch it (git fetch origin main) or pass a valid --base/--head.`,
     );
@@ -65,10 +77,10 @@ function ensureRef(ref) {
 }
 ensureRef(opt.base);
 ensureRef(opt.head);
-const mergeBase = sh(`git merge-base ${opt.base} ${opt.head}`).trim() || opt.base;
+const mergeBase = git(['merge-base', opt.base, opt.head]).trim() || opt.base;
 const range = `${mergeBase}..${opt.head}`;
 
-const nameStatus = sh(`git diff --name-status ${range}`)
+const nameStatus = git(['diff', '--name-status', range])
   .trim()
   .split('\n')
   .filter(Boolean)
@@ -78,7 +90,7 @@ const nameStatus = sh(`git diff --name-status ${range}`)
   });
 const changedPaths = nameStatus.map((f) => f.path);
 
-const commitText = sh(`git log --format=%s%x00%b ${range}`).toLowerCase();
+const commitText = git(['log', '--format=%s%x00%b', range]).toLowerCase();
 const prBodySource = opt.prBodyFile || '.audit/pr-body.md';
 const prBody = (process.env.GITHUB_PR_BODY || readIf(prBodySource) || '').toLowerCase();
 // the deviation check only runs when a body was actually provided — in Actions
@@ -92,7 +104,7 @@ function readIf(p) {
 }
 
 // ---- parse ADDED lines (unified=0, lockfile excluded) -------------------
-const rawDiff = sh(`git diff --unified=0 ${range} -- . ":(exclude)package-lock.json"`);
+const rawDiff = git(['diff', '--unified=0', range, '--', '.', ':(exclude)package-lock.json']);
 const added = [];
 {
   let file = null;
@@ -204,7 +216,7 @@ scan(
 );
 
 // net src growth without accompanying tests (the pure-logic core should stay tested).
-const numstat = sh(`git diff --numstat ${range} -- src`)
+const numstat = git(['diff', '--numstat', range, '--', 'src'])
   .trim()
   .split('\n')
   .filter(Boolean)
@@ -341,7 +353,7 @@ let fixNote = '';
 let autofixDirty = false; // computed BEFORE the history append dirties the tree
 if (opt.fix) {
   sh('npx prettier --write . > /dev/null 2>&1');
-  const dirty = sh('git status --porcelain').trim();
+  const dirty = git(['status', '--porcelain']).trim();
   autofixDirty = Boolean(dirty);
   fixNote = dirty
     ? `\n## Auto-fixes applied\nSafe formatting fixes (prettier --write) were applied:\n\n\`\`\`\n${dirty}\n\`\`\`\n`
@@ -350,7 +362,7 @@ if (opt.fix) {
 
 // ---- optional: longitudinal history (CI only) -----------------------------
 if (opt.history) {
-  const headSha = sh(`git rev-parse ${opt.head}`).trim();
+  const headSha = git(['rev-parse', opt.head]).trim();
   if (headSha && !hasHead(readIf(opt.history), headSha)) {
     appendFileSync(
       opt.history,
