@@ -15,6 +15,23 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-21 — Phase 3: dependency audit + bump (v0.6.10, PR #38)
+
+Honest audit pass — **`npm audit` = 0 vulnerabilities**, and the **runtime stack is already on the
+latest** (three r184, vite 8, express 5, howler 2.2.4, lil-gui). Only **dev tooling** had newer
+releases (all minor/patch, same major); bumped to latest:
+
+- `eslint` 10.4.1 → **10.5.0**, `eslint-plugin-security` 4.0.0 → **4.0.1**
+- `vitest` + `@vitest/coverage-v8` 4.1.8 → **4.1.9**
+- `playwright` 1.60.0 → **1.61.0** (re-ran `npx playwright install chromium` to match the bundled
+  browser — Chrome Headless Shell 149).
+
+No runtime code changed. Full gauntlet + both smokes green on the new tooling (lint · format · test
+115 · coverage · build · prod smoke · browser smoke). npm rewrote the lockfile; package.json `^`
+floors moved up to the new versions.
+
+- **Status:** built + verified locally; PR open, awaiting CodeRabbit + checks.
+
 ## 2026-06-21 — Phase 2: decision docs (v0.6.9, PR #37)
 
 Added three "single home for decisions" docs, mirroring the structure of the existing

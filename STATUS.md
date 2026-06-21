@@ -24,11 +24,15 @@ session) lives in [`docs/WORKLOG.md`](docs/WORKLOG.md); the detailed running his
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.6.9)
+## Current state (v0.6.10)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Dependency audit + bump (v0.6.10)** — honest maintenance pass: `npm audit` clean (0 vulns), the
+  runtime stack already on latest (three r184, vite 8, express 5, howler), only dev tooling bumped
+  (eslint 10.5.0, vitest/coverage 4.1.9, playwright 1.61.0). Full gauntlet + smokes green on the new
+  tooling. No runtime code changed.
 - **Decision docs (v0.6.9)** — added three "single home for decisions" docs alongside the existing
   [`AUDIO.md`](docs/AUDIO.md)/[`STORY.md`](docs/STORY.md): [`docs/GAMEPLAY.md`](docs/GAMEPLAY.md)
   (design & balance), [`docs/GRAPHICS.md`](docs/GRAPHICS.md) (visual/render decisions + the current
