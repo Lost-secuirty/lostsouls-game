@@ -8,7 +8,8 @@
 //   ...
 // =====================================================================
 
-import { PROGRESSION, CAPS } from '../config.js';
+import { PROGRESSION, CAPS, DIFFICULTY } from '../config.js';
+import { floorScale } from './scaling.js';
 
 /**
  * How many weapon slots are unlocked after beating `bossesBeaten` bosses. PURE.
@@ -43,7 +44,7 @@ export function floorDef(floorIndex) {
 /**
  * Describe a global room index.
  * @param {number} roomIndex 0-based global room number
- * @returns {{floorIndex:number, roomInFloor:number, isBossRoom:boolean, isLastRoom:boolean, def:object}}
+ * @returns {{floorIndex:number, roomInFloor:number, isBossRoom:boolean, isLastRoom:boolean, diff:number, def:object}}
  */
 export function floorInfo(roomIndex) {
   const per = roomsPerFloor();
@@ -52,7 +53,11 @@ export function floorInfo(roomIndex) {
   const isBossRoom = roomInFloor === PROGRESSION.roomsPerFloor;
   const isLastFloor = floorIndex >= floorCount() - 1;
   const isLastRoom = isLastFloor && isBossRoom;
-  return { floorIndex, roomInFloor, isBossRoom, isLastRoom, def: floorDef(floorIndex) };
+  const def = floorDef(floorIndex);
+  // difficulty is the DIFFICULTY curve (one knob for the whole run), times an
+  // optional per-floor `diffMul` spike. Drives boss HP / ring density / enemy count.
+  const diff = floorScale(floorIndex, DIFFICULTY) * (def.diffMul ?? 1);
+  return { floorIndex, roomInFloor, isBossRoom, isLastRoom, diff, def };
 }
 
 /** true if the room AFTER this one is a boss room (for the "BOSS AHEAD" warning) */

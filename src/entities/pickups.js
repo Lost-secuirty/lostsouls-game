@@ -120,12 +120,8 @@ export class Pickup {
       player.addWeapon(this.type.toLowerCase());
       audio.play('weapon');
     } else {
-      const mag = {
-        HEAL: PICKUPS.healAmount,
-        DAMAGE_UP: PICKUPS.damageUpAmount,
-        FIRE_RATE_UP: PICKUPS.fireRateMul,
-        SPEED_UP: PICKUPS.speedUpAmount,
-      }[this.type];
+      // only HEAL needs a magnitude now; the stat UPs add a stack (see player.js)
+      const mag = this.type === 'HEAL' ? PICKUPS.healAmount : 0;
       player.applyEffect(this.type, mag, game);
       audio.play('pickup');
     }

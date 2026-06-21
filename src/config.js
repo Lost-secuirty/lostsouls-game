@@ -132,9 +132,10 @@ export const PROGRESSION = {
   // AND that floor's monsters (so the monsters "reflect" their boss).
   floors: [
     {
+      // diff is now computed from the DIFFICULTY curve (scaling.floorScale) by
+      // floorInfo() — set an optional `diffMul` here for a per-floor spike.
       name: 'The Outskirts',
       boss: 'spider',
-      diff: 1,
       palette: {
         body: 0x2a0606,
         emissive: 0x6a0d0d,
@@ -150,7 +151,6 @@ export const PROGRESSION = {
       // fight him for it (systems/humanDecision.js + bosses/human.js).
       name: 'The Barricade',
       boss: 'human',
-      diff: 1.3,
       palette: {
         body: 0x6a7280, // grey jacket
         emissive: 0x3a4250, // cold blue
@@ -165,7 +165,6 @@ export const PROGRESSION = {
       // stage once those bosses exist; for now the mushroom caps off the run.)
       name: 'The Fungal Depths',
       boss: 'mushroom',
-      diff: 1.6,
       palette: {
         body: 0xb83a2a, // cap red
         emissive: 0xff6a4a, // cap glow
@@ -182,7 +181,6 @@ export const PROGRESSION = {
       name: 'The Kennels',
       boss: 'duo',
       duo: ['dog', 'cat'], // Fang (pounce) + Whisker (zoner)
-      diff: 1.9,
       palette: {
         // shared kennel ambiance; minions pick warm (pups) / cool (kittens) by kind
         body: 0x6a5230,
@@ -198,7 +196,6 @@ export const PROGRESSION = {
       // for now the skeleton caps off the run.)
       name: 'The Catacombs',
       boss: 'skeleton',
-      diff: 2.15,
       palette: {
         body: 0xe8e2d0, // bone white
         emissive: 0x8a8a6a, // dim bone glow
@@ -210,15 +207,40 @@ export const PROGRESSION = {
   ],
 };
 
-// ---- lives + checkpoints ----
-// ---- lives + global stat caps (so upgrades can't run away) ----
+// ---- lives + global stat caps (SAFETY BACKSTOPS, not the main shaper) ----
+// The real upgrade ramp is the diminishing-returns curve in UPGRADES below; these
+// caps just stop a mis-tuned curve from ever running away. Set at/above the curve
+// asymptotes so the curve is what you feel.
 export const CAPS = {
   lives: { start: 3, max: 5 }, // start with 3, can grow to 5
-  damageMul: 1.5, // max +50% damage (reached in ~3 stacks)
-  fireRateMin: 0.5, // cooldown floor = max +50% faster
-  speedMul: 1.5, // max +50% move speed
+  damageMul: 2.0, // hard ceiling on the damage multiplier (curve asymptote = +100%)
+  fireRateMin: 0.4, // cooldown floor (curve asymptote = -60% cooldown)
+  speedMul: 1.6, // hard ceiling on move speed (curve asymptote = +60%)
   maxWeaponSlots: 3, // carry up to 3 weapons
   slotUnlockBosses: [2, 10, 20], // a slot unlocks after these boss counts
+};
+
+// ---- upgrade curves (diminishing returns — see core/scaling.js statBonus) ----
+// Each pickup adds ONE stack; the stat grows big early then tapers toward maxBonus,
+// so power ramps across a whole run instead of capping in ~3 pickups. Tune per stat:
+//   maxBonus = the eventual ceiling, half = how many stacks reach HALF of it
+//   (higher half = slower, longer ramp). The pistol-stays-weak / shotgun-fine
+//   balance is in WEAPONS; this is the player's stat growth.
+export const UPGRADES = {
+  damage: { maxBonus: 1.0, half: 5 }, // damageMul = 1 + bonus  → up to ×2 damage
+  fireRate: { maxBonus: 0.6, half: 6 }, // fireRateMul = 1 - bonus → cooldown down to ×0.4
+  speed: { maxBonus: 0.6, half: 6 }, // speed = base × (1 + bonus) → up to +60%
+};
+
+// ---- difficulty curve (one knob for the whole run — see scaling.js floorScale) ----
+// diff(floorIndex) = base × (1 + growth)^floorIndex, applied to the SAFE knobs only
+// (boss HP, ring density, enemy counts — never bullet speed). Higher growth = a
+// steeper, more challenging ramp. Defaults aim above the old kid-fair tuning:
+//   floors ≈ 1.00, 1.26, 1.59, 2.00, 2.52 (vs the old 1.0, 1.3, 1.6, 1.9, 2.15).
+// A floor may also set an optional `diffMul` for a per-floor spike (default ×1).
+export const DIFFICULTY = {
+  base: 1.0, // floor 0 (the tutorial floor)
+  growth: 0.26, // per-floor ramp (~+26%/floor)
 };
 
 // ---- the spider boss ----
@@ -475,7 +497,7 @@ export const WEAPONS = {
   },
   machinegun: {
     name: 'Machine Gun',
-    cooldown: 0.07,
+    cooldown: 0.09, // was 0.07 — still the fastest hose, just less runaway (Exp7 Stage 2)
     damage: 1,
     pellets: 1,
     spreadDeg: 8,
@@ -483,7 +505,7 @@ export const WEAPONS = {
   },
   rocket: {
     name: 'Rocket',
-    cooldown: 0.8,
+    cooldown: 1.0, // was 0.8 — the big AoE nuke should be a slower, deliberate shot
     damage: 4,
     pellets: 1,
     spreadDeg: 0,
@@ -500,7 +522,7 @@ export const WEAPONS = {
   homing: {
     name: 'Homing Missiles',
     cooldown: 0.55,
-    damage: 3,
+    damage: 2, // was 3 — it already homes + explodes; 2 (×damageMul) is plenty (Exp7 Stage 2)
     pellets: 1,
     spreadDeg: 0,
     bulletSpeed: 18, // slow so the curve is visible/dramatic
@@ -581,11 +603,10 @@ export const PICKUPS = {
     { type: 'CHARGE', weight: 1 },
     { type: 'ORBITAL', weight: 1 },
   ],
-  // step sizes tuned so ~3 stacks reach the caps in CAPS
-  speedUpAmount: 1.8, // units/sec added by SPEED_UP (clamped to CAPS.speedMul)
-  damageUpAmount: 0.2, // +20% damage per pickup (damageMul, clamped to CAPS.damageMul)
-  fireRateMul: 0.82, // multiplies cooldown (lower = faster; clamped to CAPS.fireRateMin)
-  healAmount: 2,
+  // DAMAGE_UP / FIRE_RATE_UP / SPEED_UP now add ONE stack each and the stat is
+  // recomputed from the diminishing-returns curve (see UPGRADES + core/scaling.js),
+  // so there are no per-pickup step sizes any more — tune the ramp in UPGRADES.
+  healAmount: 2, // hearts restored by a HEAL pickup
 };
 
 // ---- models: map a key -> a file under /models/ (.glb). ----

@@ -6,7 +6,8 @@
 // =====================================================================
 
 import * as THREE from 'three';
-import { PLAYER, WEAPONS, PALETTE, CAPS } from '../config.js';
+import { PLAYER, WEAPONS, PALETTE, CAPS, UPGRADES } from '../config.js';
+import { statBonus } from '../core/scaling.js';
 import { makeCharacter } from './characterMesh.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { spreadDirs, circleVsCircle } from '../core/math2d.js';
@@ -44,9 +45,11 @@ export class Player {
     this.fireTimer = 0;
     this.invuln = 0;
     this._beatTimer = 0;
-    this.speed = PLAYER.speed; // SPEED_UP raises this (capped)
-    this.damageMul = 1; // DAMAGE_UP raises this (capped CAPS.damageMul)
-    this.fireRateMul = 1; // FIRE_RATE_UP lowers this (floor CAPS.fireRateMin)
+    // upgrade STACKS — each pickup adds one; the derived stats below come from the
+    // diminishing-returns curve (config.UPGRADES + core/scaling.js), so power ramps
+    // over the whole run instead of capping in ~3 pickups.
+    this._up = { damage: 0, fireRate: 0, speed: 0 };
+    this._recomputeUpgrades(); // sets speed / damageMul / fireRateMul from 0 stacks
     this.slots = ['pistol']; // weapons you carry; slotsUnlocked is the capacity
     this.slotIndex = 0;
     this._refreshWeapon();
@@ -302,20 +305,44 @@ export class Player {
     game.refreshHud();
   }
 
-  /** apply a survivor outcome or pickup buff/debuff (all capped) */
+  /**
+   * Recompute the three derived stats from the upgrade STACK counts via the
+   * diminishing-returns curve (config.UPGRADES). CAPS are a safety backstop only.
+   */
+  _recomputeUpgrades() {
+    const u = this._up;
+    this.damageMul = Math.min(
+      CAPS.damageMul,
+      1 + statBonus(u.damage, UPGRADES.damage.maxBonus, UPGRADES.damage.half),
+    );
+    this.fireRateMul = Math.max(
+      CAPS.fireRateMin,
+      1 - statBonus(u.fireRate, UPGRADES.fireRate.maxBonus, UPGRADES.fireRate.half),
+    );
+    this.speed = Math.min(
+      PLAYER.speed * CAPS.speedMul,
+      PLAYER.speed * (1 + statBonus(u.speed, UPGRADES.speed.maxBonus, UPGRADES.speed.half)),
+    );
+  }
+
+  /** apply a survivor outcome or pickup buff/debuff. The UPs add one stack each
+   *  (magnitude-agnostic) and recompute from the curve; HEAL/TAKE_DAMAGE use it. */
   applyEffect(effect, magnitude, game) {
     switch (effect) {
       case 'HEAL':
         this.hearts = Math.min(PLAYER.maxHearts, this.hearts + magnitude);
         break;
       case 'FIRE_RATE_UP':
-        this.fireRateMul = Math.max(CAPS.fireRateMin, this.fireRateMul * magnitude);
+        this._up.fireRate++;
+        this._recomputeUpgrades();
         break;
       case 'DAMAGE_UP':
-        this.damageMul = Math.min(CAPS.damageMul, this.damageMul + magnitude);
+        this._up.damage++;
+        this._recomputeUpgrades();
         break;
       case 'SPEED_UP':
-        this.speed = Math.min(PLAYER.speed * CAPS.speedMul, this.speed + magnitude);
+        this._up.speed++;
+        this._recomputeUpgrades();
         break;
       case 'TAKE_DAMAGE':
         this.invuln = 0;

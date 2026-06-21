@@ -413,3 +413,31 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
   **nameless** place, and "1940s" is only a **tech/era anchor** (period weapons/names/dates,
   _no uzis_). Rewrote `STORY.md` Setting + canon rules accordingly. Lesson: when a linter
   flags a "contradiction" in creative canon, confirm intent with the humans before "fixing."
+
+## 2026-06-21 — Expansion 7 Stage 2 (scaling math: upgrades + difficulty)
+
+- **Two pure curves in `core/scaling.js` (ADR-0022), all knobs in config.** The "feel
+  math" Scott asked for, testable + tunable in one place.
+- **Upgrades = diminishing returns, not a hard cap.** `statBonus(n, maxBonus, half)
+= maxBonus*n/(n+half)`. Switched the player from running clamped values to STACK
+  COUNTS (`_up.{damage,fireRate,speed}`) recomputed via `_recomputeUpgrades()`. So a
+  pickup adds a stack and the stat eases toward the asymptote — verified in-browser:
+  damage 3 stacks = ×1.375 (was a ×1.5 wall), still climbing to ×1.71 @12 → ×2.0.
+  `CAPS` are now just safety backstops at the asymptotes; `PICKUPS.*Amount` step
+  sizes deleted (stack-driven now). Survivor stat rewards add one stack each
+  (magnitude-agnostic) — consistent with pickups.
+- **Difficulty = one curve for the whole run.** `floorScale(i, {base, growth}) =
+base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floors`
+  and compute it in `floorInfo()` (× an optional per-floor `diffMul` spike). Gotcha:
+  the spawner read `info.def.diff` — moved the source of truth to `info.diff`, so all
+  three call sites (two boss spawns + the enemy-count formula) now read the computed
+  value. Defaults base 1.0 / growth 0.26 → floors ≈ 1.0, 1.26, 1.59, 2.0, 2.52
+  (finale clearly harder than the old 2.15; early floors ~unchanged).
+- **Net feel = intentionally harder.** Early game is a touch tougher (you ramp slower)
+  and late game is both stronger AND harder — the BoI/Gungeon/Doom target. Several
+  levers move at once (upgrade ramp + difficulty + gun nerfs), so the numbers are
+  _defaults for Scott's playtest tuning_, isolated behind config blocks so he can dial
+  each independently.
+- **Test seam:** floors.test.js used to assert each floor object had a numeric `diff`;
+  now diff is curve-derived, so it asserts the ramp via `floorInfo(i*roomsPerFloor()).diff`
+  instead. golden-value tests for both curves in scaling.test.js.

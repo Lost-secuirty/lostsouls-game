@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { PROGRESSION } from '../src/config.js';
+import { floorInfo, roomsPerFloor } from '../src/core/progression.js';
 
 // Integrity check for the Stage 5 final floor lineup (pure config — no THREE).
 const PALETTE_KEYS = ['body', 'emissive', 'leg', 'legEmissive', 'eye'];
@@ -11,19 +12,20 @@ describe('PROGRESSION.floors (Stage 5 final lineup)', () => {
     expect(floors.map((f) => f.boss)).toEqual(['spider', 'human', 'mushroom', 'duo', 'skeleton']);
   });
 
-  it('every floor has a name, a numeric diff, and a full 5-key palette', () => {
+  it('every floor has a name and a full 5-key palette', () => {
     for (const f of floors) {
       expect(typeof f.name).toBe('string');
       expect(f.name.length).toBeGreaterThan(0);
-      expect(typeof f.diff).toBe('number');
       for (const k of PALETTE_KEYS) expect(typeof f.palette[k]).toBe('number');
     }
   });
 
-  it('difficulty ramps up monotonically (non-decreasing)', () => {
-    for (let i = 1; i < floors.length; i++) {
-      expect(floors[i].diff).toBeGreaterThanOrEqual(floors[i - 1].diff);
+  it('difficulty (from the DIFFICULTY curve) ramps up monotonically per floor', () => {
+    const diffs = floors.map((_, i) => floorInfo(i * roomsPerFloor()).diff);
+    for (let i = 1; i < diffs.length; i++) {
+      expect(diffs[i]).toBeGreaterThanOrEqual(diffs[i - 1]);
     }
+    expect(diffs[diffs.length - 1]).toBeGreaterThan(diffs[0]); // it actually rises
   });
 
   it('the duo floor lists its two beasts', () => {

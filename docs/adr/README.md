@@ -27,3 +27,4 @@ below).
 | [0019](0019-human-decision-boss.md)                | Human decision-boss + the `HUMAN_CHOICE` state          | Accepted |
 | [0020](0020-arena-scale-and-camera-fit.md)         | Roomier arenas + camera fit + entity size ladder        | Accepted |
 | [0021](0021-emitter-pattern-library.md)            | Pure bullet-pattern (emitter) library + de-samey bosses | Accepted |
+| [0022](0022-scaling-math.md)                       | Scaling math: diminishing-returns upgrades + diff curve | Accepted |
