@@ -42,13 +42,13 @@ export function populateRoom(game, roomIndex) {
 
   // ---- BOSS ROOM ----
   if (info.isBossRoom) {
-    const z = -ARENA.depth / 2 + 4;
+    const z = -ARENA.depth / 2 + DUO.spawnZOffset;
     if (info.def.duo) {
       // multi-boss: spawn both beasts under one shared DuoController (alternating
       // aggression + enrage-on-partner-death). Spread them so two HP bars read.
       const ctrl = new DuoController(rng, DUO);
       info.def.duo.forEach((type, i) => {
-        const x = i === 0 ? -5 : 5;
+        const x = i === 0 ? -DUO.spawnX : DUO.spawnX;
         const boss = new Boss(game.scene, x, z, type, info.def.diff, info.def.palette);
         ctrl.add(boss);
         game.addEnemy(boss);

@@ -26,7 +26,8 @@ function fireCrossSwipe(boss, game) {
     const dx = Math.sin(ang);
     const dz = Math.cos(ang);
     for (let i = 1; i <= per; i++) {
-      game.bullets.spawnEnemy(boss.x, boss.z, dx, dz, boss.cfg.swipeBulletSpeed * (0.5 + i * 0.14));
+      const shaped = boss.cfg.swipeSpeedBase + i * boss.cfg.swipeSpeedStep;
+      game.bullets.spawnEnemy(boss.x, boss.z, dx, dz, boss.cfg.swipeBulletSpeed * shaped);
     }
   }
   boss.phase += Math.PI / arms; // rotate 45° -> the next volley lands as the "X"
@@ -55,8 +56,9 @@ export const cat = {
     const dir = normalize(target.x - boss.x, target.z - boss.z);
     const sign = d < cfg.preferredDist - 1 ? -1 : d > cfg.preferredDist + 1 ? 1 : 0;
     const perp = { x: -dir.z, z: dir.x }; // strafe sideways while keeping range
-    boss.x += (dir.x * sign + perp.x * 0.5) * cfg.speed * rage * dt;
-    boss.z += (dir.z * sign + perp.z * 0.5) * cfg.speed * rage * dt;
+    const sw = cfg.preferredStrafe;
+    boss.x += (dir.x * sign + perp.x * sw) * cfg.speed * rage * dt;
+    boss.z += (dir.z * sign + perp.z * sw) * cfg.speed * rage * dt;
     let q = slideOutOfWalls(boss.x, boss.z, boss.radius, game.walls);
     q = clampToArena(q.x, q.z, boss.radius);
     boss.x = q.x;

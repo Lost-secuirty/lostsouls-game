@@ -278,6 +278,9 @@ export const BOSS = {
     dashSpeed: 24, // fast lunge along the locked lane
     dashTime: 0.42, // short, so a sidestep clears it
     recoverTime: 1.2, // stands panting, open to hits (Whisker covers it)
+    laneSparks: 4, // telegraph sparks painted ahead along the locked pounce lane
+    laneColor: 0xff5a2a, // warning-orange lane sparks
+    laneRepaint: 0.07, // seconds between lane spark refreshes during the wind-up
   },
 
   // Whisker — the CAT: keeps its distance and fires telegraphed cross-swipes
@@ -289,11 +292,14 @@ export const BOSS = {
     contactDamage: 1,
     contactCooldown: 0.9,
     preferredDist: 12, // zoner: holds roughly this far away
+    preferredStrafe: 0.5, // how hard it circles sideways while holding range
     swipeInterval: 2.2, // seconds between cross-swipes
     telegraph: 0.4, // wind-up before a swipe
     swipeArms: 4, // 4 = a "+"; the pattern rotates 45° each volley (→ an X)
     swipeBullets: 5, // dots per arm (staggered speeds make a growing line)
     swipeBulletSpeed: 8, // slow so it's dodgeable
+    swipeSpeedBase: 0.5, // per-bullet arm shaping: speed *= (base + i*step) → a growing line
+    swipeSpeedStep: 0.14,
     kittenInterval: 3.4, // tops up its litter this often while passive
     kittenCap: 2, // small (kid-fair); +1 when enraged
   },
@@ -303,6 +309,9 @@ export const BOSS = {
 export const DUO = {
   switchInterval: 4.5, // seconds one beast stays the "aggressor" before they swap
   enrageMul: 1.4, // the survivor's permanent rage (speed/rate) bump when its partner falls
+  enrageScale: 1.3, // the "I'm angry now" size pop when a partner falls
+  spawnX: 5, // each beast spawns this far left/right of center
+  spawnZOffset: 4, // ...and this far in front of the back wall
 };
 
 // ---- ground hazards: lingering, telegraphed damage zones (spore/poison pools) ----

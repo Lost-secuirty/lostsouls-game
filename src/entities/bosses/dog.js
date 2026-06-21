@@ -52,12 +52,12 @@ function face(boss, dir) {
 /** sparks along the locked lane so the pounce clearly reads as "get out of the way" */
 function paintLane(boss, game) {
   const d = boss.dashDir;
-  for (let i = 1; i <= 4; i++) {
+  for (let i = 1; i <= boss.cfg.laneSparks; i++) {
     game.particles.burst(
       boss.x + d.x * boss.radius * (1 + i),
       boss.z + d.z * boss.radius * (1 + i),
       1,
-      0xff5a2a,
+      boss.cfg.laneColor,
     );
   }
 }
@@ -100,7 +100,7 @@ export const dog = {
       face(boss, boss.dashDir);
       boss._laneTimer -= dt;
       if (boss._laneTimer <= 0) {
-        boss._laneTimer = 0.07;
+        boss._laneTimer = cfg.laneRepaint;
         paintLane(boss, game);
       }
       if (boss.charge <= 0) {

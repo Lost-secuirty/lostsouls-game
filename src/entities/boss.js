@@ -12,7 +12,7 @@
 // casing.
 // =====================================================================
 
-import { BOSS, PALETTE, PARTICLES } from '../config.js';
+import { BOSS, PALETTE, PARTICLES, DUO } from '../config.js';
 import { BEHAVIORS } from './bosses/index.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { normalize, circleVsCircle } from '../core/math2d.js';
@@ -63,11 +63,11 @@ export class Boss {
   }
 
   /** duo: this beast's partner fell — rage permanently and fight solo (no revive) */
-  onPartnerDown(mul = 1.4) {
+  onPartnerDown(mul = DUO.enrageMul) {
     if (this.dead) return;
     this.enraged = true;
     this.enrageMul = mul;
-    this.mesh.scale.setScalar(1.3); // a visible "I'm angry now" pop
+    this.mesh.scale.setScalar(DUO.enrageScale); // a visible "I'm angry now" pop
     audio.play('bossRoar');
   }
 
