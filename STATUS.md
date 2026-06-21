@@ -23,11 +23,17 @@ This file is the lifecycle source-of-truth for the repo. The detailed running hi
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.6.0)
+## Current state (v0.6.1)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Expansion 6 Stage 6 (polish)** — wrote the **story bible** ([`docs/STORY.md`](docs/STORY.md):
+  Caden's 1940s post-war ruined city, the experiment-gone-wrong rift, temporary survivors, WW2 ×
+  rift-tech "living weapons", **no zombies**), then a **scale pass** (ADR-0020): arenas ~2.5×
+  bigger (40×30 → 64×48) with the **camera sized to fit** the whole room and a documented **size
+  ladder** (player < basic mob < boss). Fixed the **orbital-blade-survives-reset** bug
+  (`Player.dispose`). Balance/stat-cap tuning is deliberately **parked** in `BACKLOG.md`.
 - **Expansion 6 Stage 5 (finale)** — the **Human decision-boss** 🚪 "The Survivor". Before the
   fight you pick how to approach (A/B/C/D); a seeded "right" read skips the fight AND grants the
   weapon slot, a wrong read means you fight him for it (new `HUMAN_CHOICE` state + overlay,
@@ -54,7 +60,7 @@ two-player co-op (keyboard/mouse/gamepad). Most recent work:
 - **Cross-repo hardening** — secret/PII pre-commit + CI scanner (public-repo BLOCK policy),
   ESLint 10, pinned actions.
 
-19 ADRs (0001–0019). Verification: probability/proof tests, coverage gate, production smoke +
+20 ADRs (0001–0020). Verification: probability/proof tests, coverage gate, production smoke +
 browser smoke, OpenSSF scorecard, dependency review, control audit.
 
 ## Scope (unchanged)

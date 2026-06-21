@@ -7,18 +7,26 @@
 // =====================================================================
 
 // ---- the playfield (a flat arena on the XZ plane; y is "up") ----
+// Roomy by design (Stage 6 / ADR-0020): ~2.5× the old floor area so there's space
+// to dodge when a room is full of mobs firing. Walls, the door, ground/grid, and
+// every spawn position derive from these two numbers — bump them and the whole
+// arena (and the camera below) scales with it.
 export const ARENA = {
-  width: 40, // left-right size (X)
-  depth: 30, // near-far size (Z)
+  width: 64, // left-right size (X)  — was 40
+  depth: 48, // near-far size (Z)    — was 30  (64×48 ≈ 2.56× the old 40×30 area)
   wall: 1.5, // wall thickness
-  doorWidth: 5, // gap in the top wall to the next room
+  doorWidth: 6, // gap in the top wall to the next room
 };
 
 // ---- camera: tilted top-down, "Binding of Isaac" angle ----
+// height/back are sized to FIT the whole ARENA on screen (the room is always fully
+// visible — fairer for a young player who needs to see every bullet). They scale
+// with ARENA: if you grow the arena, grow these by the same factor to keep the fit.
+// Want to zoom IN (bigger sprites, but you may clip the room edges)? Lower both.
 export const CAMERA = {
   fov: 55,
-  height: 30, // how high above the arena
-  back: 18, // how far back (toward the player/camera)
+  height: 48, // how high above the arena (was 30; ×1.6 to fit the bigger arena)
+  back: 29, // how far back (toward the player/camera) (was 18; ×1.6)
   lookAtY: 0,
 };
 
@@ -39,10 +47,17 @@ export const PALETTE = {
   door: 0x36e0c0,
 };
 
+// ---- the "size ladder" (Stage 6 / ADR-0020) ----
+// Size reads as threat in a top-down game, so we keep a clear hierarchy:
+//   player/ally (0.85) < chaser (1.05) < shooter (1.2) < bosses (2.2–3.0, below).
+// `radius` is BOTH the drawn size and the collision circle, so these affect feel —
+// tune gently. (Speeds are deliberately left alone: keeping them constant in the
+// bigger arena is what actually buys "more room" to dodge.)
+
 // ---- player (you) ----
 export const PLAYER = {
-  radius: 0.7,
-  height: 1.8,
+  radius: 0.85, // was 0.7 — a touch bigger so it still reads in the roomier arena
+  height: 2.2, // was 1.8 — taller silhouette (visual only; collision is on XZ)
   speed: 11, // units/sec
   maxHearts: 6, // 6 = 3 full hearts (2 halves each)... we use whole hearts here
   fireCooldown: 0.16, // seconds between shots (lower = faster)
@@ -51,8 +66,8 @@ export const PLAYER = {
 
 // ---- ally (AI ally) ----
 export const ALLY = {
-  radius: 0.7,
-  height: 1.8,
+  radius: 0.85, // matches the player (size ladder)
+  height: 2.2,
   speed: 9,
   followDist: 4.5, // tries to stay this close to you
   fireCooldown: 0.45,
@@ -72,14 +87,14 @@ export const BULLET = {
 export const ENEMY = {
   chaser: {
     hp: 3,
-    radius: 0.85,
+    radius: 1.05, // was 0.85 — slightly bigger than the player (reads as a threat)
     speed: 6,
     contactDamage: 1,
     contactCooldown: 0.7, // how often it can hurt you by touching
   },
   shooter: {
     hp: 4,
-    radius: 0.95,
+    radius: 1.2, // was 0.95 — the bigger, ranged threat sits above the chaser
     speed: 3.2,
     preferredDist: 11, // keeps roughly this far from you
     fireInterval: 1.6, // seconds between bullet-hell volleys

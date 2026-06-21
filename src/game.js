@@ -103,8 +103,14 @@ export class Game {
   }
 
   _teardownActors() {
-    if (this.player) this.scene.remove(this.player.mesh);
-    if (this.player2) this.scene.remove(this.player2.mesh);
+    if (this.player) {
+      this.player.dispose(this.scene); // also clears scene-attached orbital blades
+      this.scene.remove(this.player.mesh);
+    }
+    if (this.player2) {
+      this.player2.dispose(this.scene);
+      this.scene.remove(this.player2.mesh);
+    }
     if (this.ally) this.scene.remove(this.ally.mesh);
     this.player = null;
     this.player2 = null;

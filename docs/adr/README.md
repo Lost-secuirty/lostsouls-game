@@ -25,3 +25,4 @@ below).
 | [0017](0017-animated-models.md)                    | Animated CC0 GLB models + animation system             | Accepted |
 | [0018](0018-multi-boss-duo.md)                     | Multi-boss fights (`game.bosses[]`) + the Dog/Cat duo  | Accepted |
 | [0019](0019-human-decision-boss.md)                | Human decision-boss + the `HUMAN_CHOICE` state         | Accepted |
+| [0020](0020-arena-scale-and-camera-fit.md)         | Roomier arenas + camera fit + entity size ladder       | Accepted |
