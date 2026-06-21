@@ -297,6 +297,7 @@ export class Player {
       this.hearts = 0;
       this.alive = false;
       this.mesh.visible = false;
+      this._hideOrbital(); // else orbital blades freeze visible at the death spot
     }
     game.refreshHud();
   }

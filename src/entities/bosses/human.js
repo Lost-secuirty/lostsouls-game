@@ -15,16 +15,18 @@ import { loadAnimated } from '../../core/animModel.js';
 import { makeCharacter } from '../characterMesh.js';
 import { humanRallyTarget } from '../../core/progression.js';
 import { topUpMinions } from '../enemies.js';
-import { aimedBurst, telegraphedRing } from './patterns.js';
+import { aimedBurst, telegraphedRing, fireAngles } from './patterns.js';
+import { nWay } from './emitters.js';
 
-function firePanicRing(boss, game) {
-  boss.phase += 0.3;
-  const n = boss.ringCount;
-  for (let i = 0; i < n; i++) {
-    const a = boss.phase + (i / n) * Math.PI * 2;
-    game.bullets.spawnEnemy(boss.x, boss.z, Math.sin(a), Math.cos(a), boss.cfg.ringBulletSpeed);
-  }
-  game.juice.shake(0.16);
+// P2 signature: a panicked SPRAY — a wide aimed cone at you (not a tidy ring like
+// the spider's). Frantic, but you dodge it by strafing sideways. Distinct + fits
+// "a cornered person emptying the magazine in your direction."
+function firePanicSpray(boss, game) {
+  const p = game.nearestPlayer(boss.x, boss.z);
+  if (!p) return;
+  const base = Math.atan2(p.x - boss.x, p.z - boss.z); // game convention: dir=(sin,cos)
+  const spread = (boss.cfg.p2SprayDeg * Math.PI) / 180;
+  fireAngles(boss, game, nWay(base, boss.ringCount, spread), boss.cfg.ringBulletSpeed, 0.16);
 }
 
 export const human = {
@@ -52,7 +54,7 @@ export const human = {
 
   attacks(boss, dt, game, p, rage) {
     aimedBurst(boss, dt, game, p, rage); // P1 — panicked pistol bursts
-    telegraphedRing(boss, dt, game, firePanicRing); // P2 — panic spray ring
+    telegraphedRing(boss, dt, game, firePanicSpray); // P2 — aimed panic spray (cone)
   },
 
   // P3 — rally armed survivors (HP-gated; tougher minions, so fewer of them)

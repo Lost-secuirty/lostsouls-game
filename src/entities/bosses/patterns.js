@@ -12,6 +12,18 @@ import { normalize, spreadDirs } from '../../core/math2d.js';
 import * as audio from '../../systems/audio.js';
 
 /**
+ * Spawn one enemy bullet per ANGLE from the boss (game convention: a bullet's
+ * direction is (sin a, cos a)), then an optional screen `shake`. Pairs with the
+ * pure pattern generators in emitters.js so a boss's ring/spray is a one-liner.
+ */
+export function fireAngles(boss, game, angles, speed, shake = 0) {
+  for (const a of angles) {
+    game.bullets.spawnEnemy(boss.x, boss.z, Math.sin(a), Math.cos(a), speed);
+  }
+  if (shake) game.juice.shake(shake);
+}
+
+/**
  * P1 — aimed burst: a `spreadDirs` volley at the nearest player, on `boss.p1Timer`.
  * Uses cfg.p1Burst / p1Spread / p1BulletSpeed / p1Interval (sped up by `rage`).
  */

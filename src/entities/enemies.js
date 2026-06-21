@@ -18,6 +18,7 @@ import { buildSkeletonMesh } from './skeletonMesh.js';
 import { makeCharacter } from './characterMesh.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { normalize, dist, circleVsCircle } from '../core/math2d.js';
+import { ring } from './bosses/emitters.js';
 import * as audio from '../systems/audio.js';
 
 // Returns { group, anim } — `anim` is an AnimModel for GLB-backed minions
@@ -193,10 +194,8 @@ export class Enemy {
   }
 
   _fireRing(game) {
-    const n = this.cfg.bulletsPerRing;
     this.phase += 0.4;
-    for (let i = 0; i < n; i++) {
-      const a = this.phase + (i / n) * Math.PI * 2;
+    for (const a of ring(this.cfg.bulletsPerRing, this.phase)) {
       game.bullets.spawnEnemy(this.x, this.z, Math.sin(a), Math.cos(a), BULLET.enemy.speed);
     }
   }

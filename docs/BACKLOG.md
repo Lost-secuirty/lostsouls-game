@@ -22,10 +22,11 @@ as `- [ ] <item> — <why deferred / status>`; the running history of _done_ wor
       without taking damage. Plan: demote it from a weapon to a **power-up / passive** that adds
       orbiting blades for extra contact damage _on top of_ a real gun — not a slot you're stuck
       with. (Remove from the weapon drop table / `WEAPON_TYPES` when it becomes a passive.)
-- [x] ~~**Orbital blade survived a game reset.**~~ **FIXED (Stage 6, 2026-06-20).** The blades
-      were `scene.add`-ed but only `_hideOrbital()`-d (visibility) on weapon swap, so a full reset
-      orphaned them in the scene at their last position. `Player.dispose(scene)` now removes them,
-      called from `Game._teardownActors`. (Same teardown gap as the AnimModel leak below.)
+- [x] ~~**Orbital blade survived a game reset / froze on death.**~~ **FIXED (Stage 6 + Exp 7
+      Stage 1).** Reset: blades were `scene.add`-ed but only `_hideOrbital()`-d on weapon swap, so a
+      full reset orphaned them — `Player.dispose(scene)` (called from `Game._teardownActors`) now
+      removes them. Death: dying mid-run left the blades frozen visible (the adversarial review's
+      catch) — `Player.hurt()` now `_hideOrbital()`s on death; they re-show on revive.
 - [ ] **Dispose AnimModel mixers on room change (Stage 6 cleanup).** `AnimModel` has no
       `dispose()`, and `loadRoom`/the boss-death sweep only `scene.remove()` the mesh — so each
       removed GLB boss + minion (mushroom, dog/cat, skeleton) leaks an `AnimationMixer` + clip-action
@@ -56,6 +57,19 @@ as `- [ ] <item> — <why deferred / status>`; the running history of _done_ wor
       (`docs/adr/0020-*`). The numbers are sensible defaults in `config.js` (`ARENA`, `CAMERA`,
       `PLAYER`, `ALLY`, `ENEMY`) — but final "feel" is Scott + Caden's eyes in `npm run dev`.
       Tweak radii/heights/camera there if anything reads too small or too big.
+
+## Deferred — heavy engine perf (do it when bullets go hundreds → thousands)
+
+> From the 2026 deep-research audit. The repo's bullet system does linear scans and one mesh per
+> pooled bullet — fine at our current counts (hundreds), the **first** bottleneck only at thousands.
+> Deliberately deferred (Exp 7) so we don't destabilize a working build for speed it doesn't need yet.
+
+- [ ] **Data-oriented projectile store (SoA / typed arrays)** to cut per-bullet JS overhead.
+- [ ] **Spatial-hash broad phase** for bullet↔actor and wall queries (replaces the linear scans).
+- [ ] **Instanced bullet rendering** (`InstancedMesh`) to collapse draw calls.
+- [ ] Optional: asset compression (glTF + KTX2/Draco), `OffscreenCanvas` worker — only if needed.
+- **Trigger to revisit:** sustained on-screen bullets approaching the pool ceiling, or frame budget
+  blowing past ~16 ms on a target device (watch via the Stage-3 perf HUD).
 
 ## Cross-repo / org
 

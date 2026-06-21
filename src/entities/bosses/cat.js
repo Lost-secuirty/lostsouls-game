@@ -13,6 +13,7 @@
 
 import { buildBeastBoss } from './dog.js';
 import { Enemy } from '../enemies.js';
+import { star } from './emitters.js';
 import { normalize, dist } from '../../core/math2d.js';
 import { slideOutOfWalls, clampToArena } from '../../systems/collision.js';
 import * as audio from '../../systems/audio.js';
@@ -21,8 +22,7 @@ import * as audio from '../../systems/audio.js';
 function fireCrossSwipe(boss, game) {
   const arms = boss.cfg.swipeArms;
   const per = boss.cfg.swipeBullets;
-  for (let a = 0; a < arms; a++) {
-    const ang = boss.phase + (a / arms) * Math.PI * 2;
+  for (const ang of star(arms, boss.phase)) {
     const dx = Math.sin(ang);
     const dz = Math.cos(ang);
     for (let i = 1; i <= per; i++) {
