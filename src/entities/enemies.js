@@ -9,8 +9,8 @@
 
 import * as THREE from 'three';
 import { ENEMY, BULLET, PALETTE, PARTICLES } from '../config.js';
-import { getModel, getAnimated } from '../core/assets.js';
-import { AnimModel } from '../core/animModel.js';
+import { getModel } from '../core/assets.js';
+import { loadAnimated } from '../core/animModel.js';
 import { buildSpiderMesh } from './spiderMesh.js';
 import { buildMushroomMesh } from './mushroomMesh.js';
 import { buildBeastMesh } from './beastMesh.js';
@@ -24,14 +24,8 @@ import * as audio from '../systems/audio.js';
 function makeEnemyMesh(type, theme) {
   // themed mini-mushrooms on the fungal floor (minions match their boss)
   if (theme && theme.boss === 'mushroom') {
-    const m = getAnimated('sporeling');
-    if (m) {
-      const anim = new AnimModel(m.scene, m.clips).fitTo(ENEMY[type].radius * 2.2);
-      anim.play('Walk');
-      const wrap = new THREE.Group(); // base-1 wrapper (hit-pop / spawn scaling)
-      wrap.add(anim.group);
-      return { group: wrap, anim };
-    }
+    const a = loadAnimated('sporeling', ENEMY[type].radius * 2.2);
+    if (a) return { group: a.wrap, anim: a.anim };
     const g = buildMushroomMesh(ENEMY[type].radius * 1.3, theme.palette || {}, {
       simple: true,
     }).group;
@@ -43,14 +37,8 @@ function makeEnemyMesh(type, theme) {
   // 'dog'/'cat' for the kittens a boss summons.
   if (theme && (theme.boss === 'dog' || theme.boss === 'cat' || theme.boss === 'duo')) {
     const kind = theme.boss === 'duo' ? (type === 'shooter' ? 'cat' : 'dog') : theme.boss;
-    const m = getAnimated(kind); // 'dog' / 'cat' model keys
-    if (m) {
-      const anim = new AnimModel(m.scene, m.clips).fitTo(ENEMY[type].radius * 1.9);
-      anim.play('Walk');
-      const wrap = new THREE.Group(); // base-1 wrapper (hit-pop / spawn scaling)
-      wrap.add(anim.group);
-      return { group: wrap, anim };
-    }
+    const a = loadAnimated(kind, ENEMY[type].radius * 1.9); // 'dog' / 'cat' model keys
+    if (a) return { group: a.wrap, anim: a.anim };
     const g = buildBeastMesh(ENEMY[type].radius * 1.2, theme.palette || {}, {
       kind,
       simple: true,
@@ -60,14 +48,8 @@ function makeEnemyMesh(type, theme) {
 
   // bone-white catacomb minions (bonelings + archers) match the skeleton boss
   if (theme?.boss === 'skeleton') {
-    const m = getAnimated('skeleton');
-    if (m) {
-      const anim = new AnimModel(m.scene, m.clips).fitTo(ENEMY[type].radius * 2.1);
-      anim.play('Walk');
-      const wrap = new THREE.Group(); // base-1 wrapper (hit-pop / spawn scaling)
-      wrap.add(anim.group);
-      return { group: wrap, anim };
-    }
+    const a = loadAnimated('skeleton', ENEMY[type].radius * 2.1);
+    if (a) return { group: a.wrap, anim: a.anim };
     const g = buildSkeletonMesh(ENEMY[type].radius * 1.3, theme.palette || {}, {
       simple: true,
     }).group;

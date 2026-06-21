@@ -11,10 +11,8 @@
 // seeded RNG so rings/spawns/gaps stay reproducible).
 // =====================================================================
 
-import * as THREE from 'three';
 import { buildMushroomMesh } from '../mushroomMesh.js';
-import { getAnimated } from '../../core/assets.js';
-import { AnimModel } from '../../core/animModel.js';
+import { loadAnimated } from '../../core/animModel.js';
 import { puffballTarget } from '../../core/progression.js';
 import { Enemy } from '../enemies.js';
 import { normalize, spreadDirs } from '../../core/math2d.js';
@@ -45,14 +43,8 @@ export const mushroom = {
   roar: 'bossRoar',
 
   buildMesh(boss, palette) {
-    const m = getAnimated('mushroom');
-    if (m) {
-      const anim = new AnimModel(m.scene, m.clips).fitTo(boss.radius * 3); // imposing "King"
-      anim.play('Walk'); // always advancing toward the player
-      const wrap = new THREE.Group(); // base-1 wrapper: hit-pop/telegraph scale stays correct
-      wrap.add(anim.group);
-      return { mesh: wrap, anim };
-    }
+    const a = loadAnimated('mushroom', boss.radius * 3); // imposing "King"
+    if (a) return { mesh: a.wrap, anim: a.anim };
     const built = buildMushroomMesh(boss.radius, palette || {});
     return { mesh: built.group, cap: built.cap };
   },

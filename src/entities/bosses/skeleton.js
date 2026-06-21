@@ -13,10 +13,8 @@
 // i-frame flag (boss.invuln) is handled by the generic Boss shell.
 // =====================================================================
 
-import * as THREE from 'three';
 import { ARENA } from '../../config.js';
-import { getAnimated } from '../../core/assets.js';
-import { AnimModel } from '../../core/animModel.js';
+import { loadAnimated } from '../../core/animModel.js';
 import { buildSkeletonMesh } from '../skeletonMesh.js';
 import { skeletonWaveTarget } from '../../core/progression.js';
 import { Enemy } from '../enemies.js';
@@ -68,14 +66,8 @@ export const skeleton = {
   roar: 'bossRoar',
 
   buildMesh(boss, palette) {
-    const m = getAnimated('skeleton');
-    if (m) {
-      const anim = new AnimModel(m.scene, m.clips).fitTo(boss.radius * 2.6);
-      anim.play('Walk');
-      const wrap = new THREE.Group(); // base-1 wrapper (hit-pop / telegraph scale)
-      wrap.add(anim.group);
-      return { mesh: wrap, anim };
-    }
+    const a = loadAnimated('skeleton', boss.radius * 2.6);
+    if (a) return { mesh: a.wrap, anim: a.anim };
     const built = buildSkeletonMesh(boss.radius, palette || {});
     boss.skull = built.skull;
     return { mesh: built.group };

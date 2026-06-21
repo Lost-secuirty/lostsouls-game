@@ -12,9 +12,7 @@
 // aggressor starts a pounce; the survivor enrages if its partner falls.
 // =====================================================================
 
-import * as THREE from 'three';
-import { getAnimated } from '../../core/assets.js';
-import { AnimModel } from '../../core/animModel.js';
+import { loadAnimated } from '../../core/animModel.js';
 import { buildBeastMesh } from '../beastMesh.js';
 import { normalize } from '../../core/math2d.js';
 import { slideOutOfWalls, clampToArena } from '../../systems/collision.js';
@@ -22,14 +20,8 @@ import * as audio from '../../systems/audio.js';
 
 /** shared beast mesh builder (GLB if present, else procedural fallback) */
 export function buildBeastBoss(boss, palette, kind, modelKey) {
-  const m = getAnimated(modelKey);
-  if (m) {
-    const anim = new AnimModel(m.scene, m.clips).fitTo(boss.radius * 2.4);
-    anim.play('Walk'); // always padding toward you
-    const wrap = new THREE.Group(); // base-1 wrapper so hit-pop / telegraph scale stays correct
-    wrap.add(anim.group);
-    return { mesh: wrap, anim };
-  }
+  const a = loadAnimated(modelKey, boss.radius * 2.4);
+  if (a) return { mesh: a.wrap, anim: a.anim };
   const built = buildBeastMesh(boss.radius, palette || {}, { kind });
   boss.beastParts = { head: built.head, tail: built.tail };
   return { mesh: built.group };
