@@ -24,11 +24,16 @@ session) lives in [`docs/WORKLOG.md`](docs/WORKLOG.md); the detailed running his
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.6.8)
+## Current state (v0.6.9)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Decision docs (v0.6.9)** — added three "single home for decisions" docs alongside the existing
+  [`AUDIO.md`](docs/AUDIO.md)/[`STORY.md`](docs/STORY.md): [`docs/GAMEPLAY.md`](docs/GAMEPLAY.md)
+  (design & balance), [`docs/GRAPHICS.md`](docs/GRAPHICS.md) (visual/render decisions + the current
+  baseline), and [`docs/ROADMAP.md`](docs/ROADMAP.md) (the curated later-scope plan, distinct from the
+  `BACKLOG.md` parking lot). Part of the phased full package upgrade ([`docs/WORKLOG.md`](docs/WORKLOG.md)).
 - **Audio studio + OGG migration (v0.6.8)** — kicked off a phased **full package upgrade** (graphics,
   tooling, deps, decision docs; see [`docs/WORKLOG.md`](docs/WORKLOG.md)). First phase: a dev
   **audio studio** ([`scripts/audio-studio.mjs`](scripts/audio-studio.mjs), `npm run audio:report` /

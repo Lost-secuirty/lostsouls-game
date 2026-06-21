@@ -15,6 +15,24 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-21 — Phase 2: decision docs (v0.6.9, PR #37)
+
+Added three "single home for decisions" docs, mirroring the structure of the existing
+[`AUDIO.md`](AUDIO.md) / [`STORY.md`](STORY.md):
+
+- **`docs/GAMEPLAY.md`** — design & balance: principles (kid-fair, skill-honest, pistol-weak-by-design,
+  the shared anti-addiction ethics), the core loop, the pillars (progression / combat / enemies /
+  bosses / economy / difficulty / feel) with a config-block + ADR map, and "adding content inside the
+  canon." Numbers stay in `config.js` (no duplication / no drift).
+- **`docs/GRAPHICS.md`** — visual & render decisions: the **honest current baseline** (raw render, no
+  post-FX, two-key lighting, emissive-glow identity, fog, the VFX/juice map) plus the **planned**
+  post-FX pipeline (bloom + ACES, ADR-0025) and render-studio sections marked as upcoming.
+- **`docs/ROADMAP.md`** — the curated later-scope plan (graphics / audio / gameplay / tooling / tech-
+  perf / cross-repo), each item with why-deferred + a trigger. Distinct from `BACKLOG.md` (parking
+  lot, now noted as feeding the roadmap).
+- Wired into `README.md` (doc index), `BACKLOG.md` (pointer), `STATUS.md` (v0.6.9).
+- **Status:** docs-only; full gauntlet green; PR open, awaiting CodeRabbit + checks.
+
 ## 2026-06-21 — Full Package Upgrade kickoff + Phase 1: audio studio + OGG (v0.6.8, PR #36)
 
 **The effort.** "Full package upgrade for everything" — graphics, tooling, dependencies, and a set of
