@@ -17,6 +17,18 @@ as `- [ ] <item> — <why deferred / status>`; the running history of _done_ wor
 
 ## Future ideas (parking lot)
 
+- [ ] **Rework the Orbital Blade (playtest feedback, 2026-06-20).** As a standalone weapon it
+      "sucks": only 2 blades, doesn't fire, and forces you into contact range so you can't act
+      without taking damage. Plan: demote it from a weapon to a **power-up / passive** that adds
+      orbiting blades for extra contact damage _on top of_ a real gun — not a slot you're stuck
+      with. (Remove from the weapon drop table / `WEAPON_TYPES` when it becomes a passive.)
+- [ ] **Dispose AnimModel mixers on room change (Stage 6 cleanup).** `AnimModel` has no
+      `dispose()`, and `loadRoom`/the boss-death sweep only `scene.remove()` the mesh — so each
+      removed GLB boss + minion (mushroom, dog/cat, skeleton) leaks an `AnimationMixer` + clip-action
+      cache + cloned Object3D graph across room visits (geometry/material are shared via
+      `SkeletonUtils.clone`, so no buffer leak). Fix: add `dispose()` (`mixer.stopAllAction()` +
+      `uncacheRoot`) and call it where meshes are removed. Pre-existing cross-cutting pattern; bundle
+      with the orbital-blade teardown above. (Found by the Stage 4 review, 2026-06-20.)
 - [ ] Next-phase expansion content — tracked here as it comes up; promoted to an ADR when decided.
 
 ## Cross-repo / org

@@ -9,11 +9,12 @@
 
 import * as THREE from 'three';
 import { ENEMY, BULLET, PALETTE, PARTICLES } from '../config.js';
-import { getModel, getAnimated } from '../core/assets.js';
-import { AnimModel } from '../core/animModel.js';
+import { getModel } from '../core/assets.js';
+import { loadAnimated } from '../core/animModel.js';
 import { buildSpiderMesh } from './spiderMesh.js';
 import { buildMushroomMesh } from './mushroomMesh.js';
 import { buildBeastMesh } from './beastMesh.js';
+import { buildSkeletonMesh } from './skeletonMesh.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { normalize, dist, circleVsCircle } from '../core/math2d.js';
 import * as audio from '../systems/audio.js';
@@ -23,14 +24,8 @@ import * as audio from '../systems/audio.js';
 function makeEnemyMesh(type, theme) {
   // themed mini-mushrooms on the fungal floor (minions match their boss)
   if (theme && theme.boss === 'mushroom') {
-    const m = getAnimated('sporeling');
-    if (m) {
-      const anim = new AnimModel(m.scene, m.clips).fitTo(ENEMY[type].radius * 2.2);
-      anim.play('Walk');
-      const wrap = new THREE.Group(); // base-1 wrapper (hit-pop / spawn scaling)
-      wrap.add(anim.group);
-      return { group: wrap, anim };
-    }
+    const a = loadAnimated('sporeling', ENEMY[type].radius * 2.2);
+    if (a) return { group: a.wrap, anim: a.anim };
     const g = buildMushroomMesh(ENEMY[type].radius * 1.3, theme.palette || {}, {
       simple: true,
     }).group;
@@ -42,16 +37,20 @@ function makeEnemyMesh(type, theme) {
   // 'dog'/'cat' for the kittens a boss summons.
   if (theme && (theme.boss === 'dog' || theme.boss === 'cat' || theme.boss === 'duo')) {
     const kind = theme.boss === 'duo' ? (type === 'shooter' ? 'cat' : 'dog') : theme.boss;
-    const m = getAnimated(kind); // 'dog' / 'cat' model keys
-    if (m) {
-      const anim = new AnimModel(m.scene, m.clips).fitTo(ENEMY[type].radius * 1.9);
-      anim.play('Walk');
-      const wrap = new THREE.Group(); // base-1 wrapper (hit-pop / spawn scaling)
-      wrap.add(anim.group);
-      return { group: wrap, anim };
-    }
+    const a = loadAnimated(kind, ENEMY[type].radius * 1.9); // 'dog' / 'cat' model keys
+    if (a) return { group: a.wrap, anim: a.anim };
     const g = buildBeastMesh(ENEMY[type].radius * 1.2, theme.palette || {}, {
       kind,
+      simple: true,
+    }).group;
+    return { group: g, anim: null };
+  }
+
+  // bone-white catacomb minions (bonelings + archers) match the skeleton boss
+  if (theme?.boss === 'skeleton') {
+    const a = loadAnimated('skeleton', ENEMY[type].radius * 2.1);
+    if (a) return { group: a.wrap, anim: a.anim };
+    const g = buildSkeletonMesh(ENEMY[type].radius * 1.3, theme.palette || {}, {
       simple: true,
     }).group;
     return { group: g, anim: null };
@@ -119,6 +118,7 @@ export class Enemy {
       theme &&
       (theme.boss === 'dog' || theme.boss === 'cat' || theme.boss === 'duo')
     );
+    this.isSkeleton = theme?.boss === 'skeleton';
     const built = makeEnemyMesh(type, theme);
     this.mesh = built.group;
     this.anim = built.anim; // AnimModel for GLB minions, else null
@@ -171,7 +171,7 @@ export class Enemy {
     if (s !== 1) this.mesh.scale.setScalar(s + (1 - s) * Math.min(1, dt * 12));
 
     // themed monsters face the player; generic blobs do a slow menacing spin
-    if (this.isSpider || this.isMushroom || this.isBeast)
+    if (this.isSpider || this.isMushroom || this.isBeast || this.isSkeleton)
       this.mesh.rotation.y = Math.atan2(p.x - this.x, p.z - this.z);
     else this.mesh.rotation.y += dt * 1.5;
     this.anim?.update(dt); // advance the GLB animation clip, if any
@@ -204,5 +204,32 @@ export class Enemy {
     audio.play('kill');
     if (this.onDeath) this.onDeath(this, game); // e.g. puffball -> poison pool
     this.scene.remove(this.mesh);
+  }
+}
+
+/**
+ * HP-gated minion top-up shared by the boss P-spawns (spider/mushroom/skeleton):
+ * keep between target.min and target.max of a `tag`-flagged chaser alive, rising
+ * at seeded ring positions. Builds + configures each minion (radius/scale/hp) and
+ * addEnemy()s it; `after(e)` adds per-boss extras (e.g. the puffball's onDeath).
+ * Seeded via game.rng (ADR-0013) so spawns stay reproducible.
+ */
+export function topUpMinions(boss, game, target, tag, opts = {}, after = null) {
+  if (target.max === 0) return;
+  const alive = game.enemies.filter((e) => e[tag] && !e.dead).length;
+  if (alive >= target.min) return;
+  const { dist = 1.5, scale = 0.55, hp = 1, puff = PALETTE.blood } = opts;
+  for (let i = alive; i < target.max; i++) {
+    const a = game.rng.next() * Math.PI * 2;
+    const lx = boss.x + Math.cos(a) * boss.radius * dist;
+    const lz = boss.z + Math.sin(a) * boss.radius * dist;
+    game.particles.burst(lx, lz, 5, puff); // little spawn puff (telegraph)
+    const e = new Enemy(boss.scene, 'chaser', lx, lz, boss.theme);
+    e[tag] = true;
+    e.mesh.scale.setScalar(scale);
+    e.radius *= 0.6;
+    e.hp = hp;
+    if (after) after(e);
+    game.addEnemy(e);
   }
 }

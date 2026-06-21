@@ -8,6 +8,7 @@
 // =====================================================================
 
 import * as THREE from 'three';
+import { getAnimated } from './assets.js';
 
 export class AnimModel {
   constructor(scene, clips) {
@@ -69,4 +70,21 @@ export class AnimModel {
   update(dt) {
     this.mixer.update(dt);
   }
+}
+
+/**
+ * The shared "GLB if present" builder used by every animated boss/minion: clone
+ * the model for `key`, fit it to `targetHeight`, play `clip`, and wrap it in a
+ * base-1 Group (so hit-pop / telegraph scaling stays correct). Returns
+ * { wrap, anim } or null if the model isn't loaded (caller falls back to a
+ * procedural mesh). Keeps the load pattern in ONE place (DRY).
+ */
+export function loadAnimated(key, targetHeight, clip = 'Walk') {
+  const m = getAnimated(key);
+  if (!m) return null;
+  const anim = new AnimModel(m.scene, m.clips).fitTo(targetHeight);
+  anim.play(clip);
+  const wrap = new THREE.Group();
+  wrap.add(anim.group);
+  return { wrap, anim };
 }

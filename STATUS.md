@@ -28,6 +28,10 @@ This file is the lifecycle source-of-truth for the repo. The detailed running hi
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Expansion 6 Stage 4** — the **skeleton boss** 💀 "Rattlebones" (aimed bone throws, a seeded
+  scatter ring, a reassemble-and-teleport escape with i-frames, and HP-gated boneling summons)
+  with an animated CC0 skeleton (Quaternius). Reuses the data-driven boss + animated-model +
+  hazard systems — no new ADR.
 - **Expansion 6 Stage 3** — the **Dog/Cat duo** 🐶🐱, the first **multi-boss** fight
   (`game.bosses[]`, two separate HP bars, a pure `DuoController` with alternating aggression +
   enrage-on-partner-death, ADR-0018). Fang pounces, Whisker zones with cross-swipes and summons

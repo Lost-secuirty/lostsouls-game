@@ -34,3 +34,4 @@ attribution is required, but we credit the author anyway.
 | `public/models/mushnub.glb`       | [Poly Pizza](https://poly.pizza/m/LWKmS30Xxl) | Quaternius | CC0 1.0 |
 | `public/models/dog.glb`           | [Poly Pizza](https://poly.pizza/m/y4wdQpg767) | Quaternius | CC0 1.0 |
 | `public/models/cat.glb`           | [Poly Pizza](https://poly.pizza/m/qKICY6xla2) | Quaternius | CC0 1.0 |
+| `public/models/skeleton.glb`      | [Poly Pizza](https://poly.pizza/m/yq5ATpujSt) | Quaternius | CC0 1.0 |

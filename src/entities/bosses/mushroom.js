@@ -11,14 +11,11 @@
 // seeded RNG so rings/spawns/gaps stay reproducible).
 // =====================================================================
 
-import * as THREE from 'three';
 import { buildMushroomMesh } from '../mushroomMesh.js';
-import { getAnimated } from '../../core/assets.js';
-import { AnimModel } from '../../core/animModel.js';
+import { loadAnimated } from '../../core/animModel.js';
 import { puffballTarget } from '../../core/progression.js';
-import { Enemy } from '../enemies.js';
-import { normalize, spreadDirs } from '../../core/math2d.js';
-import * as audio from '../../systems/audio.js';
+import { topUpMinions } from '../enemies.js';
+import { aimedBurst, telegraphedRing } from './patterns.js';
 
 function fireSporeRing(boss, game) {
   boss.phase += 0.3;
@@ -45,14 +42,8 @@ export const mushroom = {
   roar: 'bossRoar',
 
   buildMesh(boss, palette) {
-    const m = getAnimated('mushroom');
-    if (m) {
-      const anim = new AnimModel(m.scene, m.clips).fitTo(boss.radius * 3); // imposing "King"
-      anim.play('Walk'); // always advancing toward the player
-      const wrap = new THREE.Group(); // base-1 wrapper: hit-pop/telegraph scale stays correct
-      wrap.add(anim.group);
-      return { mesh: wrap, anim };
-    }
+    const a = loadAnimated('mushroom', boss.radius * 3); // imposing "King"
+    if (a) return { mesh: a.wrap, anim: a.anim };
     const built = buildMushroomMesh(boss.radius, palette || {});
     return { mesh: built.group, cap: built.cap };
   },
@@ -67,30 +58,8 @@ export const mushroom = {
 
   attacks(boss, dt, game, p, rage) {
     const cfg = boss.cfg;
-
-    // P1 — slow spore spit
-    boss.p1Timer -= dt;
-    if (boss.p1Timer <= 0) {
-      const aim = normalize(p.x - boss.x, p.z - boss.z);
-      for (const d of spreadDirs(aim.x, aim.z, cfg.p1Burst, cfg.p1Spread)) {
-        game.bullets.spawnEnemy(boss.x, boss.z, d.x, d.z, cfg.p1BulletSpeed);
-      }
-      audio.play('bossShoot');
-      boss.p1Timer = cfg.p1Interval / rage;
-    }
-
-    // P2 — telegraphed spore ring with a guaranteed gap
-    if (boss.charge > 0) {
-      boss.charge -= dt;
-      if (boss.charge <= 0) fireSporeRing(boss, game);
-    } else {
-      boss.p2Timer -= dt;
-      if (boss.p2Timer <= 0) {
-        boss.charge = cfg.telegraph;
-        audio.play('bossRing');
-        boss.p2Timer = cfg.p2Interval;
-      }
-    }
+    aimedBurst(boss, dt, game, p, rage); // P1 — slow spore spit
+    telegraphedRing(boss, dt, game, fireSporeRing); // P2 — spore ring (seeded dodge gap)
 
     // P3 — drop a lingering poison pool at a player's feet (the pool telegraphs itself)
     boss.poolTimer -= dt;
@@ -113,32 +82,23 @@ export const mushroom = {
     boss.spawnTimer -= dt;
     if (boss.spawnTimer > 0) return;
     boss.spawnTimer = boss.cfg.spawnInterval;
-
-    const tgt = puffballTarget(boss.hp / boss.maxHp);
-    if (tgt.max === 0) return;
-    const alive = game.enemies.filter((e) => e.isPuffball && !e.dead).length;
-    if (alive >= tgt.min) return;
-
-    for (let i = alive; i < tgt.max; i++) {
-      const a = game.rng.next() * Math.PI * 2;
-      const lx = boss.x + Math.cos(a) * boss.radius * 1.5;
-      const lz = boss.z + Math.sin(a) * boss.radius * 1.5;
-      game.particles.burst(lx, lz, 5, 0x7aa030); // spore-green puff (telegraph)
-      const pf = new Enemy(boss.scene, 'chaser', lx, lz, boss.theme);
-      pf.isPuffball = true;
-      pf.mesh.scale.setScalar(0.55);
-      pf.radius *= 0.6;
-      pf.hp = 1;
-      // pop into a small poison pool where it dies
-      pf.onDeath = (e, g) =>
-        g.hazards.spawn(e.x, e.z, {
-          radius: boss.cfg.puffPoolRadius,
-          warnTime: 0.4,
-          liveTime: boss.cfg.poolLive,
-          damage: boss.cfg.poolDamage,
-        });
-      game.addEnemy(pf);
-    }
+    // each puffball pops into a small poison pool where it dies (per-boss extra)
+    topUpMinions(
+      boss,
+      game,
+      puffballTarget(boss.hp / boss.maxHp),
+      'isPuffball',
+      { puff: 0x7aa030 },
+      (pf) => {
+        pf.onDeath = (e, g) =>
+          g.hazards.spawn(e.x, e.z, {
+            radius: boss.cfg.puffPoolRadius,
+            warnTime: 0.4,
+            liveTime: boss.cfg.poolLive,
+            damage: boss.cfg.poolDamage,
+          });
+      },
+    );
   },
 
   animate(boss) {
