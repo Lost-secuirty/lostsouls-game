@@ -554,3 +554,22 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
   ramp the wrong track; crossfade fades from the howl's current volume (no click on a reused howl).
   Lesson: with an async loader, "did it start?" ≠ "is it playing?" — gate the fallback on real
   async state (events), not a synchronous return.
+
+## 2026-06-21 — Audio: placeholder score + the audio bible (v0.6.7)
+
+- **`docs/AUDIO.md` is now the single home for audio decisions** (track map, candidate swaps,
+  feedback-cue map, boss prompts, how-to-swap) — Scott's request so it doesn't get lost.
+- **Design principles grounded in Scott's Drive research** (horror/addiction + gambling docs):
+  the satisfying part of horror is the **tension→release** (excitation transfer), a healthy
+  skill→reward loop; the _avoid_ list is the gambling toolkit (variable-ratio reward sounds,
+  near-miss / loss-disguised-as-win celebration, manipulative escalation). Rule of thumb baked
+  into the doc: **reward earned progress, keep danger honest, never celebrate a loss.**
+- **Wiring placeholders:** all 5 stages + menu play real CC-BY tracks; the 5 boss slots share one
+  placeholder until the real themes are designed with Caden. Repo grew ~58 MB (Scott OK'd size;
+  streams at runtime so no perf cost). CC-BY → required an in-game **Credits** panel (`ui/credits.js`,
+  start menu) plus `ASSETS.md`.
+- **Download-source reality (for future curation):** scripted download worked from
+  **incompetech.com** (Kevin MacLeod, direct MP3 URLs, CC-BY) but **FreePD 404'd** its `.php` pages
+  and **Pixabay's CDN 403'd** (both gated against `curl`). No `ffmpeg` on this machine, so no
+  transcode — picked a shorter menu track instead of the 24 MB drone. For CC0/OGG finals, expect to
+  download Pixabay/FreePD manually in a browser, or use OpenGameArt direct file URLs.

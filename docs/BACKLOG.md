@@ -35,20 +35,21 @@ as `- [ ] <item> — <why deferred / status>`; the running history of _done_ wor
       action cache are freed. (Found by the Stage 4 review, 2026-06-20.)
 - [ ] Next-phase expansion content — tracked here as it comes up; promoted to an ADR when decided.
 
-## Audio (ADR-0024 — engine shipped v0.6.6; tracks + extras to follow)
+## Audio (ADR-0024 / docs/AUDIO.md — engine + placeholders shipped; finals to follow)
 
-- [ ] **Curated stage tracks (5) + menu theme.** Engine + `config.MUSIC` slots are wired and proven;
-      pick the actual free-for-games tracks WITH Scott's ear (distinct genre per stage: Outskirts
-      noir → Barricade military dark-jazz → Fungal organic dread → Kennels frantic → Catacombs gothic),
-      download to `public/audio/`, map in config, credit in `ASSETS.md` + the in-game credits surface.
+- [x] ~~**Stage tracks + menu wired.**~~ **DONE (v0.6.7, placeholders).** All 5 stages + menu play
+      real looping music (CC-BY Kevin MacLeod placeholders); swappable via `config.MUSIC`. Finals
+      (curate with Scott's ear, maybe CC0/OGG, distinct genre per stage) still a polish pass.
+- [x] ~~**In-game credits surface.**~~ **DONE (v0.6.7).** Start menu → ♪ Credits panel
+      (`ui/credits.js`) lists the CC-BY music attributions.
 - [ ] **AI boss themes (5).** Bespoke "1940s doom-jazz × Doom" per boss (Stable Audio, full
-      ownership). Claude supplies the prompts; Scott generates + drops files in `public/audio/`; slots
-      are pre-wired with fallback so this is non-blocking.
-- [ ] **In-game credits surface.** Needed once CC-BY tracks ship (CC-BY must be credited "in the
-      actual game"). A small credits line/overlay reachable from the start menu.
-- [ ] **Audio polish (deferred):** recorded SFX (gunshots/explosions/monster foley — currently
-      procedural), adaptive intensity-layer stems (calm↔combat), a separate music-only volume slider
-      (master governs both for now).
+      ownership) — designed with Caden. Prompts in `docs/AUDIO.md`. Currently the 5 boss slots share
+      one placeholder; swap each `boss_*` in `config.MUSIC` when a theme exists.
+- [ ] **Final stage-track curation.** Replace the Kevin MacLeod placeholders with the chosen score
+      (genre-per-stage); update `ASSETS.md` + `ui/credits.js`.
+- [ ] **Win/gameover music stingers** (synth for now) — optional.
+- [ ] **Audio polish (deferred):** recorded SFX (currently procedural), adaptive intensity-layer
+      stems (calm↔combat), a separate music-only volume slider (master governs both for now).
 
 ## Balance — REWORKED in Exp 7 Stage 2 (now Scott's to fine-tune)
 

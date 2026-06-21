@@ -506,21 +506,47 @@ export const MUSIC = {
   duckRestoreDelayMs: 50, // wait this long after the dip before ramping back
   // track id -> filename in public/audio/  (null = use the synth fallback for now).
   // stageN = floor N exploration; boss_<key> = that boss's theme; win/gameover sting.
+  // Current = CC-BY placeholders (Kevin MacLeod, credited in ASSETS.md + the in-game
+  // credits panel). Boss themes share one placeholder until Scott + Caden design the real
+  // ones — swap each `boss_*` to its own file then. See docs/AUDIO.md for the full plan.
   tracks: {
-    menu: null,
-    stage0: null, // The Outskirts
-    stage1: null, // The Barricade
-    stage2: null, // The Fungal Depths
-    stage3: null, // The Kennels
-    stage4: null, // The Catacombs
-    boss_spider: null,
-    boss_human: null,
-    boss_mushroom: null,
-    boss_duo: null,
-    boss_skeleton: null,
-    win: null,
-    gameover: null,
+    menu: 'menu.mp3', // Hush
+    stage0: 'stage-outskirts.mp3', // The Outskirts — Darkest Child
+    stage1: 'stage-barricade.mp3', // The Barricade — Anxiety
+    stage2: 'stage-fungal.mp3', // The Fungal Depths — Echoes of Time
+    stage3: 'stage-kennels.mp3', // The Kennels — Killers
+    stage4: 'stage-catacombs.mp3', // The Catacombs — Dark Times
+    boss_spider: 'boss-placeholder.mp3', // placeholder (Despair and Triumph) — swap per boss later
+    boss_human: 'boss-placeholder.mp3',
+    boss_mushroom: 'boss-placeholder.mp3',
+    boss_duo: 'boss-placeholder.mp3',
+    boss_skeleton: 'boss-placeholder.mp3',
+    win: null, // synth stinger for now
+    gameover: null, // synth stinger for now
   },
+  // attribution — the SINGLE source of truth for in-game credits (ui/credits.js renders
+  // this) AND ASSETS.md. CC-BY must be credited in-game, so update this list whenever you
+  // swap a track in `tracks` above (keeps the legal credit in lockstep with the file).
+  credits: [
+    { slot: 'Menu', track: 'Hush', by: 'Kevin MacLeod', license: 'CC BY 4.0' },
+    { slot: 'The Outskirts', track: 'Darkest Child', by: 'Kevin MacLeod', license: 'CC BY 4.0' },
+    { slot: 'The Barricade', track: 'Anxiety', by: 'Kevin MacLeod', license: 'CC BY 4.0' },
+    {
+      slot: 'The Fungal Depths',
+      track: 'Echoes of Time',
+      by: 'Kevin MacLeod',
+      license: 'CC BY 4.0',
+    },
+    { slot: 'The Kennels', track: 'Killers', by: 'Kevin MacLeod', license: 'CC BY 4.0' },
+    { slot: 'The Catacombs', track: 'Dark Times', by: 'Kevin MacLeod', license: 'CC BY 4.0' },
+    {
+      slot: 'Boss themes (placeholder)',
+      track: 'Despair and Triumph',
+      by: 'Kevin MacLeod',
+      license: 'CC BY 4.0',
+    },
+  ],
+  creditsSource: 'incompetech.com', // where the current tracks come from
 };
 
 // ---- juice (the "feel good" knobs) ----
