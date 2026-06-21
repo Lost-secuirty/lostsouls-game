@@ -20,6 +20,7 @@ const transparent = process.env.STUDIO_TRANSPARENT === '1';
 const url = `${base}/tools/render-studio/index.html${transparent ? '?bg=transparent' : ''}`;
 const scale = Number(process.env.STUDIO_SCALE) || 2;
 const outDir = 'artifacts/render-studio';
+const CONTACT = { tile: 480, cols: 3, pad: 16 }; // contact-sheet grid layout
 
 await mkdir(outDir, { recursive: true });
 
@@ -58,7 +59,7 @@ try {
 
 // ---- contact sheet: tile every boss into one PNG (box-downsampled) ----
 if (shots.length) {
-  const sheet = await buildContactSheet(shots, { tile: 480, cols: 3, transparent });
+  const sheet = await buildContactSheet(shots, { ...CONTACT, transparent });
   const sheetPath = `${outDir}/contact-sheet.png`;
   await writeFile(sheetPath, PNG.sync.write(sheet));
   console.log(`  ✓ contact sheet -> ${sheetPath} (${sheet.width}×${sheet.height})`);
@@ -71,9 +72,8 @@ if (errors.length) {
 }
 
 // Average-downsample each shot to `tile`×`tile` and lay them out in a grid.
-async function buildContactSheet(items, { tile, cols, transparent: clear }) {
+async function buildContactSheet(items, { tile, cols, pad, transparent: clear }) {
   const rows = Math.ceil(items.length / cols);
-  const pad = 16;
   const W = cols * tile + (cols + 1) * pad;
   const H = rows * tile + (rows + 1) * pad;
   const sheet = new PNG({ width: W, height: H });

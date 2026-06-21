@@ -28,6 +28,22 @@ export const CAMERA = {
   height: 48, // how high above the arena (was 30; ×1.6 to fit the bigger arena)
   back: 29, // how far back (toward the player/camera) (was 18; ×1.6)
   lookAtY: 0,
+  near: 0.1, // near clip plane
+  far: 300, // far clip plane (well past the arena + fog)
+};
+
+// ---- lighting + fog (scene.js) ----
+// The game's MOOD lives here: a warm key light + a cool fill over a purple
+// hemisphere/ambient, plus fog that fades the far wall. Tweak intensities/colors to make
+// the world brighter, moodier, warmer, colder, etc. (Post-FX bloom/tone-mapping that sits
+// on top of this is in GRAPHICS.) The render studio reuses this so portraits match the game.
+export const LIGHTING = {
+  background: 0x07060a, // scene clear color (matches fog so the far edge dissolves)
+  hemisphere: { sky: 0x8a6b8a, ground: 0x241826, intensity: 0.9 },
+  ambient: { color: 0x66556a, intensity: 0.6 },
+  key: { color: 0xffb088, intensity: 1.3, pos: [10, 30, 12] }, // warm main light
+  fill: { color: 0x6688ff, intensity: 0.5, pos: [-15, 20, -10] }, // cool backlight
+  fog: { color: 0x07060a, farMul: 1.6 }, // fog far = camDist + max(arena) × farMul
 };
 
 // ---- colors / palette ----
@@ -481,6 +497,7 @@ export const SETTINGS = {
 // and the pipeline auto-falls-back to raw render if post-FX can't initialize (never breaks).
 export const GRAPHICS = {
   enabled: true, // master switch — false = raw renderer.render()
+  pixelRatioCap: 2, // max devicePixelRatio (perf/quality knob; higher = crisper but heavier)
   toneMapping: 'aces', // filmic curve: 'aces' | 'agx' | 'neutral' | 'none'
   aaSamples: 4, // WebGL2 MSAA samples for the post-FX path (0 = off)
   bloom: {

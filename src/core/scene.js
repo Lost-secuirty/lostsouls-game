@@ -4,43 +4,46 @@
 // =====================================================================
 
 import * as THREE from 'three';
-import { ARENA, CAMERA, PALETTE } from '../config.js';
+import { ARENA, CAMERA, PALETTE, LIGHTING, GRAPHICS } from '../config.js';
 import { createPostFX } from './postfx.js';
 
 export function createScene(container) {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, GRAPHICS.pixelRatioCap));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = false;
   container.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x07060a);
+  scene.background = new THREE.Color(LIGHTING.background);
   // Fog sized to the camera distance + arena span so the far wall stays readable as
   // the arena grows (it scales with config CAMERA/ARENA instead of fixed 45–90).
   const camDist = Math.hypot(CAMERA.back, CAMERA.height);
   const arenaSpan = Math.max(ARENA.width, ARENA.depth);
-  scene.fog = new THREE.Fog(0x07060a, camDist, camDist + arenaSpan * 1.6);
+  scene.fog = new THREE.Fog(LIGHTING.fog.color, camDist, camDist + arenaSpan * LIGHTING.fog.farMul);
 
   // ---- camera: high up and tilted back, looking at the arena center ----
   const camera = new THREE.PerspectiveCamera(
     CAMERA.fov,
     window.innerWidth / window.innerHeight,
-    0.1,
-    300,
+    CAMERA.near,
+    CAMERA.far,
   );
   const baseCam = { x: 0, y: CAMERA.height, z: CAMERA.back };
   camera.position.set(baseCam.x, baseCam.y, baseCam.z);
   camera.lookAt(0, CAMERA.lookAtY, 0);
 
-  // ---- lights: moody, but bright enough to read the action ----
-  scene.add(new THREE.HemisphereLight(0x8a6b8a, 0x241826, 0.9));
-  scene.add(new THREE.AmbientLight(0x66556a, 0.6));
-  const key = new THREE.DirectionalLight(0xffb088, 1.3);
-  key.position.set(10, 30, 12);
+  // ---- lights: moody, but bright enough to read the action (config.LIGHTING) ----
+  const L = LIGHTING;
+  scene.add(
+    new THREE.HemisphereLight(L.hemisphere.sky, L.hemisphere.ground, L.hemisphere.intensity),
+  );
+  scene.add(new THREE.AmbientLight(L.ambient.color, L.ambient.intensity));
+  const key = new THREE.DirectionalLight(L.key.color, L.key.intensity);
+  key.position.set(...L.key.pos);
   scene.add(key);
-  const fill = new THREE.DirectionalLight(0x6688ff, 0.5);
-  fill.position.set(-15, 20, -10);
+  const fill = new THREE.DirectionalLight(L.fill.color, L.fill.intensity);
+  fill.position.set(...L.fill.pos);
   scene.add(fill);
 
   // ---- ground: dark plane + a grid for the "ruined street" feel ----
