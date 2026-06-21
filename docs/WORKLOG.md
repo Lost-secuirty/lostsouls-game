@@ -15,6 +15,33 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-21 — Phase 4: in-game graphics overhaul — post-FX (v0.7.0, PR #39, ADR-0025)
+
+The headline visual upgrade. The game rendered raw (no tone mapping, no post-processing); now it
+runs a real pipeline.
+
+- **`src/core/postfx.js`** (new) — a pmndrs `postprocessing` `EffectComposer`:
+  `RenderPass → EffectPass( BloomEffect + VignetteEffect + ToneMappingEffect(ACES_FILMIC) )` on a
+  `HalfFloatType` HDR buffer with WebGL2 **MSAA**. **Luminance-gated bloom** (only bright/emissive
+  pixels glow → the dark world's threats pop, scene stays dark + readable). Tone mapping owned by the
+  composer (renderer stays `NoToneMapping`).
+- **Wiring:** `scene.js` builds + returns `postfx` (resize → `postfx.setSize`); `game.render()` calls
+  `postfx.render()`; `main.js` passes it in + binds the `reducedEffects` setting.
+- **`config.GRAPHICS`** — all knobs: `enabled`, `toneMapping`, `aaSamples`, `bloom{}`, `vignette{}`,
+  `vfx{}`. **Impact sparks** on bullet→wall hits via the existing pooled particles (`bullets.js`).
+- **Accessibility:** a ✨ "reduced effects" toggle in the `#settings` panel (extends ADR-0023) flips
+  post-FX off → raw render, persisted.
+- **Fallback contract:** composer init failure OR a throwing frame → raw `renderer.render`. Never a
+  black screen. Hardened `browser-smoke.mjs` to fail on any uncaught page error.
+- **ADR-0025** + GRAPHICS.md completed (pipeline + config reference). Bundle +72 KB (gzip +16 KB) for
+  postprocessing — a one-time download, no runtime bloat.
+- **Verified:** Playwright drive confirmed `window.__postfx = {enabled:true, active:true}` at boot and
+  in the boss room, the toggle flips it to `{false,false}` (raw render), **0 console/page errors**.
+  Bloom + vignette visibly working (boss room screenshots). Full gauntlet + both smokes green.
+- **Deviation:** muzzle flash deferred (per-bullet flash = rapid-fire noise; bloom already glows
+  muzzles) → parked in ROADMAP. Threshold bloom instead of `SelectiveBloomEffect` (robustness; ADR-0025).
+- **Status:** built + verified locally; PR open, awaiting CodeRabbit + checks.
+
 ## 2026-06-21 — Phase 3: dependency audit + bump (v0.6.10, PR #38)
 
 Honest audit pass — **`npm audit` = 0 vulnerabilities**, and the **runtime stack is already on the

@@ -6,13 +6,12 @@ lighting/materials, the VFX/juice, and where every visual knob lives. Companion 
 and the accessibility/feel layer in [ADR-0023](adr/0023-settings-and-overlays.md). Numbers live in
 [`src/config.js`](../src/config.js) (source of truth); this doc explains the _intent_.
 
-> **Status:** baseline documented below. A **post-processing overhaul** (selective bloom + ACES tone
-> mapping + a little VFX juice, via the pmndrs `postprocessing` lib) is **planned next** — see
-> "Planned: the post-FX pipeline" below. (ADR-0025 and the `config.GRAPHICS` block referenced there
-> are intentional forward-references — they land **with** that phase, not yet.) The companion
-> **render studio** dev harness (boss portraits / contact sheets)
-> lands the phase after. Until then the game renders raw (no post-processing), which is the honest
-> current baseline.
+> **Status:** the **post-processing pipeline is live** — luminance-gated bloom + ACES tone mapping +
+> vignette + WebGL2 MSAA, via the pmndrs `postprocessing` lib ([ADR-0025](adr/0025-postprocessing-pipeline.md),
+> [`src/core/postfx.js`](../src/core/postfx.js), tuned in `config.GRAPHICS`). It falls back to the raw
+> renderer if it can't initialize, and an in-game **"reduced effects"** toggle flips it off. The
+> companion **render studio** dev harness (boss portraits / contact sheets) lands next. The
+> "How it works" section below now describes the live pipeline.
 
 ## Design principles — readability first, then atmosphere
 
@@ -32,11 +31,12 @@ and the accessibility/feel layer in [ADR-0023](adr/0023-settings-and-overlays.md
   gracefully — if post-processing or WebGL2 is unavailable, fall back to the raw renderer. Never a
   black screen, headless/CI included.
 
-## How it works (current baseline)
+## How it works (the render pipeline)
 
 - **Renderer** (`src/core/scene.js`): `WebGLRenderer({ antialias: true })`, pixel ratio capped at 2,
-  shadows off. **No tone mapping, no post-processing** today — a single `renderer.render(scene,
-camera)` per frame (`src/game.js`).
+  shadows off. Each frame goes through the **post-FX composer** (`src/core/postfx.js`, below); tone
+  mapping is owned there (the renderer stays `NoToneMapping` to avoid double tone-mapping). The
+  composer self-falls-back to a plain `renderer.render(scene, camera)` if it can't initialize.
 - **Camera** (`src/core/scene.js`, `CAMERA` config): tilted top-down "Binding of Isaac" angle
   (perspective, FOV 55), positioned to fit the whole `ARENA` (ADR-0020). Screen-shake offsets it per
   frame (`systems/juice.js`).
@@ -54,31 +54,48 @@ camera)` per frame (`src/game.js`).
 
 | Event             | Visual                                     | Where                  | Principle                        |
 | ----------------- | ------------------------------------------ | ---------------------- | -------------------------------- |
-| Shoot             | (planned) muzzle flash                     | `JUICE`/postfx phase   | honest instant feedback          |
-| Bullet hits       | (planned) impact sparks                    | `particles.js`/postfx  | earned, proportionate            |
+| Bullet hits wall  | impact spark burst (pooled)                | `bullets.js` + sparks  | earned, readable feedback        |
 | Enemy hit / death | blood particle burst (pooled)              | `systems/particles.js` | proportionate gore (kid-fair)    |
 | Player hit        | screen shake (big) + i-frames + music duck | `systems/juice.js`     | negative feedback, clearly yours |
 | Kill              | screen shake (med) + hit-stop freeze       | `systems/juice.js`     | impact without spectacle         |
 | Boss wind-up      | pulsing telegraph ring on the ground       | `systems/overlays.js`  | fair warning (ADR-0023)          |
 | Hazard (poison)   | telegraph ring → opaque danger zone        | `systems/hazards.js`   | telegraphed, fair (ADR-0016)     |
 
+_(Muzzle flash on every shot is intentionally **not** added — on rapid-fire weapons it's visual noise;
+bloom already gives muzzles/bullets a glow. Parked in `ROADMAP.md` if it's ever wanted as a subtle
+brief flash rather than a per-bullet burst.)_
+
 Juice is tuned in `JUICE` (shake magnitudes + decay, hit-stop durations) and `PARTICLES` (blood pool).
 
-## Planned: the post-FX pipeline _(graphics phase / ADR-0025)_
+## The post-FX pipeline (live — ADR-0025, `src/core/postfx.js`)
 
-A new `src/core/postfx.js` will replace the raw render call with an `EffectComposer` from the pmndrs
-**`postprocessing`** library:
+`createPostFX()` wraps the renderer in a pmndrs **`postprocessing`** `EffectComposer`:
+`RenderPass → EffectPass( Bloom + [Vignette] + ToneMapping(ACES) )`, with a `HalfFloatType` HDR buffer
+and WebGL2 **MSAA**. `game.render()` calls `postfx.render()` instead of `renderer.render()`.
 
-- **Selective bloom** targeting the emissive entities (bullets, enemies, pickups, door) — the dark
-  world's glowing threats get a real glow, gameplay readability preserved.
-- **ACES filmic tone mapping** + correct color space + exposure (richer contrast, no blown-out colors).
-- **Vignette** (subtle) + **SMAA / WebGL2 MSAA** for crisp edges.
-- **VFX juice**: muzzle flash on shoot, impact sparks on hit, optional short bullet trails — pooled
-  like the blood particles.
-- A new **`config.GRAPHICS`** block (bloom intensity/threshold/radius, exposure, vignette, AA mode,
-  VFX toggles, master `enabled`) — all tunable, no code edits.
-- A **"reduced effects" settings toggle** (extends ADR-0023) and a **raw-render fallback** if post-FX
-  can't initialize.
+- **Luminance-gated bloom** — only pixels brighter than `bloom.threshold` glow, so the dark world
+  stays dark and the emissive threats (bullets/enemies/pickups/door) pop. (We use brightness-gated
+  bloom rather than object-selection `SelectiveBloomEffect` — simpler + more robust cross-browser; see
+  ADR-0025.)
+- **ACES filmic tone mapping** so bright/emissive colors don't clip to flat white (mode is swappable:
+  `aces` / `agx` / `neutral` / `none`).
+- **Vignette** (subtle corner darkening) + **MSAA** anti-aliasing.
+- **Impact sparks** — a small pooled spark burst when a bullet hits a wall (`config.GRAPHICS.vfx`).
+- **Fallback contract:** if the composer can't initialize (no WebGL2 / a feature gap / headless quirk)
+  or a frame throws, it falls back to `renderer.render(scene, camera)`. Never a black screen.
+- **Accessibility / low-end:** the `#settings` panel's ✨ button (the `reducedEffects` setting,
+  extending ADR-0023) flips post-FX off → raw render, persisted across reloads.
+
+### `config.GRAPHICS` (the knobs)
+
+All swap-and-see in `npm run dev`:
+
+- `enabled` — master on/off (off = raw render).
+- `toneMapping` — `'aces' | 'agx' | 'neutral' | 'none'`.
+- `aaSamples` — WebGL2 MSAA sample count (0 = off).
+- `bloom` — `{ intensity, threshold, smoothing, radius }` (threshold keeps the dark world dark).
+- `vignette` — `{ enabled, darkness, offset }`.
+- `vfx` — `{ impactSparks, sparkCount, sparkColor }`.
 
 ## Render studio (dev harness) _(render-studio phase)_
 
@@ -90,8 +107,9 @@ IBL + SSAA for crisp hero shots. Section completed when it lands; see `ROADMAP.m
 
 Curated in [`ROADMAP.md`](ROADMAP.md); parking lot in [`BACKLOG.md`](BACKLOG.md):
 
-- [ ] **Post-FX pipeline** (bloom + ACES + VFX) — the next phase.
-- [ ] **Render studio** harness — the phase after.
+- [x] **Post-FX pipeline** (bloom + ACES + vignette + MSAA + impact sparks) — **done** (ADR-0025).
+- [ ] **Render studio** harness — next.
 - [ ] **Atmospheric overhaul (later):** in-game IBL/environment lighting, PBR textures/normal maps,
       depth-of-field, richer fog — bigger mood, weighed against readability + perf.
+- [ ] **Muzzle flash** (subtle brief flash, not per-bullet noise) — parked.
 - [ ] **WebGPU renderer** (someday) — only if there's a reason.

@@ -34,11 +34,12 @@ import { showHumanChoice, moveChoiceFocus, confirmChoice } from './ui/humanchoic
 import * as audio from './systems/audio.js';
 
 export class Game {
-  constructor({ renderer, scene, camera, baseCam, input }) {
+  constructor({ renderer, scene, camera, baseCam, input, postfx }) {
     this.renderer = renderer;
     this.scene = scene;
     this.camera = camera;
     this.baseCam = baseCam;
+    this.postfx = postfx; // post-processing pipeline (ADR-0025); may be undefined in tests
     this.input = input;
     this.JUICE = JUICE;
 
@@ -469,6 +470,8 @@ export class Game {
       this.baseCam.z + (Math.random() * 2 - 1) * m,
     );
     this.camera.lookAt(0, CAMERA.lookAtY, 0);
-    this.renderer.render(this.scene, this.camera);
+    // post-FX pipeline if present (it self-falls-back to raw render); else raw render.
+    if (this.postfx) this.postfx.render();
+    else this.renderer.render(this.scene, this.camera);
   }
 }

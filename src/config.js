@@ -469,6 +469,36 @@ export const SETTINGS = {
   volume: 0.5, // master volume, 0..1
   muted: false,
   showHitboxes: false, // the opt-in hitbox/danger overlay (toggle with H)
+  reducedEffects: false, // post-FX off (raw render) — accessibility / low-end (toggle in panel)
+};
+
+// ---- graphics / post-processing (ADR-0025 — src/core/postfx.js, docs/GRAPHICS.md) ----
+// The look: a dark world where the THREATS GLOW. The post-FX pass adds bloom to the
+// bright emissive bits (bullets, enemies, pickups, the door) + ACES tone mapping so
+// colors don't blow out. Readability first — bloom is luminance-gated, so only bright
+// things bloom, never the whole screen. All swap-and-see in `npm run dev`. `enabled:false`
+// (or the in-game "reduced effects" toggle) drops to the raw renderer (the old look),
+// and the pipeline auto-falls-back to raw render if post-FX can't initialize (never breaks).
+export const GRAPHICS = {
+  enabled: true, // master switch — false = raw renderer.render()
+  toneMapping: 'aces', // filmic curve: 'aces' | 'agx' | 'neutral' | 'none'
+  aaSamples: 4, // WebGL2 MSAA samples for the post-FX path (0 = off)
+  bloom: {
+    intensity: 0.8, // glow strength
+    threshold: 0.55, // only pixels brighter than this bloom (keeps the dark world dark)
+    smoothing: 0.3, // soft knee around the threshold
+    radius: 0.62, // glow spread (0..1)
+  },
+  vignette: {
+    enabled: true,
+    darkness: 0.5, // how dark the corners get
+    offset: 0.3, // where the darkening starts (higher = smaller bright center)
+  },
+  vfx: {
+    impactSparks: true, // a small spark burst when a bullet hits a wall (reuses the particle pool)
+    sparkCount: 4,
+    sparkColor: 0xffd27a, // warm spark; bloom makes it pop
+  },
 };
 
 // ---- readability overlay rings (ADR-0023 — systems/overlays.js) ----

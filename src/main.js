@@ -15,13 +15,15 @@ import { initSettingsPanel } from './ui/settingsPanel.js';
 import { initCredits } from './ui/credits.js';
 
 (async () => {
-  const { renderer, scene, camera, baseCam, resize } = createScene(document.getElementById('app'));
+  const { renderer, scene, camera, baseCam, resize, postfx } = createScene(
+    document.getElementById('app'),
+  );
 
   // try to load any configured models (no-op while config.MODELS are all null)
   await loadModels(MODELS);
 
   const input = new Input(renderer.domElement);
-  const game = new Game({ renderer, scene, camera, baseCam, input });
+  const game = new Game({ renderer, scene, camera, baseCam, input, postfx });
   game.init();
 
   // debug handle (poke the game from the dev console, e.g. window.__game.loadRoom(5))
@@ -42,12 +44,14 @@ import { initCredits } from './ui/credits.js';
       debugGui.show(debugShown);
     }
   };
-  // persisted settings (ADR-0023): apply volume/mute to audio + keep them in sync
+  // persisted settings (ADR-0023): apply volume/mute to audio + post-FX, keep in sync
   audio.setMasterVolume(settings.get('volume'));
   audio.setMuted(settings.get('muted'));
+  postfx?.setEnabled(!settings.get('reducedEffects')); // "reduced effects" = raw render
   settings.onChange((k, v) => {
     if (k === 'volume') audio.setMasterVolume(v);
     if (k === 'muted') audio.setMuted(v);
+    if (k === 'reducedEffects') postfx?.setEnabled(!v);
   });
   initSettingsPanel();
   initCredits();
