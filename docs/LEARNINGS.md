@@ -315,3 +315,37 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
   UNREVIEWED (not when buggy) — mark them Safe/Acknowledged in the PR; the
   zero-fraction (`N.0`) and "prefer optional chain" smells are easy to avoid up
   front; fix all inline Sonar comments in ONE pass instead of push-fail-push.
+
+## 2026-06-21 — Expansion 6 Stage 5 (the Human DECISION-boss 🚪 — the finale)
+
+- **First "pause for a UI choice" boss (ADR-0019):** a nervous survivor; you pick an
+  approach (A/B/C/D) before any fight. Added a real `State.HUMAN_CHOICE` — since
+  `game.update` only ticks entities in `PLAYING`/`ROOM_CLEAR`, the fight pauses for
+  free while the overlay is up (no scattered `if (paused)` checks). `loadRoom` enters
+  it when `info.def.boss === 'human'` instead of the "KILL IT" banner.
+- **The reward is the EXISTING boss-clear path — zero new slot logic.** A right read
+  removes the un-fought boss and calls the unchanged `_onRoomClear` (→ `_countBossBeaten`
+  → `weaponSlotsForBosses` → `setSlotsUnlocked`); a wrong read fights then funnels into
+  the same path on death. The human counts as one boss either way, so the
+  `CAPS.slotUnlockBosses` cadence can't drift. Verified the slot grant by driving both
+  branches (slotsUnlocked 1→2) with `g.rng.chance` stubbed to force each outcome.
+- **Seeded resolver, label is no tell (ADR-0013):** `systems/humanDecision.js` clones
+  `npcDecision.js` — `resolveHuman(rng, choice)` consumes exactly one `rng.chance(rightChance)`
+  (config knob, 0.25). Which choice is "right" is pure RNG, never tied to the label, so
+  it can't be memorized — same spirit as the survivor help/leave gamble.
+- **Config-first paid off — CodeRabbit/Sonar surface stayed tiny:** every feel-number
+  in `config.HUMAN_BOSS` / `config.BOSS.human` from line one; the boss reuses the shared
+  primitives (`aimedBurst`/`telegraphedRing`/`topUpMinions`/`loadAnimated` + procedural
+  `makeCharacter` fallback) so there's no new duplication; the overlay reuses the
+  start-menu DOM + button CSS. No end-of-PR rework loop this time.
+- **Dev-server port gotcha (cost a wasted drive):** orphaned `vite` processes held
+  5173/5174, so a fresh `npm run dev` silently moved to **5175** — the drive hit the
+  stale 5173 (old `index.html`, no `#humanchoice`). Always confirm the port from the
+  dev-server log (or `curl | grep` for a new element) before driving; kill orphans.
+- **Final floor order set:** `spider → human → mushroom → duo → skeleton` (tight 5-floor
+  run; dropped the 2nd/3rd spider floors per Scott+Caden). `tests/floors.test.js` locks
+  the order + monotonic diff. Model: Quaternius **Animated Human** (CC0, `Human Armature|`
+  prefix — `AnimModel`'s strip-on-last-`|` handles it).
+- **Verified:** lint/format; 80 unit tests (added `humanDecision`, `humanrally`, `floors`);
+  build; a Playwright drive of BOTH branches (overlay + labels, right→skip+slot+door,
+  wrong→fight+lose-line, animated human renders) with 0 console errors.

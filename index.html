@@ -249,7 +249,8 @@
         color: #ff5a4f;
         text-shadow: 0 3px 14px #000;
       }
-      #startmenu button {
+      #startmenu button,
+      #humanchoice button {
         cursor: pointer;
         width: 300px;
         padding: 16px 20px;
@@ -265,9 +266,54 @@
           transform 0.1s ease,
           background 0.15s ease;
       }
-      #startmenu button:hover {
+      #startmenu button:hover,
+      #humanchoice button:hover,
+      #humanchoice button.focus {
         background: #4a2030;
         transform: scale(1.04);
+        outline: 3px solid #ffd24a;
+      }
+
+      /* ---- human decision-boss choice overlay ---- */
+      #humanchoice {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        text-align: center;
+        pointer-events: auto;
+        background: radial-gradient(circle at 50% 38%, #1a1410 0%, #0a0508 70%, #07060a 100%);
+        color: #fff;
+      }
+      #humanchoice.show {
+        display: flex;
+      }
+      #hc-setup {
+        max-width: 640px;
+        padding: 0 20px;
+        font-size: 22px;
+        line-height: 1.45;
+        font-weight: 700;
+        color: #ffeede;
+        text-shadow: 0 2px 10px #000;
+      }
+      #humanchoice .hc-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        justify-content: center;
+        max-width: 740px;
+      }
+      #humanchoice button {
+        width: 250px;
+        font-size: 17px;
+        letter-spacing: 1px;
+        text-transform: none;
+        border-color: #ffd24a;
       }
       #startmenu .hint {
         max-width: 440px;
@@ -319,6 +365,21 @@
       <div class="hint">
         P1: WASD + mouse &nbsp;·&nbsp; P2: Xbox controller (left stick move, right stick aim, RT
         shoot) &nbsp;·&nbsp; click once for sound
+      </div>
+    </div>
+
+    <!-- human decision-boss: A/B/C/D approach choice (text set from config in ui/humanchoice.js) -->
+    <div id="humanchoice">
+      <div id="hc-setup"></div>
+      <div class="hc-row">
+        <button id="hc-A"></button>
+        <button id="hc-B"></button>
+        <button id="hc-C"></button>
+        <button id="hc-D"></button>
+      </div>
+      <div class="hint">
+        Pick how you approach — you won't know if it was the right call until you choose.
+        &nbsp;·&nbsp; 1-4 / click / left-stick + A
       </div>
     </div>
 

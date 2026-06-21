@@ -25,9 +25,11 @@ import { Juice } from './systems/juice.js';
 import { buildRoom } from './systems/rooms.js';
 import { populateRoom } from './systems/spawner.js';
 import { resolveDecision } from './systems/npcDecision.js';
+import { resolveHuman } from './systems/humanDecision.js';
 import { circleVsBox, circleVsCircle } from './core/math2d.js';
 import { hud } from './ui/hud.js';
 import { prompts } from './ui/prompts.js';
+import { showHumanChoice, moveChoiceFocus, confirmChoice } from './ui/humanchoice.js';
 import * as audio from './systems/audio.js';
 
 export class Game {
@@ -168,7 +170,11 @@ export class Game {
 
     const info = floorInfo(index);
     audio.setMusicFloor(info.floorIndex); // music gets tenser each floor
-    if (info.isBossRoom && this.bosses.length) {
+    if (info.isBossRoom && info.def.boss === 'human') {
+      // decision-boss: pause for the A/B/C/D approach choice BEFORE any fight
+      this.state = State.HUMAN_CHOICE;
+      showHumanChoice((choice) => this._onHumanChoice(choice));
+    } else if (info.isBossRoom && this.bosses.length) {
       const names = this.bosses.map((b) => b.name).join(' & ');
       hud.banner(`${names.toUpperCase()} — ${this.bosses.length > 1 ? 'KILL THEM' : 'KILL IT'}`);
       setTimeout(() => hud.hideBanner(), 1600);
@@ -241,6 +247,20 @@ export class Game {
       this._handlePickups();
       this._handleSurvivors(dt); // survivors stay helpable after the fight is over
       this._checkDoor();
+    } else if (this.state === State.HUMAN_CHOICE) {
+      // fight is paused while the overlay is up; just drive the gamepad cursor
+      // (mouse + keyboard are handled inside ui/humanchoice.js)
+      const mv = this.input.move('pad');
+      if (mv.x > 0.5 && !this._choiceLatch) {
+        moveChoiceFocus(1);
+        this._choiceLatch = true;
+      } else if (mv.x < -0.5 && !this._choiceLatch) {
+        moveChoiceFocus(-1);
+        this._choiceLatch = true;
+      } else if (Math.abs(mv.x) < 0.3) {
+        this._choiceLatch = false;
+      }
+      if (this.input.consumeHelp('pad')) confirmChoice();
     }
 
     this.particles.update(dt);
@@ -341,6 +361,32 @@ export class Game {
       this.spawnPickup(dropRandomPickup(this.rng, false), 0, 0);
       hud.banner(nextIsBoss(this.roomIndex) ? '⚠  BOSS AHEAD  ⚠' : 'ROOM CLEAR — RUN!');
     }
+  }
+
+  /** the player picked an approach at the human decision-boss (A/B/C/D) */
+  _onHumanChoice(choice) {
+    const outcome = resolveHuman(this.rng, choice); // seeded (ADR-0013)
+    hud.toast(outcome.message, outcome.right);
+    audio.play(outcome.right ? 'good' : 'bad');
+    if (outcome.right) {
+      this._resolveHumanSkip(); // he waves you through — skip the fight, keep the reward
+    } else {
+      this.state = State.PLAYING; // he panics — the fight is on
+      audio.play(this.bosses[0]?.behavior?.roar ?? 'bossRoar');
+    }
+  }
+
+  /** right read: clear the un-fought human and run the normal boss-clear reward */
+  _resolveHumanSkip() {
+    for (const b of this.bosses) {
+      if (!b.dead) {
+        this.scene.remove(b.mesh);
+        b.dead = true;
+      }
+    }
+    this._bossHandled = true; // boss is gone; don't let any PLAYING sweep re-fire
+    this.enemies = this.enemies.filter((e) => !e.dead);
+    this._onRoomClear(); // grants the weapon slot + checkpoint + open door, like any boss clear
   }
 
   _checkDoor() {

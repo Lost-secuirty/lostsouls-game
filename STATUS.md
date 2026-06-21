@@ -28,6 +28,11 @@ This file is the lifecycle source-of-truth for the repo. The detailed running hi
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Expansion 6 Stage 5 (finale)** — the **Human decision-boss** 🚪 "The Survivor". Before the
+  fight you pick how to approach (A/B/C/D); a seeded "right" read skips the fight AND grants the
+  weapon slot, a wrong read means you fight him for it (new `HUMAN_CHOICE` state + overlay,
+  pure `resolveHuman`, ADR-0019). This sets the **final 5-floor order**:
+  spider → human → mushroom → duo → skeleton. Expansion 6's boss roster is complete.
 - **Expansion 6 Stage 4** — the **skeleton boss** 💀 "Rattlebones" (aimed bone throws, a seeded
   scatter ring, a reassemble-and-teleport escape with i-frames, and HP-gated boneling summons)
   with an animated CC0 skeleton (Quaternius). Reuses the data-driven boss + animated-model +
@@ -49,7 +54,7 @@ two-player co-op (keyboard/mouse/gamepad). Most recent work:
 - **Cross-repo hardening** — secret/PII pre-commit + CI scanner (public-repo BLOCK policy),
   ESLint 10, pinned actions.
 
-18 ADRs (0001–0018). Verification: probability/proof tests, coverage gate, production smoke +
+19 ADRs (0001–0019). Verification: probability/proof tests, coverage gate, production smoke +
 browser smoke, OpenSSF scorecard, dependency review, control audit.
 
 ## Scope (unchanged)

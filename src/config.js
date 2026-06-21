@@ -116,7 +116,7 @@ export const PROGRESSION = {
     {
       name: 'The Outskirts',
       boss: 'spider',
-      diff: 1.0,
+      diff: 1,
       palette: {
         body: 0x2a0606,
         emissive: 0x6a0d0d,
@@ -126,27 +126,19 @@ export const PROGRESSION = {
       },
     },
     {
-      name: 'Downtown Ruins',
-      boss: 'spider',
-      diff: 1.35,
+      // Expansion 6 Stage 5 — the Human DECISION-boss (a nervous survivor). Before
+      // the fight you pick how to approach (A/B/C/D, config.HUMAN_BOSS.labels); a
+      // seeded "right" read skips the fight + grants the slot, a wrong read means you
+      // fight him for it (systems/humanDecision.js + bosses/human.js).
+      name: 'The Barricade',
+      boss: 'human',
+      diff: 1.3,
       palette: {
-        body: 0x14210a,
-        emissive: 0x4aa00d,
-        leg: 0x0a1405,
-        legEmissive: 0x2a5008,
-        eye: 0xc8ff3a,
-      },
-    },
-    {
-      name: 'The Hive',
-      boss: 'spider',
-      diff: 1.7,
-      palette: {
-        body: 0x1a0a2a,
-        emissive: 0x6a0d8a,
-        leg: 0x0a0316,
-        legEmissive: 0x40085a,
-        eye: 0x6ad8ff,
+        body: 0x6a7280, // grey jacket
+        emissive: 0x3a4250, // cold blue
+        leg: 0x4a3a2a, // worn boots / pants
+        legEmissive: 0x3a5a2a, // military-green webbing
+        eye: 0xffd24a, // wary amber
       },
     },
     {
@@ -155,7 +147,7 @@ export const PROGRESSION = {
       // stage once those bosses exist; for now the mushroom caps off the run.)
       name: 'The Fungal Depths',
       boss: 'mushroom',
-      diff: 1.9,
+      diff: 1.6,
       palette: {
         body: 0xb83a2a, // cap red
         emissive: 0xff6a4a, // cap glow
@@ -172,7 +164,7 @@ export const PROGRESSION = {
       name: 'The Kennels',
       boss: 'duo',
       duo: ['dog', 'cat'], // Fang (pounce) + Whisker (zoner)
-      diff: 2.0,
+      diff: 1.9,
       palette: {
         // shared kennel ambiance; minions pick warm (pups) / cool (kittens) by kind
         body: 0x6a5230,
@@ -354,6 +346,36 @@ export const BOSS = {
     bonelingScale: 0.62, // boneling size + collision shrink
     bonelingHp: 1,
   },
+
+  // ---- the HUMAN boss — a nervous survivor 🚪 (Expansion 6 Stage 5, decision-boss).
+  // You only fight him on a WRONG pre-fight read (see HUMAN_BOSS + bosses/human.js).
+  // P1 = panicked pistol bursts · P2 = telegraphed panic spray ring ·
+  // P3 = rally armed survivors (HP-gated, humanRallyTarget()).
+  human: {
+    hp: 75,
+    radius: 2.4,
+    speed: 4, // panicked, quick on his feet
+    contactDamage: 1,
+    contactCooldown: 0.8,
+
+    // P1 — aimed pistol burst
+    p1Interval: 1.4,
+    p1Burst: 3,
+    p1Spread: 10, // degrees across the volley
+    p1BulletSpeed: 15,
+
+    // P2 — telegraphed "panic spray" ring
+    p2Interval: 3.8,
+    telegraph: 0.5, // wind-up (fair warning)
+    ringBullets: 12, // base count (scaled by floor diff in code)
+    ringBulletSpeed: 8, // slow so the ring is dodgeable
+
+    // P3 — rally armed survivors (count gated by HP in humanRallyTarget())
+    spawnInterval: 2.8,
+    spawnDist: 1.7, // ring radius (× boss.radius) the survivors rush in from
+    minionScale: 0.7, // armed survivor size + collision shrink
+    minionHp: 2, // tougher than other minions (they're armed)
+  },
 };
 
 // ---- the DUO controller knobs (shared by both beasts) — Stage 3 ----
@@ -363,6 +385,28 @@ export const DUO = {
   enrageScale: 1.3, // the "I'm angry now" size pop when a partner falls
   spawnX: 5, // each beast spawns this far left/right of center
   spawnZOffset: 4, // ...and this far in front of the back wall
+};
+
+// ---- the HUMAN decision-boss pre-fight choice — Expansion 6 Stage 5 ----
+// A nervous survivor blocks the gate; you pick how to approach (A/B/C/D). The
+// outcome is SEEDED (game.rng), so you never know which read was right — a "right"
+// read (rightChance) skips the fight AND still grants the weapon slot; a "wrong"
+// read means you fight him, then get the slot anyway (the normal boss-clear reward).
+// Resolver: systems/humanDecision.js. The labels are flavor only — never a tell.
+export const HUMAN_BOSS = {
+  rightChance: 0.25, // odds a read lands right (~1-in-4); the design's config knob
+  choices: ['A', 'B', 'C', 'D'], // button keys + the resolver's domain
+  labels: {
+    A: 'Talk to him gently',
+    B: 'Slowly step closer',
+    C: 'Offer him a trade',
+    D: 'Raise your weapon',
+  },
+  setupLine:
+    'A trembling survivor blocks the gate, his weapon shaking. "S-stay back! ...or ' +
+    "don't. I can't tell who's a monster anymore. What do you do?\"",
+  winLine: 'His shoulders drop. "You\'re... real. Okay — take this, and go." He waves you through.',
+  loseLine: 'He flinches — "MONSTER!" — and opens fire. Looks like we do this the hard way.',
 };
 
 // ---- ground hazards: lingering, telegraphed damage zones (spore/poison pools) ----
@@ -542,4 +586,5 @@ export const MODELS = {
   dog: 'models/dog.glb', // Stage 3: animated CC0 beast — Fang + pups (warm)
   cat: 'models/cat.glb', // Stage 3: animated CC0 beast — Whisker + kittens (cool)
   skeleton: 'models/skeleton.glb', // Stage 4: animated CC0 skeleton — Rattlebones + bonelings
+  human: 'models/human.glb', // Stage 5: animated CC0 human — the Survivor + rallied survivors
 };

@@ -99,6 +99,19 @@ export function skeletonWaveTarget(hpFrac) {
 }
 
 /**
+ * Human boss P3: how many armed survivors he rallies, gated by HP. PURE.
+ * Fewer than the other waves because they're tougher (minionHp 2): none above
+ * 50% HP, 1–2 under 50%, 2–3 under 25%.
+ * @param {number} hpFrac boss hp / maxHp (0..1)
+ * @returns {{min:number, max:number}}
+ */
+export function humanRallyTarget(hpFrac) {
+  if (hpFrac > 0.5) return { min: 0, max: 0 };
+  if (hpFrac > 0.25) return { min: 1, max: 2 };
+  return { min: 2, max: 3 };
+}
+
+/**
  * Decide what happens when the player dies. PURE.
  * Lose a life; if any remain, respawn at the checkpoint room; otherwise it's
  * game over (which the caller turns into a full restart).
