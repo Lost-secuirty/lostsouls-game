@@ -8,11 +8,10 @@
 // Extracted verbatim from the original boss.js so the spider plays identically.
 // =====================================================================
 
-import { PALETTE } from '../../config.js';
 import { getModel } from '../../core/assets.js';
 import { buildSpiderMesh } from '../spiderMesh.js';
 import { spiderlingTarget } from '../../core/progression.js';
-import { Enemy } from '../enemies.js';
+import { topUpMinions } from '../enemies.js';
 import { normalize, spreadDirs } from '../../core/math2d.js';
 import * as audio from '../../systems/audio.js';
 
@@ -74,25 +73,7 @@ export const spider = {
     boss.spawnTimer -= dt;
     if (boss.spawnTimer > 0) return;
     boss.spawnTimer = boss.cfg.spawnInterval;
-
-    const tgt = spiderlingTarget(boss.hp / boss.maxHp);
-    if (tgt.max === 0) return;
-    const alive = game.enemies.filter((e) => e.isSpiderling && !e.dead).length;
-    if (alive >= tgt.min) return;
-
-    for (let i = alive; i < tgt.max; i++) {
-      // seeded RNG (ADR-0013) so spawns are reproducible — also avoids Math.random
-      const a = game.rng.next() * Math.PI * 2;
-      const lx = boss.x + Math.cos(a) * boss.radius * 1.5;
-      const lz = boss.z + Math.sin(a) * boss.radius * 1.5;
-      game.particles.burst(lx, lz, 5, PALETTE.blood); // little spawn puff (telegraph)
-      const ling = new Enemy(boss.scene, 'chaser', lx, lz, boss.theme);
-      ling.isSpiderling = true;
-      ling.mesh.scale.setScalar(0.55);
-      ling.radius *= 0.6;
-      ling.hp = 1;
-      game.addEnemy(ling);
-    }
+    topUpMinions(boss, game, spiderlingTarget(boss.hp / boss.maxHp), 'isSpiderling');
   },
 
   animate(boss, rage) {

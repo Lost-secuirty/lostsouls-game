@@ -17,7 +17,7 @@ import { ARENA } from '../../config.js';
 import { loadAnimated } from '../../core/animModel.js';
 import { buildSkeletonMesh } from '../skeletonMesh.js';
 import { skeletonWaveTarget } from '../../core/progression.js';
-import { Enemy } from '../enemies.js';
+import { topUpMinions } from '../enemies.js';
 import { normalize, spreadDirs } from '../../core/math2d.js';
 import { slideOutOfWalls, clampToArena } from '../../systems/collision.js';
 import * as audio from '../../systems/audio.js';
@@ -157,28 +157,16 @@ export const skeleton = {
 
   // P4 — keep the HP-gated number of bonelings alive
   spawns(boss, dt, game) {
-    if (boss._reassembling) return;
+    if (boss._reassembling) return; // it's gone — no summoning while reforming
     boss.spawnTimer -= dt;
     if (boss.spawnTimer > 0) return;
     boss.spawnTimer = boss.cfg.spawnInterval;
-
-    const tgt = skeletonWaveTarget(boss.hp / boss.maxHp);
-    if (tgt.max === 0) return;
-    const alive = game.enemies.filter((e) => e.isBoneling && !e.dead).length;
-    if (alive >= tgt.min) return;
-
-    for (let i = alive; i < tgt.max; i++) {
-      const a = game.rng.next() * Math.PI * 2; // seeded (ADR-0013)
-      const lx = boss.x + Math.cos(a) * boss.radius * boss.cfg.spawnDist;
-      const lz = boss.z + Math.sin(a) * boss.radius * boss.cfg.spawnDist;
-      game.particles.burst(lx, lz, 5, boss.palette?.eye ?? 0x9bff6a); // bone-rise puff
-      const b = new Enemy(boss.scene, 'chaser', lx, lz, boss.theme);
-      b.isBoneling = true;
-      b.mesh.scale.setScalar(boss.cfg.bonelingScale);
-      b.radius *= 0.6;
-      b.hp = boss.cfg.bonelingHp;
-      game.addEnemy(b);
-    }
+    topUpMinions(boss, game, skeletonWaveTarget(boss.hp / boss.maxHp), 'isBoneling', {
+      dist: boss.cfg.spawnDist,
+      scale: boss.cfg.bonelingScale,
+      hp: boss.cfg.bonelingHp,
+      puff: boss.palette?.eye ?? 0x9bff6a,
+    });
   },
 
   animate(boss) {

@@ -206,3 +206,30 @@ export class Enemy {
     this.scene.remove(this.mesh);
   }
 }
+
+/**
+ * HP-gated minion top-up shared by the boss P-spawns (spider/mushroom/skeleton):
+ * keep between target.min and target.max of a `tag`-flagged chaser alive, rising
+ * at seeded ring positions. Builds + configures each minion (radius/scale/hp) and
+ * addEnemy()s it; `after(e)` adds per-boss extras (e.g. the puffball's onDeath).
+ * Seeded via game.rng (ADR-0013) so spawns stay reproducible.
+ */
+export function topUpMinions(boss, game, target, tag, opts = {}, after = null) {
+  if (target.max === 0) return;
+  const alive = game.enemies.filter((e) => e[tag] && !e.dead).length;
+  if (alive >= target.min) return;
+  const { dist = 1.5, scale = 0.55, hp = 1, puff = PALETTE.blood } = opts;
+  for (let i = alive; i < target.max; i++) {
+    const a = game.rng.next() * Math.PI * 2;
+    const lx = boss.x + Math.cos(a) * boss.radius * dist;
+    const lz = boss.z + Math.sin(a) * boss.radius * dist;
+    game.particles.burst(lx, lz, 5, puff); // little spawn puff (telegraph)
+    const e = new Enemy(boss.scene, 'chaser', lx, lz, boss.theme);
+    e[tag] = true;
+    e.mesh.scale.setScalar(scale);
+    e.radius *= 0.6;
+    e.hp = hp;
+    if (after) after(e);
+    game.addEnemy(e);
+  }
+}

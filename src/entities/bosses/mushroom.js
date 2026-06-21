@@ -14,7 +14,7 @@
 import { buildMushroomMesh } from '../mushroomMesh.js';
 import { loadAnimated } from '../../core/animModel.js';
 import { puffballTarget } from '../../core/progression.js';
-import { Enemy } from '../enemies.js';
+import { topUpMinions } from '../enemies.js';
 import { normalize, spreadDirs } from '../../core/math2d.js';
 import * as audio from '../../systems/audio.js';
 
@@ -105,32 +105,23 @@ export const mushroom = {
     boss.spawnTimer -= dt;
     if (boss.spawnTimer > 0) return;
     boss.spawnTimer = boss.cfg.spawnInterval;
-
-    const tgt = puffballTarget(boss.hp / boss.maxHp);
-    if (tgt.max === 0) return;
-    const alive = game.enemies.filter((e) => e.isPuffball && !e.dead).length;
-    if (alive >= tgt.min) return;
-
-    for (let i = alive; i < tgt.max; i++) {
-      const a = game.rng.next() * Math.PI * 2;
-      const lx = boss.x + Math.cos(a) * boss.radius * 1.5;
-      const lz = boss.z + Math.sin(a) * boss.radius * 1.5;
-      game.particles.burst(lx, lz, 5, 0x7aa030); // spore-green puff (telegraph)
-      const pf = new Enemy(boss.scene, 'chaser', lx, lz, boss.theme);
-      pf.isPuffball = true;
-      pf.mesh.scale.setScalar(0.55);
-      pf.radius *= 0.6;
-      pf.hp = 1;
-      // pop into a small poison pool where it dies
-      pf.onDeath = (e, g) =>
-        g.hazards.spawn(e.x, e.z, {
-          radius: boss.cfg.puffPoolRadius,
-          warnTime: 0.4,
-          liveTime: boss.cfg.poolLive,
-          damage: boss.cfg.poolDamage,
-        });
-      game.addEnemy(pf);
-    }
+    // each puffball pops into a small poison pool where it dies (per-boss extra)
+    topUpMinions(
+      boss,
+      game,
+      puffballTarget(boss.hp / boss.maxHp),
+      'isPuffball',
+      { puff: 0x7aa030 },
+      (pf) => {
+        pf.onDeath = (e, g) =>
+          g.hazards.spawn(e.x, e.z, {
+            radius: boss.cfg.puffPoolRadius,
+            warnTime: 0.4,
+            liveTime: boss.cfg.poolLive,
+            damage: boss.cfg.poolDamage,
+          });
+      },
+    );
   },
 
   animate(boss) {
