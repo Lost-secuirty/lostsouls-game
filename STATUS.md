@@ -32,8 +32,9 @@ two-player co-op (keyboard/mouse/gamepad). Most recent work:
 - **Drift-audit bot (v0.7.3)** — a deterministic PR auditor (`scripts/audit-drift.mjs`; design in
   [`docs/DRIFT-AUDIT.md`](docs/DRIFT-AUDIT.md), ported from the codex repo) that checks **logged intent
   vs the actual diff** (phantom claims, scope creep, weakened gates, skipped tests, lint suppressions,
-  missing PR "Deviations") and comments each PR via `.github/workflows/audit.yml` (no API key; safe
-  prettier-only auto-fix + history). (A local `auditor` agent / `/audit` for the semantic layer is
+  missing PR "Deviations") and comments each PR via `.github/workflows/audit.yml` (no API key;
+  comment-only — the control policy forbids the push-back pattern). (A local `auditor` agent / `/audit`
+  for the semantic layer is
   deferred pending sign-off — agent self-config.) First step of the atmospheric-overhaul run
   (IBL → shadows → textures → AO next).
 - **Config cleanup (v0.7.2)** — centralized the game's **lighting + fog** into a new `config.LIGHTING`

@@ -26,10 +26,12 @@ the codex repo's **audit bot** set up here first, so it watches every graphics P
   `console.log`/`debugger` in src, sensitive-path changes, deep nesting, src-growth-without-tests,
   stale docs, oversized LEARNINGS, unlogged files, and a missing PR "Deviations" section. `--fix`
   applies only `prettier --write` (formatting) — never edits logic to pass.
-- **`.github/workflows/audit.yml`** — runs on every PR: posts the report as a comment, commits safe
-  auto-fixes + appends `docs/audit-history.ndjson`. `GITHUB_TOKEN` only; fork-gate + bot-actor guard;
-  leaner than codex (no `--run-checks` — `ci.yml` already gates lint/build, no doing it twice).
-  Informational (not a required merge-blocker — Scott's call this round).
+- **`.github/workflows/audit.yml`** — runs on every PR and **posts the report as a comment**.
+  `GITHUB_TOKEN` only; **comment-only (no push)** — the repo's control policy (`tools/control_audit.py`)
+  forbids the writable-head-checkout / persisted-credentials / fork-skip that codex's auto-fix-push
+  needs, and I won't waive a security control. Auto-format is redundant anyway (`ci.yml`'s
+  `format:check` already gates it); `--fix`/`--history` stay available for local runs. Informational,
+  not a required merge-blocker.
 - **`docs/DRIFT-AUDIT.md`** — the design doc. Adapted from codex: biome→prettier, TS→JS, codex
   paths/rules → lostsouls. `npm run audit`.
 - **Deferred:** the local `.claude/` `auditor` agent + `/audit` command (the pre-push _semantic_

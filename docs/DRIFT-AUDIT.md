@@ -37,42 +37,45 @@ pre-push) and **claims that don't match the code** (phantom "done" reports).
 | `deviations-section`     | medium | PR body missing/empty `## Deviations from plan` (WA #7)                             |
 | `lint/format/build-fail` | high   | only with `--run-checks` (local) — CI's `ci.yml` already gates these                |
 
-## Auto-fix is a tiny, fixed class
+## Auto-fix is a tiny, fixed class (local only)
 
 With `--fix` the auditor runs **only `prettier --write`** (formatting). It **never** edits
 logic to make itself pass — debug statements, suppressions, skipped tests, and config
 thresholds are **report-only**. This invariant is the whole point: an auditor that can
-rewrite logic to go green is worse than no auditor.
+rewrite logic to go green is worse than no auditor. (CI doesn't use `--fix` — it can't push,
+and `ci.yml`'s `format:check` already gates formatting, so it'd be redundant.)
 
 ## How it runs
 
-- **CI (`.github/workflows/audit.yml`)** — on every PR: runs the script with `--fix`
-  `--history`, commits safe formatting fixes + appends `docs/audit-history.ndjson`, and
-  posts the report as a PR comment. Uses `GITHUB_TOKEN` only; fork-gated and guarded
-  against its own bot pushes (no self-amplifying loop). It does **not** re-run lint/build
-  — `ci.yml` already gates those (no doing it twice). **Informational** today (not a
-  required merge-blocker); flip that in branch-protection settings if we ever want it to
-  block on high-severity drift.
-- **Local** — `npm run audit` (or `node scripts/audit-drift.mjs ... --run-checks`) before
-  pushing; pre-push, **any high-severity finding = don't push.** (A `/audit` command + an
-  `auditor` agent for the semantic layer are deferred pending Scott's OK — see "Two layers".)
+- **CI (`.github/workflows/audit.yml`)** — on every PR: runs the script and **posts the
+  report as a PR comment** (read-only checkout, `persist-credentials: false`, `GITHUB_TOKEN`
+  only). **Comment-only — it does NOT push:** the repo's control policy (`tools/control_audit.py`)
+  forbids writable-head checkout / persisted credentials / fork-skip, which the auto-fix-push
+  pattern would need — and we won't waive a security control. It also doesn't re-run lint/build
+  (`ci.yml` owns those). **Informational** (not a required merge-blocker); flip that in
+  branch-protection settings to block on high-severity drift.
+- **Local** — `npm run audit` (or `node scripts/audit-drift.mjs ... --fix --run-checks`)
+  before pushing; pre-push, **any high-severity finding = don't push.** (A `/audit` command +
+  an `auditor` agent for the semantic layer are deferred pending Scott's OK — see "Two layers".)
 
 ```
 node scripts/audit-drift.mjs --base origin/main --head HEAD --run-checks   # report
 node scripts/audit-drift.mjs --base origin/main --head HEAD --fix           # + safe fixes
 ```
 
-## History
+## History (local / opt-in)
 
-`docs/audit-history.ndjson` — one line per audited head (`{ ts, base, head, pr, findings,
-srcNet, autofixed }`), appended by CI and idempotent per head. A longitudinal record of
-drift over time (and the raw material for a future retro pass).
+`--history docs/audit-history.ndjson` appends one line per audited head (`{ ts, base, head,
+pr, findings, srcNet, autofixed }`), idempotent per head — a longitudinal record of drift
+over time. **Not run in CI** (CI can't push, per the control policy), so it's a local/opt-in
+log for now; the PR comments are the per-PR record.
 
 ## Adaptations from the codex original
 
 biome → **prettier** (auto-fix class); TS/`typecheck` → **JS** (dropped the typecheck-fail
 check); codex `src/lib` vs `src/prototypes` → lostsouls `src/` vs `tests/`; sensitive-paths
-and Working-Agreement rule numbers re-pointed at lostsouls' `AGENTS.md`. The CI job is
-leaner — no `--run-checks` in CI (ci.yml owns lint/build). **Deferred** (pending Scott's
-OK on agent self-config): the `.claude/` `auditor` agent + `/audit` command. Not ported:
-`preflight.mjs` and `/audit-retro` (can add later if wanted).
+and Working-Agreement rule numbers re-pointed at lostsouls' `AGENTS.md`. The CI job is leaner
+and **comment-only** — no `--run-checks` (ci.yml owns lint/build) and **no push** (codex pushed
+auto-fixes + history back to the PR; lostsouls' control policy forbids that pattern, so we don't).
+**Deferred** (pending Scott's OK on agent self-config): the `.claude/` `auditor` agent + `/audit`
+command. Not ported: `preflight.mjs` and `/audit-retro` (can add later if wanted).
