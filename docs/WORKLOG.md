@@ -17,7 +17,7 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ## 2026-06-21 — Retro fix: centralize lighting/fog into config (v0.7.2, PR #41)
 
-A retro with Scott flagged the recurring config-discipline slip: feel-numbers in files I *edit*
+A retro with Scott flagged the recurring config-discipline slip: feel-numbers in files I _edit_
 (not just my new block) staying hardcoded. Concrete fix:
 
 - **New `config.LIGHTING`** — the game's lights (hemisphere/ambient/key/fill colors, intensities,
