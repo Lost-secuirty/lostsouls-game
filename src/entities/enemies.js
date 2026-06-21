@@ -15,6 +15,7 @@ import { buildSpiderMesh } from './spiderMesh.js';
 import { buildMushroomMesh } from './mushroomMesh.js';
 import { buildBeastMesh } from './beastMesh.js';
 import { buildSkeletonMesh } from './skeletonMesh.js';
+import { makeCharacter } from './characterMesh.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { normalize, dist, circleVsCircle } from '../core/math2d.js';
 import * as audio from '../systems/audio.js';
@@ -53,6 +54,18 @@ function makeEnemyMesh(type, theme) {
     const g = buildSkeletonMesh(ENEMY[type].radius * 1.3, theme.palette || {}, {
       simple: true,
     }).group;
+    return { group: g, anim: null };
+  }
+
+  // armed survivors rallied by the human boss (humanoid, match the boss)
+  if (theme?.boss === 'human') {
+    const a = loadAnimated('human', ENEMY[type].radius * 2.1);
+    if (a) return { group: a.wrap, anim: a.anim };
+    const g = makeCharacter(null, {
+      radius: ENEMY[type].radius,
+      height: ENEMY[type].radius * 2.2,
+      color: theme.palette?.body ?? PALETTE.npc,
+    });
     return { group: g, anim: null };
   }
 
@@ -119,6 +132,7 @@ export class Enemy {
       (theme.boss === 'dog' || theme.boss === 'cat' || theme.boss === 'duo')
     );
     this.isSkeleton = theme?.boss === 'skeleton';
+    this.isHuman = theme?.boss === 'human';
     const built = makeEnemyMesh(type, theme);
     this.mesh = built.group;
     this.anim = built.anim; // AnimModel for GLB minions, else null
@@ -171,7 +185,7 @@ export class Enemy {
     if (s !== 1) this.mesh.scale.setScalar(s + (1 - s) * Math.min(1, dt * 12));
 
     // themed monsters face the player; generic blobs do a slow menacing spin
-    if (this.isSpider || this.isMushroom || this.isBeast || this.isSkeleton)
+    if (this.isSpider || this.isMushroom || this.isBeast || this.isSkeleton || this.isHuman)
       this.mesh.rotation.y = Math.atan2(p.x - this.x, p.z - this.z);
     else this.mesh.rotation.y += dt * 1.5;
     this.anim?.update(dt); // advance the GLB animation clip, if any

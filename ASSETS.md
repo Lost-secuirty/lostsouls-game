@@ -28,10 +28,11 @@ here with their source and license. **Only use CC0 or free-for-games assets.**
 Audio is procedural (no files). Models below are **CC0 (Public Domain)** — no
 attribution is required, but we credit the author anyway.
 
-| File                              | Source                                        | Author     | License |
-| --------------------------------- | --------------------------------------------- | ---------- | ------- |
-| `public/models/mushroom-king.glb` | [Poly Pizza](https://poly.pizza/m/grnFTziU8u) | Quaternius | CC0 1.0 |
-| `public/models/mushnub.glb`       | [Poly Pizza](https://poly.pizza/m/LWKmS30Xxl) | Quaternius | CC0 1.0 |
-| `public/models/dog.glb`           | [Poly Pizza](https://poly.pizza/m/y4wdQpg767) | Quaternius | CC0 1.0 |
-| `public/models/cat.glb`           | [Poly Pizza](https://poly.pizza/m/qKICY6xla2) | Quaternius | CC0 1.0 |
-| `public/models/skeleton.glb`      | [Poly Pizza](https://poly.pizza/m/yq5ATpujSt) | Quaternius | CC0 1.0 |
+| File                              | Source                                         | Author     | License |
+| --------------------------------- | ---------------------------------------------- | ---------- | ------- |
+| `public/models/mushroom-king.glb` | [Poly Pizza](https://poly.pizza/m/grnFTziU8u)  | Quaternius | CC0 1.0 |
+| `public/models/mushnub.glb`       | [Poly Pizza](https://poly.pizza/m/LWKmS30Xxl)  | Quaternius | CC0 1.0 |
+| `public/models/dog.glb`           | [Poly Pizza](https://poly.pizza/m/y4wdQpg767)  | Quaternius | CC0 1.0 |
+| `public/models/cat.glb`           | [Poly Pizza](https://poly.pizza/m/qKICY6xla2)  | Quaternius | CC0 1.0 |
+| `public/models/skeleton.glb`      | [Poly Pizza](https://poly.pizza/m/yq5ATpujSt)  | Quaternius | CC0 1.0 |
+| `public/models/human.glb`         | [Poly Pizza](https://poly.pizza/m/c3Ibh9I3udk) | Quaternius | CC0 1.0 |
