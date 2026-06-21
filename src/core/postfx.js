@@ -41,7 +41,7 @@ export function createPostFX({ renderer, scene, camera }) {
   function build() {
     try {
       composer = new EffectComposer(renderer, {
-        multisampling: Math.max(0, g.aaSamples | 0),
+        multisampling: Math.max(0, Math.trunc(g.aaSamples) || 0),
         frameBufferType: HalfFloatType, // HDR buffer so bloom + tone mapping read true brightness
       });
       composer.addPass(new RenderPass(scene, camera));
