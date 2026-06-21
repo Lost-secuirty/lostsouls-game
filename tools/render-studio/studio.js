@@ -185,8 +185,14 @@ window.showBoss = (type) => {
 
   // Deterministic pose: jump the GLB mixer to a fixed time (frozen, not wall-clock
   // driven), and step the procedural behavior to the same fixed t. Same pose every run.
-  if (current.anim?.mixer?.setTime) current.anim.mixer.setTime(STUDIO.poseTime);
-  else for (let i = 0; i < 12; i++) current.anim?.update(0.05);
+  if (current.anim?.mixer?.setTime) {
+    current.anim.mixer.setTime(STUDIO.poseTime);
+  } else {
+    // no setTime: step in fixed ticks to the SAME poseTime (stays in sync with config)
+    const step = 0.05;
+    const ticks = Math.max(1, Math.round(STUDIO.poseTime / step));
+    for (let i = 0; i < ticks; i++) current.anim?.update(step);
+  }
   current.t = STUDIO.poseTime;
   current.behavior?.animate?.(current, 1);
 
