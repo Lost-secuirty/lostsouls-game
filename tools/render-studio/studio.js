@@ -196,5 +196,13 @@ const rootedModels = Object.fromEntries(
   Object.entries(MODELS).map(([k, v]) => [k, v ? '/' + v.replace(/^\/+/, '') : v]),
 );
 window.__ready = false;
-await loadModels(rootedModels); // top-level await (ES module); then signal the driver
-window.__ready = true;
+try {
+  await loadModels(rootedModels); // top-level await (ES module)
+} catch (err) {
+  // loadModels normally falls back to primitives (ADR-0004), but if the loader itself
+  // throws, still signal ready so the driver proceeds (bosses use procedural meshes)
+  // rather than hanging until its timeout.
+  console.error('[render-studio] model preload failed; using procedural fallbacks:', err);
+} finally {
+  window.__ready = true;
+}
