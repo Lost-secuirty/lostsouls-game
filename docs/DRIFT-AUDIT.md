@@ -58,7 +58,7 @@ and `ci.yml`'s `format:check` already gates formatting, so it'd be redundant.)
   before pushing; pre-push, **any high-severity finding = don't push.** (A `/audit` command +
   an `auditor` agent for the semantic layer are deferred pending Scott's OK — see "Two layers".)
 
-```
+```bash
 node scripts/audit-drift.mjs --base origin/main --head HEAD --run-checks   # report
 node scripts/audit-drift.mjs --base origin/main --head HEAD --fix           # + safe fixes
 ```

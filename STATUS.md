@@ -32,8 +32,10 @@ two-player co-op (keyboard/mouse/gamepad). Most recent work:
 - **Drift-audit bot (v0.7.3)** — a deterministic PR auditor (`scripts/audit-drift.mjs`; design in
   [`docs/DRIFT-AUDIT.md`](docs/DRIFT-AUDIT.md), ported from the codex repo) that checks **logged intent
   vs the actual diff** (phantom claims, scope creep, weakened gates, skipped tests, lint suppressions,
-  missing PR "Deviations") and comments each PR via `.github/workflows/audit.yml` (no API key;
-  comment-only — the control policy forbids the push-back pattern). (A local `auditor` agent / `/audit`
+  missing PR "Deviations") and posts the report as a comment on same-repo PRs via
+  `.github/workflows/audit.yml` (no API key; comment-only — the control policy forbids the push-back
+  pattern, and fork PRs get a read-only token so the audit still runs but can't comment). (A local
+  `auditor` agent / `/audit`
   for the semantic layer is
   deferred pending sign-off — agent self-config.) First step of the atmospheric-overhaul run
   (IBL → shadows → textures → AO next).
