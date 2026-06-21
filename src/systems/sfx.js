@@ -6,13 +6,16 @@
 // until the first user gesture, so call unlock() on first click/keypress.
 // =====================================================================
 
+import { SETTINGS } from '../config.js';
+
 let ctx = null;
 let master = null;
 let musicOn = false;
 let musicVoices = []; // { osc, base } for the drone, so we can shift pitch per floor
 let musicFloor = 0; // current floor (raises the drone a couple semitones each floor)
-let masterVolume = 0.5; // 0..1 player volume (settings.js); applied to the master gain
-let muted = false;
+// defaults from config (SETTINGS); main.js overrides these from the persisted store
+let masterVolume = SETTINGS.volume; // 0..1 player volume; applied to the master gain
+let muted = SETTINGS.muted;
 
 /** the live master gain = 0 when muted, else masterVolume */
 function applyGain() {

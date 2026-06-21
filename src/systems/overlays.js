@@ -12,19 +12,15 @@
 // =====================================================================
 
 import * as THREE from 'three';
-import { HAZARD } from '../config.js';
+import { HAZARD, OVERLAY } from '../config.js';
 import { settings } from './settings.js';
-
-const POOL = 96; // players + a crowded room of enemies + a couple of telegraphs
-const PLAYER_HIT = 0x6cff8a; // green = "this is your hitbox"
-const ENEMY_HIT = 0xff4d4d; // red = it can hurt you
-const BOSS_HIT = 0xff3030;
 
 export class Overlays {
   constructor(scene) {
     this.items = [];
-    const geo = new THREE.RingGeometry(0.82, 1.0, 28); // unit ring, scaled per entity
-    for (let i = 0; i < POOL; i++) {
+    const r = OVERLAY.ring;
+    const geo = new THREE.RingGeometry(r.inner, r.outer, r.segments); // unit ring, scaled per entity
+    for (let i = 0; i < OVERLAY.poolSize; i++) {
       const mat = new THREE.MeshBasicMaterial({
         color: 0xffffff,
         transparent: true,
@@ -42,7 +38,7 @@ export class Overlays {
     this._t = 0;
   }
 
-  _ring(x, z, radius, colorHex, opacity, y = 0.06) {
+  _ring(x, z, radius, colorHex, opacity, y = OVERLAY.hitboxY) {
     const it = this.items[this._n];
     if (!it) return; // pool exhausted (very crowded) — skip the extra ring gracefully
     this._n++;
@@ -70,20 +66,23 @@ export class Overlays {
 
   /** boss telegraph rings — ALWAYS on (fair warning), pulse like the hazard warn ring */
   _telegraphRings(game) {
+    const tg = OVERLAY.telegraph;
     for (const b of game.bosses) {
       if (b.dead || b.charge <= 0) continue;
-      const pulse = 0.3 + 0.28 * (0.5 + 0.5 * Math.sin(this._t * 18));
-      this._ring(b.x, b.z, b.radius * 1.6, HAZARD.warnColor, pulse, 0.04);
+      const pulse = tg.pulseBase + tg.pulseAmp * (0.5 + 0.5 * Math.sin(this._t * tg.pulseSpeed));
+      this._ring(b.x, b.z, b.radius * tg.radiusMul, HAZARD.warnColor, pulse, tg.y);
     }
   }
 
   /** opt-in hitbox overlay — ring each player's (green) and enemy's/boss's (red) circle */
   _hitboxRings(game) {
+    const c = OVERLAY.colors;
+    const op = OVERLAY.hitboxOpacity;
     for (const p of game.players) {
-      if (p.alive) this._ring(p.x, p.z, p.radius, PLAYER_HIT, 0.9);
+      if (p.alive) this._ring(p.x, p.z, p.radius, c.player, op.player);
     }
     for (const e of game.enemies) {
-      if (!e.dead) this._ring(e.x, e.z, e.radius, e.isBoss ? BOSS_HIT : ENEMY_HIT, 0.85);
+      if (!e.dead) this._ring(e.x, e.z, e.radius, e.isBoss ? c.boss : c.enemy, op.enemy);
     }
   }
 }

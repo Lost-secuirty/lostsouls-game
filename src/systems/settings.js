@@ -5,13 +5,26 @@
 // unavailable (private mode / headless), so it never throws.
 // =====================================================================
 
+import { SETTINGS } from '../config.js';
+
 const KEY = 'lostsouls.settings';
-const DEFAULTS = { volume: 0.5, muted: false, showHitboxes: false };
+const DEFAULTS = SETTINGS; // single source of truth (config.js); never mutated here
+
+// Coerce a (possibly corrupt / hand-edited) stored blob to the right types, so a bad
+// value — e.g. a non-numeric `volume` — can't flow downstream into audio.setMasterVolume.
+function normalize(v) {
+  const n = Number(v.volume);
+  return {
+    volume: Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : DEFAULTS.volume,
+    muted: !!v.muted,
+    showHitboxes: !!v.showHitboxes,
+  };
+}
 
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
+    if (raw) return normalize({ ...DEFAULTS, ...JSON.parse(raw) });
   } catch {
     /* no storage (private mode / headless) — fall back to defaults */
   }

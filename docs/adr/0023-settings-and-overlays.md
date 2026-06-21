@@ -17,8 +17,10 @@ scene-mesh-per-boss would have re-introduced the teardown-leak class the Stage-6
 A small, persisted accessibility/feel layer:
 
 - **`src/systems/settings.js`** — a tiny shared store for `{ volume, muted, showHitboxes }`,
-  persisted to **`localStorage`** (the repo's first use), with a subscribe hook. Degrades to defaults
-  where storage is unavailable (private mode / headless) — never throws.
+  persisted to **`localStorage`** (the repo's first use), with a subscribe hook. Defaults come from
+  **`config.SETTINGS`** (one source of truth), and a loaded blob is **normalized** (volume coerced to
+  a finite 0..1, the flags to booleans) so a corrupt/hand-edited store can't push a bad value into
+  audio. Degrades to defaults where storage is unavailable (private mode / headless) — never throws.
 - **Volume + mute** — `sfx.js` gains `setMasterVolume`/`setMuted` (a `masterVolume`/`muted` pair
   applied to the master gain, honored even if set before audio unlocks). A bottom-right `#settings`
   panel (revealed once the boot splash clears, then always reachable, `ui/settingsPanel.js`) gives a
@@ -28,7 +30,8 @@ A small, persisted accessibility/feel layer:
   `hazards.js` (a fixed set of meshes made once, reused every frame → never added/removed during
   play, so no teardown leak). Two uses: (1) an **always-on boss telegraph ring** that pulses while a
   boss winds up (fair warning), and (2) an **opt-in hitbox overlay** (`settings.showHitboxes`) that
-  rings each player's (green) and enemy's/boss's (red) exact collision circle.
+  rings each player's (green) and enemy's/boss's (red) exact collision circle. Its tunables (pool
+  size, ring geometry, colors, opacities, telegraph pulse) live in **`config.OVERLAY`**.
 - **Dev perf HUD** — the debug menu's FPS readout grew into a Performance folder (draw calls via
   `renderer.info`, live bullet + enemy counts) to support difficulty/perf tuning.
 - **Carry-overs** — `ally.range` 16 → 22 for the bigger arena; the Stage-6 `scale.test.js` review

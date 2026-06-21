@@ -489,3 +489,12 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
   - _Hide overlays that sit above the boot splash_ until boot clears (`.ready` class), and keep
     doc/CSS comments truthful about placement (the panel was "top-right" in 3 docs but is
     bottom-right) — a linter/reviewer will (rightly) flag the mismatch.
+- **CodeRabbit pass → tunables to config (the standing rule, enforced):** moved the
+  hardcoded feel/defaults out of modules into `config.js` — a `SETTINGS` block (the
+  persisted-store defaults; `settings.js` + `sfx.js` both source it, one source of truth)
+  and an `OVERLAY` block (ring pool size, colors, opacities, telegraph pulse coefficients).
+  Also normalize the persisted blob at the `settings.js` load boundary (the right layer:
+  coerce `volume` to a finite 0..1 + flags to booleans) — belt-and-suspenders with the
+  `sfx.setMasterVolume` finite-guard. Lesson: when adding a system, put its defaults in
+  `config.js` from the start; a default hardcoded in a module reads as a smell to reviewers
+  even when it's "just" a fallback.
