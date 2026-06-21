@@ -18,7 +18,7 @@ const DEADZONE = 0.15;
 const dz = (v) => (Math.abs(v) < DEADZONE ? 0 : v);
 
 /** is the event target a text field / menu control (so we shouldn't treat keys as game input)? */
-function isEditable(el) {
+export function isEditable(el) {
   if (!el || !el.tagName) return false;
   const t = el.tagName;
   return t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT' || el.isContentEditable;

@@ -25,6 +25,9 @@ export function initDebugMenu(game) {
     weapon: game.player?.weapon ?? 'pistol',
     pickup: 'HEAL',
     fps: 0,
+    drawCalls: 0,
+    bullets: 0,
+    enemies: 0,
   };
 
   // ---- World ----
@@ -117,8 +120,12 @@ export function initDebugMenu(game) {
     'drop',
   ).name('🎁 Drop pickup');
 
-  // ---- FPS monitor ----
-  const fpsCtrl = gui.add(state, 'fps').name('FPS').disable().listen();
+  // ---- Performance (FPS + the counts that matter for tuning difficulty/perf) ----
+  const perf = gui.addFolder('Performance');
+  const fpsCtrl = perf.add(state, 'fps').name('FPS').disable().listen();
+  const dcCtrl = perf.add(state, 'drawCalls').name('Draw calls').disable().listen();
+  const blCtrl = perf.add(state, 'bullets').name('Bullets (live)').disable().listen();
+  const enCtrl = perf.add(state, 'enemies').name('Enemies (live)').disable().listen();
   let last = performance.now();
   let frames = 0;
   let acc = 0;
@@ -128,7 +135,13 @@ export function initDebugMenu(game) {
     last = now;
     if (acc >= 500) {
       state.fps = Math.round((frames * 1000) / acc);
+      state.drawCalls = game.renderer?.info?.render?.calls ?? 0;
+      state.bullets = game.bullets ? game.bullets.items.filter((b) => b.active).length : 0;
+      state.enemies = game.enemies.filter((e) => !e.dead).length;
       fpsCtrl.updateDisplay();
+      dcCtrl.updateDisplay();
+      blCtrl.updateDisplay();
+      enCtrl.updateDisplay();
       frames = 0;
       acc = 0;
     }

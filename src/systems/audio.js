@@ -22,6 +22,14 @@ export function setMusicFloor(floorIndex) {
   sfx.setMusicFloor(floorIndex);
 }
 
+/** master volume (0..1) + mute — wired to the settings panel (ADR-0023) */
+export function setMasterVolume(v) {
+  sfx.setMasterVolume(v);
+}
+export function setMuted(b) {
+  sfx.setMuted(b);
+}
+
 /** kept for call-site compatibility; the synth needs no pre-registration */
 export function registerDefaultSounds() {
   // procedural — nothing to load.

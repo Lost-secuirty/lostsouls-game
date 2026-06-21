@@ -6,11 +6,21 @@
 // until the first user gesture, so call unlock() on first click/keypress.
 // =====================================================================
 
+import { SETTINGS } from '../config.js';
+
 let ctx = null;
 let master = null;
 let musicOn = false;
 let musicVoices = []; // { osc, base } for the drone, so we can shift pitch per floor
 let musicFloor = 0; // current floor (raises the drone a couple semitones each floor)
+// defaults from config (SETTINGS); main.js overrides these from the persisted store
+let masterVolume = SETTINGS.volume; // 0..1 player volume; applied to the master gain
+let muted = SETTINGS.muted;
+
+/** the live master gain = 0 when muted, else masterVolume */
+function applyGain() {
+  if (master) master.gain.value = muted ? 0 : masterVolume;
+}
 
 function ensure() {
   if (ctx) return ctx;
@@ -18,9 +28,24 @@ function ensure() {
   if (!AC) return null;
   ctx = new AC();
   master = ctx.createGain();
-  master.gain.value = 0.5;
   master.connect(ctx.destination);
+  applyGain(); // honor any volume/mute set before audio unlocked
   return ctx;
+}
+
+/** set the master volume (0..1); takes effect immediately and on next unlock */
+export function setMasterVolume(v) {
+  // coerce + reject non-finite (a corrupt stored value like {"volume":"loud"} would
+  // otherwise clamp to NaN and make a spec-compliant AudioParam throw — see ADR-0023)
+  const n = Number(v);
+  if (Number.isFinite(n)) masterVolume = Math.max(0, Math.min(1, n));
+  applyGain();
+}
+
+/** mute/unmute without losing the chosen volume */
+export function setMuted(b) {
+  muted = !!b;
+  applyGain();
 }
 
 /** Resume audio after the first user gesture, and kick off the music. */

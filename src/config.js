@@ -74,7 +74,7 @@ export const ALLY = {
   speed: 9,
   followDist: 4.5, // tries to stay this close to you
   fireCooldown: 0.45,
-  range: 16, // will shoot enemies within this distance
+  range: 22, // will shoot enemies within this distance (bumped for the bigger arena)
 };
 
 // ---- bullets (shared pool for player + enemies) ----
@@ -459,6 +459,35 @@ export const HAZARD = {
   tickInterval: 0.5, // seconds between damage ticks while you stand in a live pool
   warnColor: 0xc8ff3a, // telegraph ring (harmless)
   liveColor: 0x66c000, // active poison
+};
+
+// ---- accessibility / feel settings (persisted-store defaults — systems/settings.js) ----
+// Starting values for the persisted player settings. settings.js seeds its store from
+// these (and clamps a loaded `volume` to a finite 0..1), and sfx.js uses them as the
+// pre-unlock fallback — so there's ONE source of truth. (ADR-0023)
+export const SETTINGS = {
+  volume: 0.5, // master volume, 0..1
+  muted: false,
+  showHitboxes: false, // the opt-in hitbox/danger overlay (toggle with H)
+};
+
+// ---- readability overlay rings (ADR-0023 — systems/overlays.js) ----
+// Flat ground rings drawn over the action: an always-on boss TELEGRAPH ring (pulses
+// while a boss winds up) + the opt-in HITBOX overlay. Pooled like HAZARD (meshes made
+// once, repositioned each frame). The telegraph color comes from HAZARD.warnColor.
+export const OVERLAY = {
+  poolSize: 96, // ring meshes: players + a crowded room of enemies + a few telegraphs
+  ring: { inner: 0.82, outer: 1.0, segments: 28 }, // unit ring geometry (scaled per entity)
+  colors: { player: 0x6cff8a, enemy: 0xff4d4d, boss: 0xff3030 }, // green = you, red = threat
+  hitboxOpacity: { player: 0.9, enemy: 0.85 },
+  hitboxY: 0.06, // height above the ground for the hitbox rings
+  telegraph: {
+    radiusMul: 1.6, // telegraph ring size = boss.radius × this
+    pulseBase: 0.3, // opacity = base + amp × (0..1 sine)
+    pulseAmp: 0.28,
+    pulseSpeed: 18, // rad/sec pulse cadence (wall-clock driven, so refresh-rate-stable)
+    y: 0.04, // sits just under the hitbox rings
+  },
 };
 
 // ---- juice (the "feel good" knobs) ----

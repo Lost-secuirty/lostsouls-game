@@ -19,6 +19,7 @@ import { Ally } from './entities/ally.js';
 import { Enemy } from './entities/enemies.js';
 import { Bullets } from './entities/bullets.js';
 import { Hazards } from './systems/hazards.js';
+import { Overlays } from './systems/overlays.js';
 import { dropRandomPickup, Pickup } from './entities/pickups.js';
 import { Particles } from './systems/particles.js';
 import { Juice } from './systems/juice.js';
@@ -69,6 +70,7 @@ export class Game {
     this.juice = new Juice();
     this.bullets = new Bullets(this.scene);
     this.hazards = new Hazards(this.scene);
+    this.overlays = new Overlays(this.scene); // boss telegraph rings + opt-in hitbox overlay
     // players are created in startRun (which the start menu calls)
   }
 
@@ -446,6 +448,7 @@ export class Game {
   }
 
   render() {
+    this.overlays.sync(this); // boss telegraph rings + (opt-in) hitbox overlay
     const m = this.juice.shakeMag;
     this.camera.position.set(
       this.baseCam.x + (Math.random() * 2 - 1) * m,

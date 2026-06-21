@@ -4,12 +4,14 @@
 
 import { createScene } from './core/scene.js';
 import { loadModels } from './core/assets.js';
-import { Input } from './systems/input.js';
+import { Input, isEditable } from './systems/input.js';
 import { Game } from './game.js';
 import { startLoop } from './core/loop.js';
 import { MODELS } from './config.js';
 import * as audio from './systems/audio.js';
 import { showStartMenu } from './ui/startmenu.js';
+import { settings } from './systems/settings.js';
+import { initSettingsPanel } from './ui/settingsPanel.js';
 
 (async () => {
   const { renderer, scene, camera, baseCam, resize } = createScene(document.getElementById('app'));
@@ -38,8 +40,23 @@ import { showStartMenu } from './ui/startmenu.js';
       debugGui.show(debugShown);
     }
   };
+  // persisted settings (ADR-0023): apply volume/mute to audio + keep them in sync
+  audio.setMasterVolume(settings.get('volume'));
+  audio.setMuted(settings.get('muted'));
+  settings.onChange((k, v) => {
+    if (k === 'volume') audio.setMasterVolume(v);
+    if (k === 'muted') audio.setMuted(v);
+  });
+  initSettingsPanel();
+
   addEventListener('keydown', (e) => {
+    // ignore OS key-repeat (holding a key shouldn't strobe a toggle) and keys typed
+    // into a focused control (slider/menu) — matches input.js's game-key convention
+    if (e.repeat || isEditable(e.target)) return;
     if (e.key === '`') toggleDebug();
+    else if (e.key === 'm' || e.key === 'M')
+      settings.toggle('muted'); // mute/unmute
+    else if (e.key === 'h' || e.key === 'H') settings.toggle('showHitboxes'); // hitbox overlay
   });
   if (location.search.includes('debug')) toggleDebug();
 
@@ -60,6 +77,7 @@ import { showStartMenu } from './ui/startmenu.js';
 
   // hide the loading splash, then show the start menu (pick 1P or 2P)
   document.getElementById('boot')?.classList.add('hide');
+  document.getElementById('settings')?.classList.add('ready'); // reveal once boot clears
   showStartMenu((coop) => game.startRun(coop));
 
   startLoop({
