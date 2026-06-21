@@ -5,6 +5,7 @@
 
 import * as THREE from 'three';
 import { ARENA, CAMERA, PALETTE } from '../config.js';
+import { createPostFX } from './postfx.js';
 
 export function createScene(container) {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -61,11 +62,16 @@ export function createScene(container) {
   grid.material.transparent = true;
   scene.add(grid);
 
+  // post-processing pipeline (bloom + ACES tone mapping + vignette; ADR-0025). Falls
+  // back to the raw renderer internally if it can't initialize, so this never breaks boot.
+  const postfx = createPostFX({ renderer, scene, camera });
+
   function resize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    postfx.setSize(window.innerWidth, window.innerHeight);
   }
 
-  return { renderer, scene, camera, baseCam, resize };
+  return { renderer, scene, camera, baseCam, resize, postfx };
 }

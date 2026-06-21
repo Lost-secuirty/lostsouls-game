@@ -24,11 +24,17 @@ session) lives in [`docs/WORKLOG.md`](docs/WORKLOG.md); the detailed running his
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.6.10)
+## Current state (v0.7.0)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **In-game graphics overhaul — post-FX (v0.7.0, ADR-0025)** — the game now renders through a
+  **post-processing pipeline** ([`src/core/postfx.js`](src/core/postfx.js), pmndrs `postprocessing`):
+  **luminance-gated bloom** so the dark world's emissive threats (bullets/enemies/pickups/door) glow,
+  **ACES tone mapping**, vignette, and WebGL2 MSAA — plus impact sparks on wall hits. All knobs in
+  `config.GRAPHICS`; a ✨ "reduced effects" toggle (`#settings`) and an automatic raw-render fallback
+  mean it never breaks. Big visual jump, readability preserved.
 - **Dependency audit + bump (v0.6.10)** — honest maintenance pass: `npm audit` clean (0 vulns), the
   runtime stack already on latest (three r184, vite 8, express 5, howler), only dev tooling bumped
   (eslint 10.5.0, vitest/coverage 4.1.9, playwright 1.61.0). Full gauntlet + smokes green on the new
@@ -118,7 +124,7 @@ two-player co-op (keyboard/mouse/gamepad). Most recent work:
 - **Cross-repo hardening** — secret/PII pre-commit + CI scanner (public-repo BLOCK policy),
   ESLint 10, pinned actions.
 
-24 ADRs (0001–0024). Verification: probability/proof tests, coverage gate, production smoke +
+25 ADRs (0001–0025). Verification: probability/proof tests, coverage gate, production smoke +
 browser smoke, OpenSSF scorecard, dependency review, control audit.
 
 ## Scope (unchanged)

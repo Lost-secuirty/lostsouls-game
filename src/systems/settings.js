@@ -18,6 +18,7 @@ function normalize(v) {
     volume: Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : DEFAULTS.volume,
     muted: !!v.muted,
     showHitboxes: !!v.showHitboxes,
+    reducedEffects: !!v.reducedEffects,
   };
 }
 

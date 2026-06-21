@@ -14,7 +14,7 @@
 // =====================================================================
 
 import * as THREE from 'three';
-import { BULLET, PALETTE } from '../config.js';
+import { BULLET, PALETTE, GRAPHICS } from '../config.js';
 import { circleVsCircle, turnAngle } from '../core/math2d.js';
 import { hitsAnyWall } from '../systems/collision.js';
 import * as audio from '../systems/audio.js';
@@ -188,6 +188,7 @@ export class Bullets {
           audio.play('bounce');
         } else {
           if (b.explosive) this._explode(b, game);
+          this._wallSpark(b, game); // small impact spark (no-op if disabled in config)
           this._kill(b);
           continue;
         }
@@ -273,6 +274,15 @@ export class Bullets {
     game.particles.burst(b.x, b.z, 26, 0xff7722);
     game.juice.shake(0.4);
     audio.play('explosion');
+  }
+
+  // a small spark burst where a (non-bouncing) bullet hits a wall — reuses the pooled
+  // particle system; gated by config.GRAPHICS.vfx so it's free to turn off. Bloom (ADR-0025)
+  // makes the warm spark pop. No-op when impactSparks is off.
+  _wallSpark(b, game) {
+    const vfx = GRAPHICS.vfx;
+    if (!vfx?.impactSparks || !game.particles) return;
+    game.particles.burst(b.x, b.z, vfx.sparkCount, vfx.sparkColor);
   }
 
   _kill(b) {
