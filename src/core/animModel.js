@@ -70,6 +70,21 @@ export class AnimModel {
   update(dt) {
     this.mixer.update(dt);
   }
+
+  /**
+   * Release the mixer + its cached clip-actions when this entity is removed (room
+   * change / death). Without this, each animated boss/minion orphans an
+   * AnimationMixer + action cache across room visits (the Stage-6 teardown-leak
+   * class). Geometry/materials are SHARED via SkeletonUtils.clone and the clips come
+   * from the original gltf, so we deliberately DON'T dispose those (would break other
+   * live instances). Mirrors Player.dispose() for the procedural player.
+   */
+  dispose() {
+    this.mixer.stopAllAction();
+    this.mixer.uncacheRoot(this.group);
+    this.actions = {};
+    this.current = null;
+  }
 }
 
 /**

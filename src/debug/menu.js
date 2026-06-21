@@ -156,6 +156,7 @@ function _killAll(game) {
   for (const e of game.enemies) {
     if (!e.dead) {
       e.dead = true;
+      e.anim?.dispose();
       game.scene.remove(e.mesh);
     }
   }

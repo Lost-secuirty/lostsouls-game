@@ -141,8 +141,11 @@ export class Game {
     this._bossHandled = false;
     hud.hideBossBars();
 
-    // clear out the previous room's actors
-    for (const e of this.enemies) this.scene.remove(e.mesh);
+    // clear out the previous room's actors (dispose anim mixers so they don't leak)
+    for (const e of this.enemies) {
+      e.anim?.dispose();
+      this.scene.remove(e.mesh);
+    }
     this.enemies = [];
     for (const n of this.npcs) {
       this.scene.remove(n.mesh);
@@ -236,6 +239,7 @@ export class Game {
         this._bossHandled = true;
         for (const e of this.enemies) {
           if (!e.isBoss && !e.dead) {
+            e.anim?.dispose();
             this.scene.remove(e.mesh);
             e.dead = true;
           }
@@ -388,6 +392,7 @@ export class Game {
   _resolveHumanSkip() {
     for (const b of this.bosses) {
       if (!b.dead) {
+        b.anim?.dispose();
         this.scene.remove(b.mesh);
         b.dead = true;
       }

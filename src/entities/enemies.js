@@ -216,6 +216,7 @@ export class Enemy {
     game.juice.hitStop(game.JUICE.hitStopOnKill);
     audio.play('kill');
     if (this.onDeath) this.onDeath(this, game); // e.g. puffball -> poison pool
+    this.anim?.dispose(); // free the GLB AnimationMixer for animated minions (no leak)
     this.scene.remove(this.mesh);
   }
 }

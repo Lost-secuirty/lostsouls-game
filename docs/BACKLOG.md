@@ -27,13 +27,12 @@ as `- [ ] <item> — <why deferred / status>`; the running history of _done_ wor
       full reset orphaned them — `Player.dispose(scene)` (called from `Game._teardownActors`) now
       removes them. Death: dying mid-run left the blades frozen visible (the adversarial review's
       catch) — `Player.hurt()` now `_hideOrbital()`s on death; they re-show on revive.
-- [ ] **Dispose AnimModel mixers on room change (Stage 6 cleanup).** `AnimModel` has no
-      `dispose()`, and `loadRoom`/the boss-death sweep only `scene.remove()` the mesh — so each
-      removed GLB boss + minion (mushroom, dog/cat, skeleton) leaks an `AnimationMixer` + clip-action
-      cache + cloned Object3D graph across room visits (geometry/material are shared via
-      `SkeletonUtils.clone`, so no buffer leak). Fix: add `dispose()` (`mixer.stopAllAction()` +
-      `uncacheRoot`) and call it where meshes are removed. Pre-existing cross-cutting pattern; bundle
-      with the orbital-blade teardown above. (Found by the Stage 4 review, 2026-06-20.)
+- [x] ~~**Dispose AnimModel mixers on room change (Stage 6 cleanup).**~~ **DONE (v0.6.5).**
+      `AnimModel.dispose()` (`mixer.stopAllAction()` + `uncacheRoot`) now runs wherever an animated
+      boss/minion mesh is removed — `Boss.die`, `Enemy.die`, `loadRoom`'s sweep, the post-boss minion
+      sweep, the human-skip path, and the debug kill-all. Geometry/materials stay shared
+      (`SkeletonUtils.clone`), clips come from the original gltf, so only the per-instance mixer +
+      action cache are freed. (Found by the Stage 4 review, 2026-06-20.)
 - [ ] Next-phase expansion content — tracked here as it comes up; promoted to an ADR when decided.
 
 ## Balance — REWORKED in Exp 7 Stage 2 (now Scott's to fine-tune)
