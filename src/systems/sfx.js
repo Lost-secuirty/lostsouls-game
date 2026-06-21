@@ -16,6 +16,10 @@ let musicFloor = 0; // current floor (raises the drone a couple semitones each f
 // defaults from config (SETTINGS); main.js overrides these from the persisted store
 let masterVolume = SETTINGS.volume; // 0..1 player volume; applied to the master gain
 let muted = SETTINGS.muted;
+// the procedural drone routes through musicBus so a recorded track (music.js, ADR-0024)
+// can silence the synth music without touching SFX. 1 = drone audible, 0 = silenced.
+let musicBus = null;
+let synthMusicMuted = false;
 
 /** the live master gain = 0 when muted, else masterVolume */
 function applyGain() {
@@ -46,6 +50,17 @@ export function setMasterVolume(v) {
 export function setMuted(b) {
   muted = !!b;
   applyGain();
+}
+
+/** silence the procedural drone while a recorded music track plays (ADR-0024) */
+export function setSynthMusicMuted(b) {
+  synthMusicMuted = !!b;
+  if (musicBus && ctx) {
+    const t = ctx.currentTime;
+    musicBus.gain.cancelScheduledValues(t);
+    musicBus.gain.setValueAtTime(musicBus.gain.value, t);
+    musicBus.gain.linearRampToValueAtTime(synthMusicMuted ? 0 : 1, t + 0.5);
+  }
 }
 
 /** Resume audio after the first user gesture, and kick off the music. */
@@ -204,7 +219,11 @@ export function startMusic() {
   musicOn = true;
   const g = ctx.createGain();
   g.gain.value = 0.06;
-  g.connect(master);
+  // drone -> musicBus -> master, so setSynthMusicMuted() can fade the drone out when a
+  // recorded track is playing (the LFO still modulates g.gain underneath, untouched).
+  musicBus = ctx.createGain();
+  musicBus.gain.value = synthMusicMuted ? 0 : 1;
+  g.connect(musicBus).connect(master);
 
   // two detuned low voices (kept so we can shift their pitch per floor)
   musicVoices = [];

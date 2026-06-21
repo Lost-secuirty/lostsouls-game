@@ -295,6 +295,7 @@ export class Player {
     game.particles.burst(this.x, this.z, 10, this._baseColor.getHex());
     hud.flashSplatter();
     audio.play('hurt');
+    audio.duckMusic(); // dip the music for a beat when you get hit
     if (this.device !== 'kb') game.input.rumble(0.6, 0.4, 200);
     if (this.hearts <= 0) {
       this.hearts = 0;

@@ -490,6 +490,39 @@ export const OVERLAY = {
   },
 };
 
+// ---- music: recorded background tracks (Howler — ADR-0024) ----
+// PLUG-AND-PLAY: drop an audio file in public/audio/ and point its track id at the
+// filename below — no code change. A null/missing/undecodable file falls back to the
+// procedural synth drone (sfx.js), so the game is never silent (offline/CI-safe).
+// Files stream (html5) and load lazily, so big tracks don't bloat memory or stall boot.
+export const MUSIC = {
+  enabled: true,
+  basePath: 'audio/', // under public/ (Vite base './' is prepended at runtime)
+  crossfadeMs: 1500, // fade time when swapping tracks (stage <-> boss <-> menu)
+  level: 0.7, // music volume relative to the master (0..1)
+  duckTo: 0.4, // dip music to this fraction of `level` when the player is hit
+  duckMs: 160, // fade-down time when the player is hit
+  duckRecoverMul: 5, // music ramps back over duckMs × this after the dip
+  duckRestoreDelayMs: 50, // wait this long after the dip before ramping back
+  // track id -> filename in public/audio/  (null = use the synth fallback for now).
+  // stageN = floor N exploration; boss_<key> = that boss's theme; win/gameover sting.
+  tracks: {
+    menu: null,
+    stage0: null, // The Outskirts
+    stage1: null, // The Barricade
+    stage2: null, // The Fungal Depths
+    stage3: null, // The Kennels
+    stage4: null, // The Catacombs
+    boss_spider: null,
+    boss_human: null,
+    boss_mushroom: null,
+    boss_duo: null,
+    boss_skeleton: null,
+    win: null,
+    gameover: null,
+  },
+};
+
 // ---- juice (the "feel good" knobs) ----
 export const JUICE = {
   shakeOnShoot: 0.05,

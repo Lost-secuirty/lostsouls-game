@@ -1,10 +1,10 @@
 // =====================================================================
 // progression.js — pure helpers for "where am I in the run?" (no imports
-// except config). Each floor = N normal rooms + 1 boss room. Rooms are
-// numbered globally from 0.
+// except config). Each floor = PROGRESSION.roomsPerFloor normal rooms + 1 boss
+// room. Rooms are numbered globally from 0. With roomsPerFloor = 9 (10/floor):
 //
-//   floor 0: rooms 0,1,2,3,4 (normal) + 5 (BOSS)
-//   floor 1: rooms 6,7,8,9,10 + 11 (BOSS)
+//   floor 0: rooms 0..8 (normal) + 9 (BOSS)
+//   floor 1: rooms 10..18 + 19 (BOSS)
 //   ...
 // =====================================================================
 

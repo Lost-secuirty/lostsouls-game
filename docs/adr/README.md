@@ -29,3 +29,4 @@ below).
 | [0021](0021-emitter-pattern-library.md)            | Pure bullet-pattern (emitter) library + de-samey bosses | Accepted |
 | [0022](0022-scaling-math.md)                       | Scaling math: diminishing-returns upgrades + diff curve | Accepted |
 | [0023](0023-settings-and-overlays.md)              | Persisted settings + readability overlay (a11y/feel)    | Accepted |
+| [0024](0024-recorded-music-howler.md)              | Recorded music layer (Howler) + deps-allowed policy     | Accepted |

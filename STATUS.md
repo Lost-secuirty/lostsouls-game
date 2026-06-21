@@ -23,11 +23,20 @@ This file is the lifecycle source-of-truth for the repo. The detailed running hi
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.6.5)
+## Current state (v0.6.6)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Audio overhaul — music engine (v0.6.6, ADR-0024)** — a recorded-music layer via **Howler.js**
+  ([`music.js`](src/systems/music.js)): a distinct looping track per stage, a crossfade to each boss
+  theme, a menu theme, and music-ducking on hits — driven from game state through the existing
+  [`audio.js`](src/systems/audio.js) facade. The procedural **SFX synth stays**; the synth drone is
+  now the **fallback** so a missing track is never silent. Tracks are **plug-and-play**
+  (`config.MUSIC` id→file map; stream + lazy-load so big files don't bloat runtime). This run's
+  identity: "**1940s × Doom**" (doom-jazz), distinct genre per stage. **Engine ships now; track files
+  (curated stages + AI boss themes) come next.** This ADR also records Scott **superseding the
+  zero-dependency posture** (free libs allowed if they fit the other rules).
 - **Maintenance pass (v0.6.5)** — fixed the carried-forward **AnimModel mixer leak**: animated
   bosses/minions ([`animModel.js`](src/core/animModel.js)) now `dispose()` their `AnimationMixer`
   (+ action cache) when removed, so a multi-floor run no longer orphans mixers. Plus doc-freshness
@@ -87,7 +96,7 @@ two-player co-op (keyboard/mouse/gamepad). Most recent work:
 - **Cross-repo hardening** — secret/PII pre-commit + CI scanner (public-repo BLOCK policy),
   ESLint 10, pinned actions.
 
-23 ADRs (0001–0023). Verification: probability/proof tests, coverage gate, production smoke +
+24 ADRs (0001–0024). Verification: probability/proof tests, coverage gate, production smoke +
 browser smoke, OpenSSF scorecard, dependency review, control audit.
 
 ## Scope (unchanged)
