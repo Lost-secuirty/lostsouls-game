@@ -135,6 +135,7 @@ export class Boss {
     game.particles.burst(this.x, this.z, PARTICLES.perDeath * 3, PALETTE.blood);
     game.juice.shake(1.2);
     game.juice.hitStop(0.12);
+    this.anim?.dispose(); // free the GLB AnimationMixer (no leak across rooms)
     this.scene.remove(this.mesh);
   }
 }

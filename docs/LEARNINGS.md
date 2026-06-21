@@ -498,3 +498,24 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
   `sfx.setMasterVolume` finite-guard. Lesson: when adding a system, put its defaults in
   `config.js` from the start; a default hardcoded in a module reads as a smell to reviewers
   even when it's "just" a fallback.
+
+## 2026-06-21 — Maintenance pass (v0.6.5): AnimModel mixer-leak fix
+
+- **The leak (carried since Stage 6):** every animated boss/minion built via
+  `loadAnimated()` owns its own `THREE.AnimationMixer` + cached clip-actions
+  (`core/animModel.js`). All the removal paths only did `scene.remove(mesh)`, so the mixer +
+  action cache (and the cloned Object3D graph they pin) survived every room change — ~5–10
+  orphaned mixers across a full 5-floor run.
+- **Fix:** added `AnimModel.dispose()` = `mixer.stopAllAction()` + `mixer.uncacheRoot(group)`
+  (+ drop `actions`/`current`), called via `entity.anim?.dispose()` at EVERY mesh-removal site:
+  `Boss.die`, `Enemy.die`, `loadRoom`'s actor sweep, the post-boss minion sweep,
+  `_resolveHumanSkip`, and the debug kill-all. Mirrors the `Player.dispose()` precedent.
+- **What NOT to free:** geometry/materials are shared across instances (`SkeletonUtils.clone`)
+  and clips come from the original gltf — disposing those or `uncacheClip` would corrupt other
+  live instances. Only the per-instance mixer + its action cache are ours to release.
+- **Gotcha worth keeping:** bosses live in BOTH `game.bosses[]` and `game.enemies[]` (flagged
+  `isBoss`), so `loadRoom`'s `this.enemies` sweep already covers boss meshes on room change; the
+  death/skip paths are the ones that needed their own `dispose()` call.
+- **Doc freshness:** a 24h check caught `STATUS.md` still saying "WW2 × rift-tech" (it
+  contradicted both the corrected civil-war canon and its own neighboring line) — fixed to
+  "civil-war-era arms". Reminder: re-grep the docs for retired facts after a canon change.

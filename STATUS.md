@@ -23,11 +23,16 @@ This file is the lifecycle source-of-truth for the repo. The detailed running hi
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.6.4)
+## Current state (v0.6.5)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Maintenance pass (v0.6.5)** — fixed the carried-forward **AnimModel mixer leak**: animated
+  bosses/minions ([`animModel.js`](src/core/animModel.js)) now `dispose()` their `AnimationMixer`
+  (+ action cache) when removed, so a multi-floor run no longer orphans mixers. Plus doc-freshness
+  fixes. The **Exp7 #31 follow-up** had consolidated the last feel-knobs into config
+  (`config.SETTINGS`/`OVERLAY`/`DIFFICULTY`/`PICKUPS`).
 - **Expansion 7 Stage 3 (feel & dev tools)** — the accessibility/feel layer (ADR-0023). Persisted
   **settings** ([`settings.js`](src/systems/settings.js), the first `localStorage` use): a
   bottom-right panel + `M`/`H` keys for **volume / mute** and a **hitbox overlay**. A pooled, leak-safe
@@ -50,8 +55,9 @@ two-player co-op (keyboard/mouse/gamepad). Most recent work:
   a **civil war** not WW2, the 1940s as a tech/era anchor — no anachronistic weapons). First of the
   research-led "Foundation & Feel" pass (scaling math + accessibility follow in later stages).
 - **Expansion 6 Stage 6 (polish)** — wrote the **story bible** ([`docs/STORY.md`](docs/STORY.md):
-  Caden's 1940s post-war ruined city, the experiment-gone-wrong rift, temporary survivors, WW2 ×
-  rift-tech "living weapons", **no zombies**), then a **scale pass** (ADR-0020): arenas ~2.5×
+  Caden's 1940s post-war ruined city, the experiment-gone-wrong rift, temporary survivors,
+  civil-war-era arms × rift-tech "living weapons", **no zombies**), then a **scale pass**
+  (ADR-0020): arenas ~2.5×
   bigger (40×30 → 64×48) with the **camera sized to fit** the whole room and a documented **size
   ladder** (player < basic mob < boss). Fixed the **orbital-blade-survives-reset** bug
   (`Player.dispose`). Balance/stat-cap tuning is deliberately **parked** in `BACKLOG.md`.
