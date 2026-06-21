@@ -6,6 +6,24 @@
 // Agreement — see docs/DRIFT-AUDIT.md).
 // =====================================================================
 
+// Remove HTML comments so a commented-out heading can't fool checkDeviationSection.
+// A single global replace is NOT enough: stripping one match can splice the
+// surrounding text into a fresh "<!--" — e.g. "<!-<!---->->" collapses to "<!-->",
+// leaving a live opener behind (CodeQL js/incomplete-multi-character-sanitization).
+// So: (1) loop the replace until the string stops changing — clears any opener that
+// splicing exposes AND completes; then (2) drop a surviving *unclosed* "<!--" to
+// EOF (the loop only removes closed comments, and an unclosed comment runs to the
+// end of the document in HTML anyway). After this no "<!--" survives. PR bodies are
+// short, so the worst-case O(n) iterations are cheap.
+export function stripHtmlComments(input) {
+  let text = String(input ?? '');
+  for (let prev; prev !== text; ) {
+    prev = text;
+    text = text.replace(/<!--[\s\S]*?-->/g, '');
+  }
+  return text.replace(/<!--[\s\S]*$/, '');
+}
+
 // Canonical check ids — the ONE list a retro pass uses to detect dead checks.
 // Adding a check to audit-drift.mjs means adding its id here too.
 export const CHECK_IDS = [
@@ -32,7 +50,7 @@ export const CHECK_IDS = [
 // check. Case-insensitive (the auditor feeds a lowercased body). Returns null when
 // satisfied, else { reason: 'missing' | 'empty' }.
 export function checkDeviationSection(body) {
-  const text = (body || '').replace(/<!--[\s\S]*?-->/g, '');
+  const text = stripHtmlComments(body || '');
   const m = /^##\s*deviations from plan\s*$/im.exec(text);
   if (!m) return { reason: 'missing' };
   const rest = text.slice(m.index + m[0].length);

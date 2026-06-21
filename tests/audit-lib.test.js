@@ -4,6 +4,7 @@ import { describe, it, expect } from 'vitest';
 import {
   CHECK_IDS,
   checkDeviationSection,
+  stripHtmlComments,
   learningsDistillDue,
   historyLine,
   hasHead,
@@ -32,6 +33,29 @@ describe('checkDeviationSection', () => {
   it('treats an empty/missing body as missing', () => {
     expect(checkDeviationSection('')).toEqual({ reason: 'missing' });
     expect(checkDeviationSection(null)).toEqual({ reason: 'missing' });
+  });
+  it('does not let a spliced-in comment opener smuggle a heading through', () => {
+    // "<!-<!---->-> ## deviations..." collapses to "<!--> ## deviations..." after
+    // ONE replace — a live "<!--" opener. The strip neutralizes it (unclosed ->
+    // EOF), eating the pathological heading, so the check errs to "missing" (a nag,
+    // the safe direction) rather than counting a comment-adjacent heading as real.
+    expect(checkDeviationSection('<!-<!---->-> ## deviations from plan\n\n## next')).toEqual({
+      reason: 'missing',
+    });
+  });
+});
+
+describe('stripHtmlComments', () => {
+  it('removes a simple comment', () => {
+    expect(stripHtmlComments('a<!-- x -->b')).toBe('ab');
+  });
+  it('strips to a fixed point (no leftover opener)', () => {
+    expect(stripHtmlComments('<!-<!---->->')).not.toContain('<!--');
+  });
+  it('handles empty/nullish input', () => {
+    expect(stripHtmlComments('')).toBe('');
+    expect(stripHtmlComments(null)).toBe('');
+    expect(stripHtmlComments(undefined)).toBe('');
   });
 });
 

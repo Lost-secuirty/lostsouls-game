@@ -606,3 +606,11 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
   with unrestricted Bash) + `.claude/commands/audit.md` was blocked as agent self-modification beyond
   the user's approval. Correct call — shipped the CI bot (the part that audits every PR) and deferred
   the local `.claude/` semantic layer pending explicit sign-off.
+- **CodeQL `js/incomplete-multi-character-sanitization` (high) on the bot's own code:** stripping HTML
+  comments from a PR body with a **single** `body.replace(/<!--[\s\S]*?-->/g, '')` is unsafe — removing
+  one match can splice the surrounding text into a _fresh_ `<!--` opener (e.g. `<!-<!---->->` → `<!-->`),
+  so a commented-out heading can survive one pass. Fix (now `stripHtmlComments()` in `audit-lib.mjs`):
+  **loop the replace to a fixed point**, then drop any surviving _unclosed_ `<!--` to EOF (the loop only
+  removes closed comments; an unclosed one runs to end-of-document in HTML anyway). After that no `<!--`
+  survives, and pathological input errs to "missing" (a nag) — the safe direction. The auditor getting
+  flagged by the security scanner on its first PR is the system working; we fixed it, didn't suppress it.
