@@ -337,14 +337,14 @@ export const BOSS = {
     p1BulletSpeed: 13,
 
     // P2 — scatter ring: a rattle wind-up, then a ring of bones at seeded jittered angles
-    p2Interval: 4.0,
+    p2Interval: 4,
     telegraph: 0.5, // rattle wind-up (fair warning)
     ringBullets: 14, // base count (scaled by floor diff in code)
     ringBulletSpeed: 8, // slow so the ring is dodgeable
     scatterJitter: 0.22, // radians of seeded angle wobble per bone (the "scatter")
 
     // P3 — reassemble & relocate: collapse (invulnerable), teleport away, reform
-    reassembleInterval: 9.0, // seconds between disappear-and-reform tricks
+    reassembleInterval: 9, // seconds between disappear-and-reform tricks
     reassembleTime: 1.4, // invulnerable + gone this long = your free breather
     teleportMargin: 7, // reappears at least this far from the nearest player
 

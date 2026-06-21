@@ -58,7 +58,9 @@ function teleportSpot(boss, game) {
     }
     if (minD >= boss.cfg.teleportMargin) break; // far enough, stop early
   }
-  return clampToArena(best.x, best.z, boss.radius);
+  // push out of any rubble it landed in, then clamp (same order as move())
+  const q = slideOutOfWalls(best.x, best.z, boss.radius, game.walls);
+  return clampToArena(q.x, q.z, boss.radius);
 }
 
 export const skeleton = {

@@ -59,7 +59,7 @@ function makeEnemyMesh(type, theme) {
   }
 
   // bone-white catacomb minions (bonelings + archers) match the skeleton boss
-  if (theme && theme.boss === 'skeleton') {
+  if (theme?.boss === 'skeleton') {
     const m = getAnimated('skeleton');
     if (m) {
       const anim = new AnimModel(m.scene, m.clips).fitTo(ENEMY[type].radius * 2.1);
@@ -136,7 +136,7 @@ export class Enemy {
       theme &&
       (theme.boss === 'dog' || theme.boss === 'cat' || theme.boss === 'duo')
     );
-    this.isSkeleton = !!(theme && theme.boss === 'skeleton');
+    this.isSkeleton = theme?.boss === 'skeleton';
     const built = makeEnemyMesh(type, theme);
     this.mesh = built.group;
     this.anim = built.anim; // AnimModel for GLB minions, else null

@@ -34,11 +34,13 @@ export function buildSkeletonMesh(radius, palette = {}, opts = {}) {
   });
   const limbMat = new THREE.MeshStandardMaterial({
     color: p.leg,
+    emissive: p.legEmissive, // graveyard-green accent (matches spiderMesh/mushroomMesh)
+    emissiveIntensity: 0.25,
     roughness: 0.85,
     flatShading: true,
   });
 
-  const legH = radius * 1.0;
+  const legH = radius * 1;
   const torsoH = radius * 0.95;
   const torsoW = radius * 0.85;
   const torsoY = legH + radius * 0.3 + torsoH / 2;

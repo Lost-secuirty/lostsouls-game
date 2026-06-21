@@ -3,7 +3,7 @@ import { skeletonWaveTarget } from '../src/core/progression.js';
 
 describe('skeletonWaveTarget (skeleton boss P4 — HP-gated bonelings)', () => {
   it('spawns nothing while the boss is above 50% HP', () => {
-    expect(skeletonWaveTarget(1.0)).toEqual({ min: 0, max: 0 });
+    expect(skeletonWaveTarget(1)).toEqual({ min: 0, max: 0 });
     expect(skeletonWaveTarget(0.75)).toEqual({ min: 0, max: 0 });
     expect(skeletonWaveTarget(0.51)).toEqual({ min: 0, max: 0 });
   });
