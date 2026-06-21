@@ -27,10 +27,13 @@ export function ring(n, phase = 0) {
  * are the dodge lane — pick `gapStart` with a seeded RNG so it's reproducible.
  */
 export function gapRing(n, gapStart, gapWidth, phase = 0) {
+  // Clamp so the ring always keeps at least one bullet AND a real lane, even if a
+  // future caller over-asks (gapWidth >= n would otherwise silently empty the ring).
+  const gw = Math.max(0, Math.min(gapWidth, n - 1));
   const out = [];
   for (let i = 0; i < n; i++) {
     let inGap = false;
-    for (let g = 0; g < gapWidth; g++) {
+    for (let g = 0; g < gw; g++) {
       if ((gapStart + g) % n === i) {
         inGap = true;
         break;

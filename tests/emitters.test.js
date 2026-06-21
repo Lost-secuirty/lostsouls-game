@@ -47,6 +47,15 @@ describe('gapRing', () => {
     expect(present.has(5)).toBe(false);
     expect(present.has(0)).toBe(false);
   });
+
+  it('gapWidth 0 is a full ring (no gap)', () => {
+    expect(gapRing(8, 3, 0, 0)).toEqual(ring(8, 0));
+  });
+
+  it('clamps an over-large gap so it never empties the ring (keeps a real lane)', () => {
+    expect(gapRing(6, 0, 6, 0)).toHaveLength(1); // gapWidth>=n clamped to n-1
+    expect(gapRing(6, 0, 99, 0)).toHaveLength(1);
+  });
 });
 
 describe('jitterRing', () => {
