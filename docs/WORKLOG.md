@@ -15,6 +15,26 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-21 — Phase 5: render studio harness (v0.7.1, PR #40)
+
+The "photo harness" — salvaged the boss-portrait harness from the closed PR #35 and upgraded it.
+
+- **`tools/render-studio/`** (`index.html`, `studio.js`, `README.md`) + **`scripts/render-studio.mjs`**
+  (`npm run render:studio`). Renders each boss's **real in-game mesh** (GLB or procedural fallback)
+  via the actual `Boss` shell.
+- **Upgrades over PR #35's harness:** renders through the **same post-FX pipeline as the game**
+  (`createPostFX` — bloom + ACES, so portraits match the live look); **IBL** (`RoomEnvironment`, kept
+  to a 0.35 fill so pale/untextured models don't bloom-blow to white); **deterministic frozen pose**
+  (`mixer.setTime` + fixed procedural `t`); a **per-subject facing table** (replaces hardcoded
+  FACING); **SSAA** via 2× device scale; a **contact sheet** (box-downsampled grid via `pngjs`); and a
+  `STUDIO_TRANSPARENT=1` cutout mode. Kept the three solved traps (root-relative model paths,
+  world-space union bounds for skinned meshes, per-subject yaw).
+- Re-added `pngjs` (contact sheet). Closed **PR #35** (superseded).
+- **Produced** portraits + a contact sheet of all 6 bosses (spider, mushroom, Fang, Whisker,
+  Rattlebones, the Survivor) for Caden — caught + fixed an IBL over-bright on the white human model.
+- Docs: `GRAPHICS.md` render-studio section + `tools/render-studio/README.md`.
+- **Status:** built + verified (6/6 bosses + contact sheet render, 0 errors); PR open, awaiting checks.
+
 ## 2026-06-21 — Phase 4: in-game graphics overhaul — post-FX (v0.7.0, PR #39, ADR-0025)
 
 The headline visual upgrade. The game rendered raw (no tone mapping, no post-processing); now it

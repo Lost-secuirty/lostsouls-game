@@ -97,18 +97,22 @@ All swap-and-see in `npm run dev`:
 - `vignette` — `{ enabled, darkness, offset }`.
 - `vfx` — `{ impactSparks, sparkCount, sparkColor }`.
 
-## Render studio (dev harness) _(render-studio phase)_
+## Render studio (dev harness — `tools/render-studio/`, `npm run render:studio`)
 
-A `tools/render-studio/` + `scripts/render-studio.mjs` harness renders deterministic boss
-portraits / a contact sheet through the same post-FX pipeline (so screenshots match the game), with
-IBL + SSAA for crisp hero shots. Section completed when it lands; see `ROADMAP.md` until then.
+A Playwright harness that renders each boss's **real in-game mesh** through the **same post-FX
+pipeline** (so portraits match the live look), and writes one PNG per boss + a combined **contact
+sheet** to `artifacts/render-studio/`. Upgrades over a plain screenshot: IBL (a subtle fill),
+**deterministic frozen pose** (`mixer.setTime`), auto camera-fit (world-space union bounds — skinned
+GLB boxes lie), a per-subject facing table, SSAA via device-scale, and a `STUDIO_TRANSPARENT=1` cutout
+mode. Run `npm run dev` first (it serves the repo root on :5173). Full details in
+[`tools/render-studio/README.md`](../tools/render-studio/README.md).
 
 ## Open items / later scope
 
 Curated in [`ROADMAP.md`](ROADMAP.md); parking lot in [`BACKLOG.md`](BACKLOG.md):
 
 - [x] **Post-FX pipeline** (bloom + ACES + vignette + MSAA + impact sparks) — **done** (ADR-0025).
-- [ ] **Render studio** harness — next.
+- [x] **Render studio** harness (boss portraits + contact sheet) — **done** (`tools/render-studio/`).
 - [ ] **Atmospheric overhaul (later):** in-game IBL/environment lighting, PBR textures/normal maps,
       depth-of-field, richer fog — bigger mood, weighed against readability + perf.
 - [ ] **Muzzle flash** (subtle brief flash, not per-bullet noise) — parked.
