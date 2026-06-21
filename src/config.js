@@ -524,6 +524,29 @@ export const MUSIC = {
     win: null, // synth stinger for now
     gameover: null, // synth stinger for now
   },
+  // attribution — the SINGLE source of truth for in-game credits (ui/credits.js renders
+  // this) AND ASSETS.md. CC-BY must be credited in-game, so update this list whenever you
+  // swap a track in `tracks` above (keeps the legal credit in lockstep with the file).
+  credits: [
+    { slot: 'Menu', track: 'Hush', by: 'Kevin MacLeod', license: 'CC BY 4.0' },
+    { slot: 'The Outskirts', track: 'Darkest Child', by: 'Kevin MacLeod', license: 'CC BY 4.0' },
+    { slot: 'The Barricade', track: 'Anxiety', by: 'Kevin MacLeod', license: 'CC BY 4.0' },
+    {
+      slot: 'The Fungal Depths',
+      track: 'Echoes of Time',
+      by: 'Kevin MacLeod',
+      license: 'CC BY 4.0',
+    },
+    { slot: 'The Kennels', track: 'Killers', by: 'Kevin MacLeod', license: 'CC BY 4.0' },
+    { slot: 'The Catacombs', track: 'Dark Times', by: 'Kevin MacLeod', license: 'CC BY 4.0' },
+    {
+      slot: 'Boss themes (placeholder)',
+      track: 'Despair and Triumph',
+      by: 'Kevin MacLeod',
+      license: 'CC BY 4.0',
+    },
+  ],
+  creditsSource: 'incompetech.com', // where the current tracks come from
 };
 
 // ---- juice (the "feel good" knobs) ----
