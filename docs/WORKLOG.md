@@ -15,6 +15,30 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-21 — Audit bot: drift auditor ported from Codex-Speed-Test (v0.7.3, PR #42)
+
+Kicks off the atmospheric-overhaul run (next: IBL → shadows → floor texture → AO). Scott asked for
+the codex repo's **audit bot** set up here first, so it watches every graphics PR.
+
+- **`scripts/audit-drift.mjs` + `scripts/audit-lib.mjs`** (pure, unit-tested — `tests/audit-lib.test.js`,
+  15 tests) — deterministic, no API key. Diffs the branch vs `main`, reads the **logged intent**
+  (commits, PR body, WORKLOG, LEARNINGS) and flags **drift**: lint suppressions, `.skip/.only` tests,
+  `console.log`/`debugger` in src, sensitive-path changes, deep nesting, src-growth-without-tests,
+  stale docs, oversized LEARNINGS, unlogged files, and a missing PR "Deviations" section. `--fix`
+  applies only `prettier --write` (formatting) — never edits logic to pass.
+- **`.github/workflows/audit.yml`** — runs on every PR: posts the report as a comment, commits safe
+  auto-fixes + appends `docs/audit-history.ndjson`. `GITHUB_TOKEN` only; fork-gate + bot-actor guard;
+  leaner than codex (no `--run-checks` — `ci.yml` already gates lint/build, no doing it twice).
+  Informational (not a required merge-blocker — Scott's call this round).
+- **`docs/DRIFT-AUDIT.md`** — the design doc. Adapted from codex: biome→prettier, TS→JS, codex
+  paths/rules → lostsouls. `npm run audit`.
+- **Deferred:** the local `.claude/` `auditor` agent + `/audit` command (the pre-push _semantic_
+  layer). A safety guard flagged adding a `.claude/` agent as agent-self-config beyond Scott's
+  approval — correct call; it needs his explicit OK. The **CI bot (the part that audits every PR) is
+  fully shipped**; the local agent is a convenience to add later.
+- **Status:** built + verified (15 lib tests, full gauntlet green); PR open, awaiting checks + the
+  bot's first self-report.
+
 ## 2026-06-21 — Retro fix: centralize lighting/fog into config (v0.7.2, PR #41)
 
 A retro with Scott flagged the recurring config-discipline slip: feel-numbers in files I _edit_
