@@ -4,7 +4,7 @@
 
 import { createScene } from './core/scene.js';
 import { loadModels } from './core/assets.js';
-import { Input } from './systems/input.js';
+import { Input, isEditable } from './systems/input.js';
 import { Game } from './game.js';
 import { startLoop } from './core/loop.js';
 import { MODELS } from './config.js';
@@ -50,6 +50,9 @@ import { initSettingsPanel } from './ui/settingsPanel.js';
   initSettingsPanel();
 
   addEventListener('keydown', (e) => {
+    // ignore OS key-repeat (holding a key shouldn't strobe a toggle) and keys typed
+    // into a focused control (slider/menu) — matches input.js's game-key convention
+    if (e.repeat || isEditable(e.target)) return;
     if (e.key === '`') toggleDebug();
     else if (e.key === 'm' || e.key === 'M')
       settings.toggle('muted'); // mute/unmute
@@ -74,6 +77,7 @@ import { initSettingsPanel } from './ui/settingsPanel.js';
 
   // hide the loading splash, then show the start menu (pick 1P or 2P)
   document.getElementById('boot')?.classList.add('hide');
+  document.getElementById('settings')?.classList.add('ready'); // reveal once boot clears
   showStartMenu((coop) => game.startRun(coop));
 
   startLoop({

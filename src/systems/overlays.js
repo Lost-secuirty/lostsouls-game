@@ -56,28 +56,34 @@ export class Overlays {
   /** Position the overlay rings for this frame. Call from render() (no dt needed). */
   sync(game) {
     this._n = 0;
-    this._t += 1 / 60;
-    const showHit = settings.get('showHitboxes');
+    // sync() runs from render() (per display frame, NOT the fixed 1/60 step), so drive
+    // the telegraph pulse from wall-clock time — otherwise it flickers ~2× faster on a
+    // 120/144 Hz monitor. Only the phase matters for Math.sin. (ADR-0023 / loop.js)
+    this._t = (globalThis.performance?.now?.() ?? 0) / 1000;
 
-    // 1) boss telegraph rings — ALWAYS on (fair warning), pulse like the hazard warn
-    for (const b of game.bosses) {
-      if (!b.dead && b.charge > 0) {
-        const pulse = 0.3 + 0.28 * (0.5 + 0.5 * Math.sin(this._t * 18));
-        this._ring(b.x, b.z, b.radius * 1.6, HAZARD.warnColor, pulse, 0.04);
-      }
-    }
-
-    // 2) hitbox overlay — opt-in readability aid
-    if (showHit) {
-      for (const p of game.players) {
-        if (p.alive) this._ring(p.x, p.z, p.radius, PLAYER_HIT, 0.9);
-      }
-      for (const e of game.enemies) {
-        if (!e.dead) this._ring(e.x, e.z, e.radius, e.isBoss ? BOSS_HIT : ENEMY_HIT, 0.85);
-      }
-    }
+    this._telegraphRings(game); // 1) always-on boss wind-up warning
+    if (settings.get('showHitboxes')) this._hitboxRings(game); // 2) opt-in readability aid
 
     // hide the unused tail of the pool
     for (let i = this._n; i < this.items.length; i++) this.items[i].mesh.visible = false;
+  }
+
+  /** boss telegraph rings — ALWAYS on (fair warning), pulse like the hazard warn ring */
+  _telegraphRings(game) {
+    for (const b of game.bosses) {
+      if (b.dead || b.charge <= 0) continue;
+      const pulse = 0.3 + 0.28 * (0.5 + 0.5 * Math.sin(this._t * 18));
+      this._ring(b.x, b.z, b.radius * 1.6, HAZARD.warnColor, pulse, 0.04);
+    }
+  }
+
+  /** opt-in hitbox overlay — ring each player's (green) and enemy's/boss's (red) circle */
+  _hitboxRings(game) {
+    for (const p of game.players) {
+      if (p.alive) this._ring(p.x, p.z, p.radius, PLAYER_HIT, 0.9);
+    }
+    for (const e of game.enemies) {
+      if (!e.dead) this._ring(e.x, e.z, e.radius, e.isBoss ? BOSS_HIT : ENEMY_HIT, 0.85);
+    }
   }
 }

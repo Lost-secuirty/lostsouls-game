@@ -29,8 +29,8 @@ A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI al
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
 - **Expansion 7 Stage 3 (feel & dev tools)** — the accessibility/feel layer (ADR-0023). Persisted
-  **settings** ([`settings.js`](src/systems/settings.js), the first `localStorage` use): a top-right
-  panel + `M`/`H` keys for **volume / mute** and a **hitbox overlay**. A pooled, leak-safe
+  **settings** ([`settings.js`](src/systems/settings.js), the first `localStorage` use): a
+  bottom-right panel + `M`/`H` keys for **volume / mute** and a **hitbox overlay**. A pooled, leak-safe
   [`overlays.js`](src/systems/overlays.js) draws an always-on **boss telegraph ring** (the
   ground-ring telegraph deferred from Stage 1) and the opt-in hitbox rings. The debug menu gained a
   **perf HUD** (draw calls / live bullet + enemy counts) for tuning. Carry-overs: `ally.range` 16→22

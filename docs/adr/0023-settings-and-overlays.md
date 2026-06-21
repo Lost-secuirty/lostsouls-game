@@ -20,9 +20,10 @@ A small, persisted accessibility/feel layer:
   persisted to **`localStorage`** (the repo's first use), with a subscribe hook. Degrades to defaults
   where storage is unavailable (private mode / headless) — never throws.
 - **Volume + mute** — `sfx.js` gains `setMasterVolume`/`setMuted` (a `masterVolume`/`muted` pair
-  applied to the master gain, honored even if set before audio unlocks). A top-right `#settings`
-  panel (always reachable, `ui/settingsPanel.js`) gives a mute button + volume slider, and `M` /
-  `H` keys toggle mute / hitboxes. `main.js` applies settings to audio and keeps them in sync.
+  applied to the master gain, honored even if set before audio unlocks). A bottom-right `#settings`
+  panel (revealed once the boot splash clears, then always reachable, `ui/settingsPanel.js`) gives a
+  mute button + volume slider, and `M` / `H` keys toggle mute / hitboxes. `main.js` applies settings
+  to audio and keeps them in sync.
 - **`src/systems/overlays.js`** — flat ground rings drawn in `render()`, **pooled** like
   `hazards.js` (a fixed set of meshes made once, reused every frame → never added/removed during
   play, so no teardown leak). Two uses: (1) an **always-on boss telegraph ring** that pulses while a
@@ -50,7 +51,7 @@ A small, persisted accessibility/feel layer:
 - **Per-boss telegraph ring as a child of the boss mesh.** Simpler to attach, but the mesh
   puffs/rotates/(GLB-)scales, distorting the ring, and a separate scene mesh would leak on room
   change. The pooled `overlays.js` (game-lifetime, never torn down) avoids both. Chosen.
-- **Settings baked into the start menu only.** Rejected — a fixed top-right panel + `M`/`H` keys are
-  reachable during play too, where they matter.
+- **Settings baked into the start menu only.** Rejected — a fixed bottom-right panel + `M`/`H` keys
+  are reachable during play too, where they matter.
 - **Ring every bullet in the hitbox overlay.** Hundreds of extra meshes for little gain (a bullet
   basically _is_ its hitbox). Limited to players + enemies + bosses — the high-value, cheap subset.

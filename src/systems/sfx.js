@@ -32,7 +32,10 @@ function ensure() {
 
 /** set the master volume (0..1); takes effect immediately and on next unlock */
 export function setMasterVolume(v) {
-  masterVolume = Math.max(0, Math.min(1, v));
+  // coerce + reject non-finite (a corrupt stored value like {"volume":"loud"} would
+  // otherwise clamp to NaN and make a spec-compliant AudioParam throw — see ADR-0023)
+  const n = Number(v);
+  if (Number.isFinite(n)) masterVolume = Math.max(0, Math.min(1, n));
   applyGain();
 }
 

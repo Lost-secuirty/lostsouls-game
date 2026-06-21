@@ -447,7 +447,7 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
 - **First localStorage in the repo (ADR-0023):** `systems/settings.js` is a tiny shared
   store ({volume, muted, showHitboxes}) with a subscribe hook, wrapped in try/catch so it
   degrades to defaults in private mode / headless (never throws). main.js subscribes and
-  pushes volume/mute into audio; a top-right `#settings` DOM panel + `M`/`H` keys drive it.
+  pushes volume/mute into audio; a bottom-right `#settings` DOM panel + `M`/`H` keys drive it.
 - **Volume/mute the clean way:** sfx.js keeps `masterVolume`/`muted` module vars and an
   `applyGain()` (= 0 when muted else volume); `ensure()` calls it, so a volume/mute set
   BEFORE the first user-gesture unlock is honored once the AudioContext exists. Kept sfx
@@ -469,3 +469,23 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
 - **Carry-overs cleared:** ally.range 16→22 (the bigger arena made the old bubble feel
   short); tightened scale.test's ARENA-area bound to the documented ~2.5x and made the
   camera-fit test's comment honest (coarse distance check, not a frustum proof).
+- **Adversarial review of the feel layer (5 confirmed, all folded into PR #30):**
+  - _"Never throws" needs a finite guard at the boundary._ `setMasterVolume` clamped with
+    `Math.max/min`, but `Math.min(1, NaN)` is `NaN`, and a corrupt stored `{"volume":"loud"}`
+    parses fine (so settings.js's try/catch doesn't catch it) → `gain.value = NaN` throws on
+    a real AudioParam. Fix: `const n = Number(v); if (Number.isFinite(n)) ...`. JSON.parse
+    success ≠ value sanity; coerce types where a value crosses into a strict API.
+  - _A toggle bound to keydown must drop `e.repeat`,_ or holding the key strobes it at the OS
+    auto-repeat rate (mute chatter / overlay flicker). Also reused input.js's `isEditable`
+    (now exported) so M/H ignore keys typed into a focused control — matching the existing
+    game-key convention instead of a second ad-hoc rule.
+  - _An always-on DOM panel over a full-screen canvas eats clicks + can trap movement._ A
+    focused `<input type=range>` makes input.js's editable guard swallow WASD (dead-zone), and
+    input.js's off-canvas pointerdown drops held keys. Mitigation: `blur()` controls after
+    use; the residual corner click-steal is inherent to an always-on overlay (accepted, minor).
+  - _render() is per-RAF, not the fixed step:_ animating with `_t += 1/60` in `sync()` runs
+    ~2× fast at 120 Hz. Drive any render-time animation from wall-clock (`performance.now()`),
+    not a per-frame constant — only update(dt) gets the fixed 1/60.
+  - _Hide overlays that sit above the boot splash_ until boot clears (`.ready` class), and keep
+    doc/CSS comments truthful about placement (the panel was "top-right" in 3 docs but is
+    bottom-right) — a linter/reviewer will (rightly) flag the mismatch.
