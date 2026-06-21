@@ -39,9 +39,11 @@ export function statBonus(stacks, maxBonus, half) {
  * per-floor diffs so the curve is tunable in one spot. Negative indices clamp to 0.
  *
  * @param {number} floorIndex 0-based floor
- * @param {{base?:number, growth?:number}} params
+ * @param {{base:number, growth:number}} params REQUIRED — pass `config.DIFFICULTY`
+ *        (kept pure/import-free, so the only source of these knobs is the caller's
+ *        config; no in-module defaults to silently drift from it).
  * @returns {number} the difficulty multiplier for that floor
  */
-export function floorScale(floorIndex, { base = 1, growth = 0.25 } = {}) {
+export function floorScale(floorIndex, { base, growth }) {
   return base * Math.pow(1 + growth, Math.max(0, floorIndex));
 }
