@@ -573,3 +573,19 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
   and **Pixabay's CDN 403'd** (both gated against `curl`). No `ffmpeg` on this machine, so no
   transcode — picked a shorter menu track instead of the 24 MB drone. For CC0/OGG finals, expect to
   download Pixabay/FreePD manually in a browser, or use OpenGameArt direct file URLs.
+
+## 2026-06-21 — Harness upgrade pt.1: audio studio (ffmpeg)
+
+- **Installed ffmpeg** (winget `Gyan.FFmpeg`) — unblocks transcode + loudness + waveforms. winget
+  modifies PATH but only for NEW shells; this session's shells didn't see it, so scripts resolve the
+  binary from `$FFMPEG`/`$FFPROBE` → PATH → the winget `…/Gyan.FFmpeg_*/ffmpeg-*/bin` glob.
+- **`scripts/audio-studio.mjs`** (`npm run audio:report` / `audio:process`): per-track LUFS/peak via
+  `ebur128`, waveform PNGs via `showwavespic`, two-pass `loudnorm` to −16 LUFS + libvorbis OGG.
+- **Gotcha:** ffmpeg writes its `ebur128`/`loudnorm` summaries to **stderr and exits 0**, so a
+  `try/catch` around `execFileSync` never sees them (no throw). Use `spawnSync` and read
+  `stderr+stdout` regardless of exit code. (First pass returned all NaN because of this.)
+- The placeholders had an **11 LU loudness spread** (−24 to −12.6 LUFS — some ~4× louder); normalizing
+  to −16 brought them to ±0.4 LU with peaks < −1 dBFS. Also shrank 58 MB → 33 MB as OGG.
+- **Drive gotcha:** Howler `html5:true` streams via ranged `<audio>` requests; a crossfade/stop
+  aborts the in-flight stream → Playwright `requestfailed` fires with `net::ERR_ABORTED`. That's
+  benign, NOT a 404 — confirm with the served status (HEAD = 200) + that the track didn't fall back.
