@@ -388,16 +388,14 @@
         border-color: #b06cff;
       }
       #credits {
-        position: fixed;
-        inset: 0;
-        z-index: 25;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        background: rgba(7, 6, 10, 0.82);
+        border: 0;
+        padding: 0;
+        background: transparent;
+        color: #e8d8ff;
+        max-width: 90vw;
       }
-      #credits.show {
-        display: flex;
+      #credits::backdrop {
+        background: rgba(7, 6, 10, 0.82);
       }
       .credits-box {
         max-width: 560px;
@@ -484,13 +482,13 @@
     </div>
 
     <!-- credits panel (music uses CC-BY tracks — must be credited in-game) -->
-    <div id="credits">
-      <div class="credits-box" role="dialog" aria-modal="true" aria-labelledby="credits-title">
+    <dialog id="credits" aria-labelledby="credits-title">
+      <div class="credits-box">
         <h2 id="credits-title">Credits</h2>
         <div id="credits-list"></div>
         <button id="credits-close">Close</button>
       </div>
-    </div>
+    </dialog>
 
     <!-- human decision-boss: A/B/C/D approach choice (text set from config in ui/humanchoice.js) -->
     <div id="humanchoice">

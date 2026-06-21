@@ -34,13 +34,12 @@ export function initCredits() {
     'Sound effects are generated in-engine. Full credits: ASSETS.md.</p>' +
     `<ul class="cr-list">${rows}</ul>`;
 
-  openBtn?.addEventListener('click', () => panel.classList.add('show'));
-  closeBtn?.addEventListener('click', () => panel.classList.remove('show'));
+  // native <dialog>: showModal() gives modal semantics + ::backdrop + Esc-to-close for free
+  const open = () => (panel.showModal ? panel.showModal() : panel.setAttribute('open', ''));
+  const close = () => (panel.close ? panel.close() : panel.removeAttribute('open'));
+  openBtn?.addEventListener('click', open);
+  closeBtn?.addEventListener('click', close);
   panel.addEventListener('click', (e) => {
-    if (e.target === panel) panel.classList.remove('show'); // click backdrop to close
-  });
-  // Esc closes the dialog
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') panel.classList.remove('show');
+    if (e.target === panel) close(); // click the backdrop area to close
   });
 }
