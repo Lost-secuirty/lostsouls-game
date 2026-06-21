@@ -7,9 +7,13 @@
 
 import { spider } from './spider.js';
 import { mushroom } from './mushroom.js';
+import { dog } from './dog.js';
+import { cat } from './cat.js';
 
 export const BEHAVIORS = {
   spider,
   mushroom,
-  // expansion 6 (added per stage): dog, cat, skeleton, human
+  dog, // Stage 3: Fang (melee pouncer)
+  cat, // Stage 3: Whisker (ranged zoner) — paired via DuoController (bosses/duo.js)
+  // expansion 6 (later stages): skeleton, human
 };

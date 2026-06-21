@@ -66,40 +66,61 @@
         color: #6cff8a;
         display: none;
       }
-      #bossbar {
+      /* boss HP bars — 1 for a lone boss, 2 stacked for the dog/cat duo */
+      #bossbars {
         position: absolute;
-        top: 60px;
+        top: 56px;
         left: 50%;
         transform: translateX(-50%);
         width: 56%;
         max-width: 620px;
-        height: 16px;
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+      }
+      #bossbars.show {
+        display: flex;
+      }
+      .bossbar.hidden {
+        display: none;
+      }
+      .bossbar-name {
+        text-align: center;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #ff8a8a;
+        margin-bottom: 3px;
+      }
+      .bossbar-track {
+        height: 14px;
         background: rgba(0, 0, 0, 0.55);
         border: 2px solid #ff4d4d;
         border-radius: 8px;
         overflow: hidden;
-        display: none;
       }
-      #bossbar.show {
-        display: block;
-      }
-      #bossbar-fill {
+      .bossbar-fill {
         height: 100%;
         width: 100%;
         background: linear-gradient(90deg, #ff2a2a, #ff7a2a);
         transition: width 0.1s linear;
       }
-      #bossbar-name {
-        position: absolute;
-        top: 18px;
-        left: 0;
-        right: 0;
-        text-align: center;
-        font-size: 14px;
-        font-weight: 800;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        color: #ff8a8a;
+      /* the 2nd bar (the cat) reads "cool" so the two roles are distinct */
+      .bossbar[data-i='1'] .bossbar-track {
+        border-color: #4db3ff;
+      }
+      .bossbar[data-i='1'] .bossbar-fill {
+        background: linear-gradient(90deg, #2a8aff, #2ad0ff);
+      }
+      .bossbar[data-i='1'] .bossbar-name {
+        color: #8ac8ff;
+      }
+      .bossbar.dead {
+        opacity: 0.3;
+      }
+      .bossbar.dead .bossbar-fill {
+        background: #555;
       }
       #room {
         position: absolute;
@@ -276,9 +297,15 @@
       <div id="lives"></div>
       <div id="hearts2"></div>
       <div id="room"></div>
-      <div id="bossbar">
-        <div id="bossbar-fill"></div>
-        <div id="bossbar-name"></div>
+      <div id="bossbars">
+        <div class="bossbar" data-i="0">
+          <div class="bossbar-name"></div>
+          <div class="bossbar-track"><div class="bossbar-fill"></div></div>
+        </div>
+        <div class="bossbar" data-i="1">
+          <div class="bossbar-name"></div>
+          <div class="bossbar-track"><div class="bossbar-fill"></div></div>
+        </div>
       </div>
       <div id="banner"></div>
       <div id="prompt"></div>

@@ -3,10 +3,11 @@
 // monsters (more/tougher deeper into a floor) and the occasional survivor.
 // =====================================================================
 
-import { ARENA, ROOMS, ENEMY, NPC } from '../config.js';
+import { ARENA, ROOMS, ENEMY, NPC, DUO } from '../config.js';
 import { floorInfo } from '../core/progression.js';
 import { Enemy } from '../entities/enemies.js';
 import { Boss } from '../entities/boss.js';
+import { DuoController } from '../entities/bosses/duo.js';
 import { Npc } from '../entities/npc.js';
 import { circleVsBox } from '../core/math2d.js';
 
@@ -41,9 +42,21 @@ export function populateRoom(game, roomIndex) {
 
   // ---- BOSS ROOM ----
   if (info.isBossRoom) {
-    game.addEnemy(
-      new Boss(game.scene, 0, -ARENA.depth / 2 + 4, info.def.boss, info.def.diff, info.def.palette),
-    );
+    const z = -ARENA.depth / 2 + DUO.spawnZOffset;
+    if (info.def.duo) {
+      // multi-boss: spawn both beasts under one shared DuoController (alternating
+      // aggression + enrage-on-partner-death). Spread them so two HP bars read.
+      const ctrl = new DuoController(rng, DUO);
+      info.def.duo.forEach((type, i) => {
+        const x = i === 0 ? -DUO.spawnX : DUO.spawnX;
+        const boss = new Boss(game.scene, x, z, type, info.def.diff, info.def.palette);
+        ctrl.add(boss);
+        game.addEnemy(boss);
+      });
+      game.duo = ctrl;
+    } else {
+      game.addEnemy(new Boss(game.scene, 0, z, info.def.boss, info.def.diff, info.def.palette));
+    }
     return;
   }
 

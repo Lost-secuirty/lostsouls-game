@@ -213,3 +213,46 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
   coverage 47/41/54/48; build + prod + browser smoke; a Playwright drive confirmed
   the mushroom boss + 6 themed minions render & animate, pools + puffballs spawn,
   spider unchanged, zero console errors; full security gauntlet green.
+
+## 2026-06-20 — Expansion 6 Stage 3 (Dog/Cat duo 🐶🐱 — the first MULTI-boss)
+
+- **Multi-boss refactor (ADR-0018):** `game.boss → game.bosses[]` (0/1/2 entries).
+  Single-boss floors are just `bosses.length === 1`, so spider/mushroom are
+  untouched (regression-checked: spider still shows one bar). Minion sweep + the
+  room-clear gate now fire only when **every** boss is dead; `_countBossBeaten`
+  still +1 per boss room, so the duo is one encounter for slot-unlock cadence.
+- **`DuoController` (`bosses/duo.js`) is pure of three.js** (operates on boss-like
+  objects), so the locked rules are unit-tested directly: alternating aggression
+  (timer swap; each behavior gates its attack starts on `isAggressor(boss)`),
+  enrage-on-partner-death (no revive; `boss.onPartnerDown(mul)` folds a permanent
+  multiplier into the shared `rage` getter), and seeded co-op targeting
+  (`chooseTarget(players)`, held until the next swap). Keeping it three-free is
+  what makes it testable — same pattern as the `progression.js` helpers.
+- **Two beasts, two rhythms:** Fang (dog) is a melee **pounce** state machine in
+  `move()` (stalk→wind/telegraph lane→dash→recover); Whisker (cat) is a ranged
+  **cross-swipe** zoner that summons a small kitten litter **while passive** (so
+  one pressures while the other adds). Both override the shell `move()` and so must
+  redo wall-slide + arena-clamp themselves (the shell only sets `mesh.position`).
+- **HUD multi-bar:** `#bossbar` (one element) → `#bossbars` container with two
+  `.bossbar` rows; `hud.setBossBars(bosses)` fills 1 or 2 (cat bar is cool-blue,
+  dead boss greys at 0%). Names use `textContent` (no innerHTML).
+- **GLB clip-prefix is NOT always `CharacterArmature|`:** the Quaternius animals use
+  `AnimalArmature|Walk`, and the cat is even **triple-prefixed**
+  (`AnimalArmature|AnimalArmature|AnimalArmature|Walk`). `AnimModel` already strips
+  on the LAST `|` (`split('|').pop()`), so both resolve to `Walk` with no change —
+  the generic split was the right call in Stage 2. Verified the real clip list by
+  parsing the GLB JSON chunk (`readUInt32LE(12)` → JSON) before wiring.
+- **Preview serves `dist/`, dev serves `public/`:** dropping the GLBs into
+  `public/models/` after `npm run build` left the _built_ `dist/` without them, so a
+  `vite preview` drive rendered the **procedural fallback** beasts (not a bug — the
+  fallback working is the point). Rebuild after adding assets, or drive the dev
+  server. Also: Chromium blocks "unsafe" ports (5060 = SIP) for `page.goto` — use
+  4173/5173/8080.
+- **Models:** Quaternius **Shiba Inu** (`dog.glb`) + **Cat** (`cat.glb`), CC0, in
+  `public/models/`, credited in `ASSETS.md`. The duo doesn't have to _look_ like a
+  cat/dog (co-designer's call) but recognizable animals delight the kid.
+- **Verified:** lint/format; 66 unit tests (added `duo`); coverage 47/41/54/48
+  (> floor); build + prod + browser smoke; a Playwright drive confirmed two bosses
+  - two HP bars render with the real animated models, the cat summons a kitten,
+    killing one beast enrages the survivor + greys its bar, spider single-boss
+    unchanged, zero console errors.

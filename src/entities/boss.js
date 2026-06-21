@@ -12,7 +12,7 @@
 // casing.
 // =====================================================================
 
-import { BOSS, PALETTE, PARTICLES } from '../config.js';
+import { BOSS, PALETTE, PARTICLES, DUO } from '../config.js';
 import { BEHAVIORS } from './bosses/index.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { normalize, circleVsCircle } from '../core/math2d.js';
@@ -40,6 +40,8 @@ export class Boss {
     this.charge = 0; // >0 while telegraphing (drives the puff-up scale)
     this.phase = 0;
     this.t = 0;
+    this.enraged = false; // duo: set when a partner falls (no revive)
+    this.enrageMul = 1; // permanent rage bump folded into `rage` once enraged
 
     this.behavior.init?.(this);
 
@@ -53,10 +55,20 @@ export class Boss {
     audio.play(this.behavior.roar || 'bossRoar');
   }
 
-  /** speeds up as it weakens (50%/25% gates) — shared by every boss */
+  /** speeds up as it weakens (50%/25% gates), then again if enraged — every boss */
   get rage() {
     const f = this.hp / this.maxHp;
-    return f <= 0.25 ? 1.5 : f <= 0.5 ? 1.2 : 1;
+    const base = f <= 0.25 ? 1.5 : f <= 0.5 ? 1.2 : 1;
+    return base * this.enrageMul;
+  }
+
+  /** duo: this beast's partner fell — rage permanently and fight solo (no revive) */
+  onPartnerDown(mul = DUO.enrageMul) {
+    if (this.dead) return;
+    this.enraged = true;
+    this.enrageMul = mul;
+    this.mesh.scale.setScalar(DUO.enrageScale); // a visible "I'm angry now" pop
+    audio.play('bossRoar');
   }
 
   update(dt, game) {

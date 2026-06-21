@@ -164,6 +164,24 @@ export const PROGRESSION = {
         eye: 0xffe66a,
       },
     },
+    {
+      // Expansion 6 Stage 3 — the Dog/Cat duo (first multi-boss). `boss: 'duo'`
+      // marks a multi-boss floor; `duo` lists the two boss types (see spawner.js).
+      // (Final boss order spider→human→mushroom→duo→skeleton is set in a later
+      // stage; for now the duo caps off the run.)
+      name: 'The Kennels',
+      boss: 'duo',
+      duo: ['dog', 'cat'], // Fang (pounce) + Whisker (zoner)
+      diff: 2.0,
+      palette: {
+        // shared kennel ambiance; minions pick warm (pups) / cool (kittens) by kind
+        body: 0x6a5230,
+        emissive: 0xc8923a,
+        leg: 0x2a2018,
+        legEmissive: 0x5a4020,
+        eye: 0xffd23a,
+      },
+    },
   ],
 };
 
@@ -241,6 +259,59 @@ export const BOSS = {
     // P4 — puffball spawns (count gated by HP in puffballTarget())
     spawnInterval: 3.0,
   },
+
+  // ---- the Dog/Cat DUO (first multi-boss) — Expansion 6 Stage 3 ----
+  // Two bosses at once, SEPARATE HP bars, ALTERNATING aggression (only the
+  // "aggressor" attacks; see DUO + bosses/duo.js). The survivor ENRAGES when its
+  // partner dies (no revive). Fang (dog) is a melee pouncer; Whisker (cat) is a
+  // ranged cross-swipe zoner that summons kittens while it's the passive partner.
+
+  // Fang — the DOG: stalk → wind-up (rear back) → fast pounce dash → recover.
+  dog: {
+    hp: 70,
+    radius: 2.2,
+    speed: 2.6, // slow stalk between pounces
+    contactDamage: 1,
+    contactCooldown: 0.8,
+    stalkTime: 2.8, // seconds stalking before it readies a pounce
+    telegraph: 0.6, // wind-up; the danger lane lights up = fair warning
+    dashSpeed: 24, // fast lunge along the locked lane
+    dashTime: 0.42, // short, so a sidestep clears it
+    recoverTime: 1.2, // stands panting, open to hits (Whisker covers it)
+    laneSparks: 4, // telegraph sparks painted ahead along the locked pounce lane
+    laneColor: 0xff5a2a, // warning-orange lane sparks
+    laneRepaint: 0.07, // seconds between lane spark refreshes during the wind-up
+  },
+
+  // Whisker — the CAT: keeps its distance and fires telegraphed cross-swipes
+  // (arms of slow bullets in a +, rotated to an X each volley).
+  cat: {
+    hp: 60,
+    radius: 2.0,
+    speed: 3.2,
+    contactDamage: 1,
+    contactCooldown: 0.9,
+    preferredDist: 12, // zoner: holds roughly this far away
+    preferredStrafe: 0.5, // how hard it circles sideways while holding range
+    swipeInterval: 2.2, // seconds between cross-swipes
+    telegraph: 0.4, // wind-up before a swipe
+    swipeArms: 4, // 4 = a "+"; the pattern rotates 45° each volley (→ an X)
+    swipeBullets: 5, // dots per arm (staggered speeds make a growing line)
+    swipeBulletSpeed: 8, // slow so it's dodgeable
+    swipeSpeedBase: 0.5, // per-bullet arm shaping: speed *= (base + i*step) → a growing line
+    swipeSpeedStep: 0.14,
+    kittenInterval: 3.4, // tops up its litter this often while passive
+    kittenCap: 2, // small (kid-fair); +1 when enraged
+  },
+};
+
+// ---- the DUO controller knobs (shared by both beasts) — Stage 3 ----
+export const DUO = {
+  switchInterval: 4.5, // seconds one beast stays the "aggressor" before they swap
+  enrageMul: 1.4, // the survivor's permanent rage (speed/rate) bump when its partner falls
+  enrageScale: 1.3, // the "I'm angry now" size pop when a partner falls
+  spawnX: 5, // each beast spawns this far left/right of center
+  spawnZOffset: 4, // ...and this far in front of the back wall
 };
 
 // ---- ground hazards: lingering, telegraphed damage zones (spore/poison pools) ----
@@ -417,4 +488,6 @@ export const MODELS = {
   // expansion 6: animated CC0 monster models (null => procedural fallback mesh)
   mushroom: 'models/mushroom-king.glb', // Quaternius "Mushroom King" (CC0)
   sporeling: 'models/mushnub.glb', // Quaternius "Mushnub" (CC0) — mushroom minions
+  dog: 'models/dog.glb', // Stage 3: animated CC0 beast — Fang + pups (warm)
+  cat: 'models/cat.glb', // Stage 3: animated CC0 beast — Whisker + kittens (cool)
 };

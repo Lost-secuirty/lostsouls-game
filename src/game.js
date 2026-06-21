@@ -44,7 +44,8 @@ export class Game {
     this.pickups = [];
     this.walls = [];
     this.activeNpc = null;
-    this.boss = null;
+    this.bosses = []; // 0, 1, or 2 bosses in a boss room (the duo = 2)
+    this.duo = null; // DuoController when a multi-boss floor is loaded
     this.room = null;
     this.roomIndex = 0;
     this.lives = CAPS.lives.start;
@@ -125,9 +126,10 @@ export class Game {
 
   loadRoom(index) {
     this.roomIndex = index;
-    this.boss = null;
+    this.bosses = [];
+    this.duo = null; // re-created by the spawner if this is a multi-boss room
     this._bossHandled = false;
-    hud.hideBossHp();
+    hud.hideBossBars();
 
     // clear out the previous room's actors
     for (const e of this.enemies) this.scene.remove(e.mesh);
@@ -157,7 +159,7 @@ export class Game {
     if (this.ally) this.ally.reset(2, ARENA.depth / 2 - 3);
 
     populateRoom(this, index);
-    this.boss = this.enemies.find((e) => e.isBoss) || null;
+    this.bosses = this.enemies.filter((e) => e.isBoss);
 
     this.state = State.PLAYING;
     hud.hideBanner();
@@ -166,8 +168,9 @@ export class Game {
 
     const info = floorInfo(index);
     audio.setMusicFloor(info.floorIndex); // music gets tenser each floor
-    if (info.isBossRoom && this.boss) {
-      hud.banner(`${this.boss.name.toUpperCase()} — KILL IT`);
+    if (info.isBossRoom && this.bosses.length) {
+      const names = this.bosses.map((b) => b.name).join(' & ');
+      hud.banner(`${names.toUpperCase()} — ${this.bosses.length > 1 ? 'KILL THEM' : 'KILL IT'}`);
       setTimeout(() => hud.hideBanner(), 1600);
     }
   }
@@ -207,17 +210,18 @@ export class Game {
     if (this.state === State.PLAYING) {
       for (const pl of this.players) if (pl.alive) pl.update(dt, this);
       if (this.ally) this.ally.update(dt, this);
+      if (this.duo) this.duo.update(dt); // alternating aggression + enrage-on-death
       for (const e of this.enemies) e.update(dt, this);
       this.bullets.update(dt, this);
       this.hazards.update(dt, this);
       this._handlePickups();
       this._handleSurvivors(dt);
 
-      // boss died -> sweep its spiderlings so the room finishes cleanly
-      if (this.boss && this.boss.dead && !this._bossHandled) {
+      // ALL bosses dead -> sweep their minions so the room finishes cleanly
+      if (this.bosses.length && this.bosses.every((b) => b.dead) && !this._bossHandled) {
         this._bossHandled = true;
         for (const e of this.enemies) {
-          if (e !== this.boss && !e.dead) {
+          if (!e.isBoss && !e.dead) {
             this.scene.remove(e.mesh);
             e.dead = true;
           }
@@ -225,8 +229,7 @@ export class Game {
       }
       this.enemies = this.enemies.filter((e) => !e.dead);
 
-      if (this.boss && !this.boss.dead)
-        hud.setBossHp(this.boss.hp / this.boss.maxHp, this.boss.name);
+      if (this.bosses.length && this.bosses.some((b) => !b.dead)) hud.setBossBars(this.bosses);
 
       const wipe = !this.players.some((p) => p.alive);
       if (this.coop ? wipe : !this.player.alive) this._onDefeat();
@@ -322,7 +325,7 @@ export class Game {
     const info = floorInfo(this.roomIndex);
 
     if (info.isBossRoom) {
-      hud.hideBossHp();
+      hud.hideBossBars();
       audio.play('bossDie');
       this.input.rumble(0.8, 0.6, 300); // boss-down rumble
       this._countBossBeaten();

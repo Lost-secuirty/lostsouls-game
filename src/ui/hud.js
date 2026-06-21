@@ -46,18 +46,29 @@ export const hud = {
     el.textContent = `FLOOR ${floor} · ${where}${weaponName ? ` · ${weaponName}` : ''}`;
   },
 
-  setBossHp(frac, name) {
-    const bar = $('bossbar');
-    const fill = $('bossbar-fill');
-    const label = $('bossbar-name');
-    if (!bar || !fill) return;
-    bar.classList.add('show');
-    fill.style.width = `${Math.max(0, Math.min(1, frac)) * 100}%`;
-    if (label && name) label.textContent = name;
+  // Render 1 or 2 boss HP bars (the dog/cat duo uses two). Each row shows the
+  // boss's name + a fill; a dead boss's row greys out at 0% (clear "you got one!").
+  setBossBars(bosses) {
+    const wrap = $('bossbars');
+    if (!wrap) return;
+    wrap.classList.add('show');
+    const rows = wrap.querySelectorAll('.bossbar');
+    rows.forEach((row, i) => {
+      const b = bosses[i];
+      if (!b) {
+        row.classList.add('hidden');
+        return;
+      }
+      row.classList.remove('hidden');
+      const frac = Math.max(0, Math.min(1, b.hp / b.maxHp));
+      row.querySelector('.bossbar-fill').style.width = `${frac * 100}%`;
+      row.querySelector('.bossbar-name').textContent = b.name;
+      row.classList.toggle('dead', !!b.dead || b.hp <= 0);
+    });
   },
 
-  hideBossHp() {
-    $('bossbar')?.classList.remove('show');
+  hideBossBars() {
+    $('bossbars')?.classList.remove('show');
   },
 
   banner(text) {
