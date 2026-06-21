@@ -543,3 +543,14 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
   active track on `__audio.currentMusicTrack()`. The spider boss room is global index **9**
   (roomsPerFloor=9 → 10/floor), NOT 5 — the old progression.js header comment was stale and
   said 5; fixed the comment too. Don't trust a comment for room math; use `floorInfo`.
+- **Adversarial review caught the fallback contract holes (fixed before merge):** the synth-mute
+  was driven off `crossfadeTo`'s SYNC return, which broke the music↔synth XOR once a track is
+  mapped. (1) An UNMAPPED context after a recorded track returned false WITHOUT stopping the old
+  track → recorded music + synth drone stacked. (2) Howler load failure is ASYNC (no throw) → a
+  404/undecodable mapped file muted the synth into total silence. Fixes: `crossfadeTo` false-path
+  now `stopCurrent()` (fade+stop+clear); a `loaderror`/`noAudio`/known-`failed` track returns null
+  and fires an `onSilent` callback that un-mutes the synth; `playerror` (autoplay lock) retries on
+  unlock instead of failing; `duck`'s restore captures its own howl so a crossfade mid-duck can't
+  ramp the wrong track; crossfade fades from the howl's current volume (no click on a reused howl).
+  Lesson: with an async loader, "did it start?" ≠ "is it playing?" — gate the fallback on real
+  async state (events), not a synchronous return.

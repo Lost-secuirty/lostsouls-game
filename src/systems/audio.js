@@ -12,6 +12,10 @@ import * as sfx from './sfx.js';
 import * as music from './music.js';
 import { stageTrackId, bossTrackId } from '../core/musicMap.js';
 
+// if a recorded track drops out async (404 / undecodable), un-mute the synth drone so
+// the game is never silent (the never-silent contract — ADR-0024).
+music.onSilent(() => sfx.setSynthMusicMuted(false));
+
 export function play(name) {
   sfx.play(name);
 }
