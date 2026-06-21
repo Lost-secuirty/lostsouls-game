@@ -501,7 +501,9 @@ export const MUSIC = {
   crossfadeMs: 1500, // fade time when swapping tracks (stage <-> boss <-> menu)
   level: 0.7, // music volume relative to the master (0..1)
   duckTo: 0.4, // dip music to this fraction of `level` when the player is hit
-  duckMs: 160, // fade-down time (recovers over ~5x this)
+  duckMs: 160, // fade-down time when the player is hit
+  duckRecoverMul: 5, // music ramps back over duckMs × this after the dip
+  duckRestoreDelayMs: 50, // wait this long after the dip before ramping back
   // track id -> filename in public/audio/  (null = use the synth fallback for now).
   // stageN = floor N exploration; boss_<key> = that boss's theme; win/gameover sting.
   tracks: {

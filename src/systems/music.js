@@ -118,7 +118,7 @@ export function crossfadeTo(id, ms = MUSIC.crossfadeMs) {
   }
   clearTimeout(duckTimer);
   duckedHowl = null;
-  const target = MUSIC.level ?? 0.7;
+  const target = MUSIC.level;
 
   if (currentHowl && currentHowl !== next) {
     const old = currentHowl;
@@ -144,7 +144,7 @@ export function crossfadeTo(id, ms = MUSIC.crossfadeMs) {
 export function playStinger(id) {
   const h = getHowl(id);
   if (!h) return false;
-  h.volume(MUSIC.level ?? 0.7);
+  h.volume(MUSIC.level);
   h.play();
   return true;
 }
@@ -152,15 +152,15 @@ export function playStinger(id) {
 /** briefly dip the music (e.g. when the player is hit), then ramp it back. */
 export function duck(toFrac = MUSIC.duckTo, ms = MUSIC.duckMs) {
   if (!currentHowl) return;
-  const base = MUSIC.level ?? 0.7;
+  const base = MUSIC.level;
   const h = currentHowl; // capture: only this howl gets restored, and only if still current
   duckedHowl = h;
   h.fade(h.volume(), base * toFrac, ms);
   clearTimeout(duckTimer);
   duckTimer = setTimeout(() => {
-    if (currentHowl === h && duckedHowl === h) h.fade(h.volume(), base, ms * 5);
+    if (currentHowl === h && duckedHowl === h) h.fade(h.volume(), base, ms * MUSIC.duckRecoverMul);
     duckedHowl = null;
-  }, ms + 50);
+  }, ms + MUSIC.duckRestoreDelayMs);
 }
 
 /** re-issue the current track after the first user gesture (Howler unlocks then). */
