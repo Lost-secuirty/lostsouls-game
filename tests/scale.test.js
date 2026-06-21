@@ -8,7 +8,7 @@ import { ARENA, CAMERA, PLAYER, ALLY, ENEMY, BOSS } from '../src/config.js';
 describe('ARENA (Stage 6 roomier playfield)', () => {
   it('is meaningfully bigger than the old 40x30 floor (~2.5x the area)', () => {
     const area = ARENA.width * ARENA.depth;
-    expect(area).toBeGreaterThanOrEqual(2 * (40 * 30)); // clearly bigger, not a fluke
+    expect(area).toBeGreaterThanOrEqual(2.4 * (40 * 30)); // locks the documented ~2.5x intent
     expect(area).toBeLessThan(4 * (40 * 30)); // ...but not absurd
   });
 
@@ -21,7 +21,10 @@ describe('ARENA (Stage 6 roomier playfield)', () => {
 describe('CAMERA fits the arena', () => {
   it('sits far enough back to frame the whole room (scales with ARENA)', () => {
     const camDist = Math.hypot(CAMERA.back, CAMERA.height);
-    // the camera must be at least as far as the arena is big, or the room clips
+    // Coarse distance sanity-check, NOT a true frustum-containment proof (it ignores
+    // fov + aspect): it just catches a camera that's obviously too close for the arena
+    // (e.g. reverting the camera but not the arena). Real fit is verified by the
+    // Playwright drive screenshots.
     expect(camDist).toBeGreaterThanOrEqual(Math.max(ARENA.width, ARENA.depth) * 0.7);
   });
 });

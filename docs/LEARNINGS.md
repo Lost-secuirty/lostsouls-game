@@ -441,3 +441,31 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
 - **Test seam:** floors.test.js used to assert each floor object had a numeric `diff`;
   now diff is curve-derived, so it asserts the ramp via `floorInfo(i*roomsPerFloor()).diff`
   instead. golden-value tests for both curves in scaling.test.js.
+
+## 2026-06-21 — Expansion 7 Stage 3 (feel & dev tools: settings, overlays, perf HUD)
+
+- **First localStorage in the repo (ADR-0023):** `systems/settings.js` is a tiny shared
+  store ({volume, muted, showHitboxes}) with a subscribe hook, wrapped in try/catch so it
+  degrades to defaults in private mode / headless (never throws). main.js subscribes and
+  pushes volume/mute into audio; a top-right `#settings` DOM panel + `M`/`H` keys drive it.
+- **Volume/mute the clean way:** sfx.js keeps `masterVolume`/`muted` module vars and an
+  `applyGain()` (= 0 when muted else volume); `ensure()` calls it, so a volume/mute set
+  BEFORE the first user-gesture unlock is honored once the AudioContext exists. Kept sfx
+  decoupled from settings (main.js does the wiring) so the synth stays dependency-free.
+- **Leak-safe ground rings (the Stage-1 deferral resolved):** `systems/overlays.js` pools
+  ring meshes once (like hazards.js) and repositions them each frame in render() — boss
+  telegraph rings (always on, pulsing) + opt-in hitbox rings. A per-boss child/scene mesh
+  would have re-created the teardown-leak class the Stage-6 review caught; a game-lifetime
+  pool never gets added/removed mid-play, so there's nothing to leak. Drew rings only for
+  players/enemies/bosses, not bullets (a bullet basically IS its hitbox — hundreds of extra
+  meshes for nothing).
+- **Coverage gate is scoped (vitest.config include),** so render/DOM modules
+  (overlays/settings/settingsPanel) don't move the % — verified by the Playwright drive
+  instead. Good to remember before writing UI/render code: it won't sink the gate, but it
+  also won't be unit-covered, so drive it.
+- **Perf HUD:** extended the debug menu's FPS tick to also read `renderer.info.render.calls`
+  (per-frame, no reset needed) + live bullet/enemy counts — the numbers Scott needs to feel
+  out difficulty + when the deferred perf work (BACKLOG) actually becomes necessary.
+- **Carry-overs cleared:** ally.range 16→22 (the bigger arena made the old bubble feel
+  short); tightened scale.test's ARENA-area bound to the documented ~2.5x and made the
+  camera-fit test's comment honest (coarse distance check, not a frustum proof).

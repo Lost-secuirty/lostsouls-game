@@ -23,11 +23,18 @@ This file is the lifecycle source-of-truth for the repo. The detailed running hi
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.6.3)
+## Current state (v0.6.4)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Expansion 7 Stage 3 (feel & dev tools)** — the accessibility/feel layer (ADR-0023). Persisted
+  **settings** ([`settings.js`](src/systems/settings.js), the first `localStorage` use): a top-right
+  panel + `M`/`H` keys for **volume / mute** and a **hitbox overlay**. A pooled, leak-safe
+  [`overlays.js`](src/systems/overlays.js) draws an always-on **boss telegraph ring** (the
+  ground-ring telegraph deferred from Stage 1) and the opt-in hitbox rings. The debug menu gained a
+  **perf HUD** (draw calls / live bullet + enemy counts) for tuning. Carry-overs: `ally.range` 16→22
+  for the bigger arena; tightened the Stage-6 `scale.test` nits. Completes the Foundation & Feel pass.
 - **Expansion 7 Stage 2 (scaling math)** — the balance rework (ADR-0022). A pure
   [`scaling.js`](src/core/scaling.js): **diminishing-returns upgrades** (`statBonus`, config
   `UPGRADES`) so power ramps over a whole run instead of capping in ~3 pickups, and a single
@@ -74,7 +81,7 @@ two-player co-op (keyboard/mouse/gamepad). Most recent work:
 - **Cross-repo hardening** — secret/PII pre-commit + CI scanner (public-repo BLOCK policy),
   ESLint 10, pinned actions.
 
-22 ADRs (0001–0022). Verification: probability/proof tests, coverage gate, production smoke +
+23 ADRs (0001–0023). Verification: probability/proof tests, coverage gate, production smoke +
 browser smoke, OpenSSF scorecard, dependency review, control audit.
 
 ## Scope (unchanged)

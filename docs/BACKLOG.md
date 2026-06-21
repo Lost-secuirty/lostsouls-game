@@ -56,6 +56,12 @@ as `- [ ] <item> — <why deferred / status>`; the running history of _done_ wor
       `PLAYER`, `ALLY`, `ENEMY`) — but final "feel" is Scott + Caden's eyes in `npm run dev`.
       Tweak radii/heights/camera there if anything reads too small or too big.
 
+## Accessibility — easy adds (the store + panel exist now, ADR-0023)
+
+- [ ] **Reduced-shake / "calm camera" toggle** and **high-contrast / colorblind palette** — both
+      were offered but not picked this round. `systems/settings.js` + the `#settings` panel make
+      them small: add a setting, guard `juice.shake()` (reduced) and swap `PALETTE` (high-contrast).
+
 ## Deferred — heavy engine perf (do it when bullets go hundreds → thousands)
 
 > From the 2026 deep-research audit. The repo's bullet system does linear scans and one mesh per

@@ -74,7 +74,7 @@ export const ALLY = {
   speed: 9,
   followDist: 4.5, // tries to stay this close to you
   fireCooldown: 0.45,
-  range: 16, // will shoot enemies within this distance
+  range: 22, // will shoot enemies within this distance (bumped for the bigger arena)
 };
 
 // ---- bullets (shared pool for player + enemies) ----

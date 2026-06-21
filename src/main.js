@@ -10,6 +10,8 @@ import { startLoop } from './core/loop.js';
 import { MODELS } from './config.js';
 import * as audio from './systems/audio.js';
 import { showStartMenu } from './ui/startmenu.js';
+import { settings } from './systems/settings.js';
+import { initSettingsPanel } from './ui/settingsPanel.js';
 
 (async () => {
   const { renderer, scene, camera, baseCam, resize } = createScene(document.getElementById('app'));
@@ -38,8 +40,20 @@ import { showStartMenu } from './ui/startmenu.js';
       debugGui.show(debugShown);
     }
   };
+  // persisted settings (ADR-0023): apply volume/mute to audio + keep them in sync
+  audio.setMasterVolume(settings.get('volume'));
+  audio.setMuted(settings.get('muted'));
+  settings.onChange((k, v) => {
+    if (k === 'volume') audio.setMasterVolume(v);
+    if (k === 'muted') audio.setMuted(v);
+  });
+  initSettingsPanel();
+
   addEventListener('keydown', (e) => {
     if (e.key === '`') toggleDebug();
+    else if (e.key === 'm' || e.key === 'M')
+      settings.toggle('muted'); // mute/unmute
+    else if (e.key === 'h' || e.key === 'H') settings.toggle('showHitboxes'); // hitbox overlay
   });
   if (location.search.includes('debug')) toggleDebug();
 
