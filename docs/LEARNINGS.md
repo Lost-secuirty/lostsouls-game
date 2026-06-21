@@ -554,3 +554,13 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
   ramp the wrong track; crossfade fades from the howl's current volume (no click on a reused howl).
   Lesson: with an async loader, "did it start?" ≠ "is it playing?" — gate the fallback on real
   async state (events), not a synchronous return.
+
+- **Boss portrait harness (`tools/boss-shots/`, `npm`-less: `node scripts/boss-shots.mjs`):**
+  rendered all six bosses off the real `Boss` shell instead of playing to each room. Three
+  traps, all fixed in the harness: (1) `config.MODELS` paths are root-relative (`models/x.glb`)
+  so a page served from a SUBDIR 404s every GLB and silently falls back to procedural meshes —
+  re-root to `/models/x.glb` before `loadModels`. (2) `Box3.setFromObject` on a skinned GLB
+  reads bind-pose/bone extents and frames empty space; union per-mesh `geometry.boundingBox` in
+  world space instead (mirror `AnimModel.fitTo`). (3) Quaternius GLBs don't share a forward axis,
+  so a single yaw shows some bosses' backs — needs a per-boss `FACING` map. Pre-installed
+  Chromium at `/opt/pw-browsers` via `CHROME_PATH` when Playwright can't download its browser.
