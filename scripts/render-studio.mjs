@@ -35,7 +35,7 @@ const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 
-const shots = []; // { type, name, file }
+const shots = []; // one captured entry per boss — type, name and file path
 
 try {
   await page.goto(url, { waitUntil: 'networkidle', timeout: 30_000 });

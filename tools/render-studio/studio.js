@@ -15,10 +15,11 @@
 
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
-import { Boss } from '/src/entities/boss.js';
-import { loadModels } from '/src/core/assets.js';
-import { createPostFX } from '/src/core/postfx.js';
-import { MODELS, PROGRESSION, BOSS } from '/src/config.js';
+// relative paths (resolve to /src/* under the Vite dev server from this subdir)
+import { Boss } from '../../src/entities/boss.js';
+import { loadModels } from '../../src/core/assets.js';
+import { createPostFX } from '../../src/core/postfx.js';
+import { MODELS, PROGRESSION, BOSS } from '../../src/config.js';
 
 // transparent cutout mode (?bg=transparent): render raw (no post-FX/ground) so the
 // PNG alpha is preserved for compositing elsewhere. Default = the full game look.
@@ -168,7 +169,13 @@ window.showBoss = (type) => {
   current.behavior?.animate?.(current, 1);
 
   frameBoss(current, sub);
-  if (labelEl) labelEl.innerHTML = `${current.name}<small>${type}</small>`;
+  if (labelEl) {
+    // textContent (not innerHTML) so a boss type/name can never inject markup
+    labelEl.textContent = current.name;
+    const small = document.createElement('small');
+    small.textContent = type;
+    labelEl.appendChild(small);
+  }
   return current.name;
 };
 
@@ -176,14 +183,6 @@ window.showBoss = (type) => {
 // ("models/x.glb") and resolve against the server ROOT in the game; this harness lives
 // in a subdir, so re-root to /models/x.glb (served from public/). A still-missing model
 // falls back to the boss's procedural mesh — still a valid portrait.
-const rootedModels = Object.fromEntries(
-  Object.entries(MODELS).map(([k, v]) => [k, v ? '/' + v.replace(/^\/+/, '') : v]),
-);
-window.__ready = false;
-loadModels(rootedModels).then(() => {
-  window.__ready = true;
-});
-
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -191,4 +190,11 @@ window.addEventListener('resize', () => {
   postfx?.setSize(window.innerWidth, window.innerHeight);
 });
 
-animate();
+animate(); // start the render loop immediately (renders an empty scene until a boss loads)
+
+const rootedModels = Object.fromEntries(
+  Object.entries(MODELS).map(([k, v]) => [k, v ? '/' + v.replace(/^\/+/, '') : v]),
+);
+window.__ready = false;
+await loadModels(rootedModels); // top-level await (ES module); then signal the driver
+window.__ready = true;
