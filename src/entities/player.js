@@ -233,6 +233,24 @@ export class Player {
     if (this._orbital) for (const m of this._orbital.blades) m.visible = false;
   }
 
+  /**
+   * Tear down anything this player added to the scene BEYOND its own mesh.
+   * Right now that's the orbital blades — they live directly in the scene (not
+   * under `this.mesh`), so removing the mesh alone would orphan them. Without
+   * this, resetting the game while the Orbital Blade is equipped left the blades
+   * frozen in the scene at their last position. Call before dropping a player.
+   */
+  dispose(scene) {
+    if (this._orbital) {
+      for (const m of this._orbital.blades) {
+        scene.remove(m);
+        m.geometry?.dispose();
+        m.material?.dispose();
+      }
+      this._orbital = null;
+    }
+  }
+
   // --- Charge Cannon: hold to charge, release a bigger/stronger cannonball ---
   _updateCharge(dt, game, aim) {
     const aiming = aim.x !== 0 || aim.z !== 0;

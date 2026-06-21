@@ -349,3 +349,34 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
 - **Verified:** lint/format; 80 unit tests (added `humanDecision`, `humanrally`, `floors`);
   build; a Playwright drive of BOTH branches (overlay + labels, right→skip+slot+door,
   wrong→fight+lose-line, animated human renders) with 0 console errors.
+
+## 2026-06-20 — Expansion 6 Stage 6 (polish: story bible, roomier arenas, scale pass, orbital fix)
+
+- **Wrote the story down so the theme can't drift (`docs/STORY.md`).** Scott + Caden's
+  canon: **1940s post-war ruined city**, an **experiment-gone-wrong rift** at the center
+  that keeps spawning (harder toward the core; you win by **crossing over**), distrustful
+  **survivors who help only temporarily** (already realized as the Human decision-boss),
+  WW2-era guns that fuse with rift-tech and can **come "alive,"** and a hard rule:
+  **NO zombies** (other undead + demons only). Includes a roster→story table and an
+  Open-Questions list (name of the other side, the "Living Weapons" rules, ally system).
+- **Roomier arenas without changing the action (ADR-0020).** `ARENA` 40×30 → **64×48**
+  (~2.56× area). The trick: **leave all speeds unchanged** — more space _relative to_
+  movement/bullet speeds is what actually buys dodging room. Everything but the camera and
+  entity sizes already derived from `ARENA` (walls/door/ground/grid/spawns), so it scaled
+  for free. **Gotcha:** `scene.js` fog was hardcoded `45–90` and would've fogged out the
+  bigger back wall — now derived from camera distance + arena span.
+- **Camera fits the whole room (not a follow-cam).** `CAMERA.height/back` 30/18 → 48/29
+  (same ×1.6 as the arena) keeps the entire room on screen — chosen over a follow-cam
+  because **seeing every bullet is fairer for a kid**. Trade-off: sprites are a bit smaller
+  on screen; offset by the size bumps + parked as a `config.js` feel-dial.
+- **Size ladder (threat reads by size).** player/ally 0.7→0.85, chaser 0.85→1.05, shooter
+  0.95→1.2; bosses untouched (Scott: fine). `tests/scale.test.js` locks player < chaser <
+  shooter < every boss so it can't silently regress. `radius` is draw-size AND hitbox, so
+  bumps stayed gentle.
+- **Orbital-blade reset bug (Scott's report) fixed.** The blades are `scene.add`-ed but
+  weapon-swap only `_hideOrbital()`-d them, so a full reset orphaned them in the scene at
+  their last spot. Added `Player.dispose(scene)` (removes + disposes the blade meshes),
+  called from `Game._teardownActors`. Same teardown gap as the parked AnimModel mixer leak.
+- **Parked, NOT changed (Scott's call):** stat-cap scaling ramps too fast / some guns
+  (machine gun, homing, rockets) feel OP — noted in `BACKLOG.md` to tune later, because
+  changing balance mid-stream is how we'd rework twice. Pistol weak by design, shotgun fine.

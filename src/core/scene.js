@@ -15,7 +15,11 @@ export function createScene(container) {
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x07060a);
-  scene.fog = new THREE.Fog(0x07060a, 45, 90);
+  // Fog sized to the camera distance + arena span so the far wall stays readable as
+  // the arena grows (it scales with config CAMERA/ARENA instead of fixed 45–90).
+  const camDist = Math.hypot(CAMERA.back, CAMERA.height);
+  const arenaSpan = Math.max(ARENA.width, ARENA.depth);
+  scene.fog = new THREE.Fog(0x07060a, camDist, camDist + arenaSpan * 1.6);
 
   // ---- camera: high up and tilted back, looking at the arena center ----
   const camera = new THREE.PerspectiveCamera(
