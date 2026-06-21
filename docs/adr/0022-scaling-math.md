@@ -24,7 +24,7 @@ A pure **`src/core/scaling.js`** holds the two curves; all knobs live in `config
 
 **Upgrades — diminishing returns (soft cap), `statBonus(stacks, maxBonus, half)`:**
 
-```
+```text
 bonus(n) = maxBonus * n / (n + half)
 ```
 
@@ -37,7 +37,7 @@ speed +60% (half 6). `CAPS` are kept only as safety backstops at the asymptotes.
 
 **Difficulty — one curve for the whole run, `floorScale(floorIndex, {base, growth})`:**
 
-```
+```text
 diff(i) = base * (1 + growth)^i        (× an optional per-floor `diffMul` spike)
 ```
 

@@ -11,12 +11,20 @@
 // helping slightly safer).
 // =====================================================================
 
+import { PICKUPS } from '../config.js';
+
 // Good things that can happen.
 // NOTE: the stat UPs add ONE upgrade stack and IGNORE magnitude since ADR-0022 (the
 // diminishing-returns curve in config.UPGRADES sets the strength), so their magnitude
 // is 0 here — not a live knob. Only HEAL/TAKE_DAMAGE/SPAWN_ENEMIES consume magnitude.
+// HEAL reuses config.PICKUPS.healAmount so there's one source of truth (and the message
+// can't drift from the value).
 const GOOD_EFFECTS = [
-  { effect: 'HEAL', magnitude: 2, message: 'They patch you up! +2 hearts' },
+  {
+    effect: 'HEAL',
+    magnitude: PICKUPS.healAmount,
+    message: `They patch you up! +${PICKUPS.healAmount} hearts`,
+  },
   { effect: 'FIRE_RATE_UP', magnitude: 0, message: 'They tune your gun! Faster shots' },
   { effect: 'DAMAGE_UP', magnitude: 0, message: 'They sharpen your aim! More damage' },
 ];
