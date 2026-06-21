@@ -1,7 +1,7 @@
 {
   "name": "lostsouls-game",
   "private": true,
-  "version": "0.7.0",
+  "version": "0.7.1",
   "type": "module",
   "description": "A 3D bullet-hell twin-stick shooter with co-op, procedural systems, deterministic tests, and production smoke checks.",
   "scripts": {
@@ -18,7 +18,8 @@
     "smoke:browser": "node scripts/browser-smoke.mjs",
     "smoke:prod": "node scripts/prod-health-proof.mjs",
     "audio:report": "node scripts/audio-studio.mjs report",
-    "audio:process": "node scripts/audio-studio.mjs process"
+    "audio:process": "node scripts/audio-studio.mjs process",
+    "render:studio": "node scripts/render-studio.mjs"
   },
   "dependencies": {
     "express": "^5.2.1",
@@ -36,6 +37,7 @@
     "eslint-plugin-security": "^4.0.1",
     "globals": "^17.6.0",
     "playwright": "^1.61.0",
+    "pngjs": "^7.0.0",
     "prettier": "^3.4.2",
     "vite": "^8.0.16",
     "vitest": "^4.1.9"

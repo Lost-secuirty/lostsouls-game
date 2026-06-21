@@ -24,11 +24,16 @@ session) lives in [`docs/WORKLOG.md`](docs/WORKLOG.md); the detailed running his
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.7.0)
+## Current state (v0.7.1)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Render studio harness (v0.7.1)** — a dev tool ([`tools/render-studio/`](tools/render-studio/),
+  `npm run render:studio`) that renders each boss's real in-game mesh through the **same post-FX
+  pipeline** (so portraits match the game), with IBL, a deterministic pose, auto camera-fit, and a
+  combined **contact sheet** of all bosses. Salvaged + upgraded from the closed boss-shots PR;
+  produces clean boss portraits without playing to each room.
 - **In-game graphics overhaul — post-FX (v0.7.0, ADR-0025)** — the game now renders through a
   **post-processing pipeline** ([`src/core/postfx.js`](src/core/postfx.js), pmndrs `postprocessing`):
   **luminance-gated bloom** so the dark world's emissive threats (bullets/enemies/pickups/door) glow,
