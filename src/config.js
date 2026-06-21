@@ -49,10 +49,13 @@ export const PALETTE = {
 
 // ---- the "size ladder" (Stage 6 / ADR-0020) ----
 // Size reads as threat in a top-down game, so we keep a clear hierarchy:
-//   player/ally (0.85) < chaser (1.05) < shooter (1.2) < bosses (2.2–3.0, below).
+//   player/ally (0.85) < chaser (1.05) < shooter (1.2) < bosses (2.0–3.0, below).
 // `radius` is BOTH the drawn size and the collision circle, so these affect feel —
 // tune gently. (Speeds are deliberately left alone: keeping them constant in the
 // bigger arena is what actually buys "more room" to dodge.)
+// NOTE: every HP-gated MINION sizes itself RELATIVE to ENEMY.chaser.radius (it is
+// built as a 'chaser' then shrunk in enemies.js topUpMinions / cat.js), so a tweak
+// to chaser.radius moves all the bonelings/puffballs/kittens/survivors too.
 
 // ---- player (you) ----
 export const PLAYER = {
@@ -379,11 +382,13 @@ export const BOSS = {
     p1Spread: 10, // degrees across the volley
     p1BulletSpeed: 15,
 
-    // P2 — telegraphed "panic spray" ring
+    // P2 — telegraphed "panic spray": a wide AIMED cone at you (not a tidy ring —
+    // distinct from the spider; dodge it by strafing sideways). emitters.nWay.
     p2Interval: 3.8,
     telegraph: 0.5, // wind-up (fair warning)
-    ringBullets: 12, // base count (scaled by floor diff in code)
-    ringBulletSpeed: 8, // slow so the ring is dodgeable
+    ringBullets: 12, // bullets in the spray (scaled by floor diff in code)
+    ringBulletSpeed: 8, // slow so it's dodgeable
+    p2SprayDeg: 60, // cone width of the panic spray (degrees)
 
     // P3 — rally armed survivors (count gated by HP in humanRallyTarget())
     spawnInterval: 2.8,

@@ -3,7 +3,7 @@ lifecycle: growing
 frozen: false
 visibility: public
 maturity: active-development
-updated: 2026-06-20
+updated: 2026-06-21
 ---
 
 # Status — Lostsouls
@@ -23,11 +23,19 @@ This file is the lifecycle source-of-truth for the repo. The detailed running hi
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.6.1)
+## Current state (v0.6.2)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Expansion 7 Stage 1 (foundation)** — a pure **bullet-pattern (emitter) library**
+  ([`emitters.js`](src/entities/bosses/emitters.js): `ring`/`gapRing`/`jitterRing`/`star`/`nWay`/
+  `arc`), so a new attack is "pick a generator + config numbers" (ADR-0021). The 5–6 duplicate ring
+  closures were refactored onto it (behavior-identical), and the **human** boss was **de-samey'd**
+  from a spider-clone ring into an aimed **panic-spray cone**; telegraphs read clearer. Also fixed
+  the **orbital-blade-freezes-on-death** residual and corrected the **story canon** (nameless place,
+  a **civil war** not WW2, the 1940s as a tech/era anchor — no anachronistic weapons). First of the
+  research-led "Foundation & Feel" pass (scaling math + accessibility follow in later stages).
 - **Expansion 6 Stage 6 (polish)** — wrote the **story bible** ([`docs/STORY.md`](docs/STORY.md):
   Caden's 1940s post-war ruined city, the experiment-gone-wrong rift, temporary survivors, WW2 ×
   rift-tech "living weapons", **no zombies**), then a **scale pass** (ADR-0020): arenas ~2.5×
@@ -60,7 +68,7 @@ two-player co-op (keyboard/mouse/gamepad). Most recent work:
 - **Cross-repo hardening** — secret/PII pre-commit + CI scanner (public-repo BLOCK policy),
   ESLint 10, pinned actions.
 
-20 ADRs (0001–0020). Verification: probability/proof tests, coverage gate, production smoke +
+21 ADRs (0001–0021). Verification: probability/proof tests, coverage gate, production smoke +
 browser smoke, OpenSSF scorecard, dependency review, control audit.
 
 ## Scope (unchanged)

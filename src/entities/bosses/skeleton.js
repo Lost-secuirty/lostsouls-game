@@ -18,23 +18,20 @@ import { loadAnimated } from '../../core/animModel.js';
 import { buildSkeletonMesh } from '../skeletonMesh.js';
 import { skeletonWaveTarget } from '../../core/progression.js';
 import { topUpMinions } from '../enemies.js';
-import { aimedBurst, telegraphedRing } from './patterns.js';
+import { aimedBurst, telegraphedRing, fireAngles } from './patterns.js';
+import { jitterRing } from './emitters.js';
 import { normalize } from '../../core/math2d.js';
 import { slideOutOfWalls, clampToArena } from '../../systems/collision.js';
 import * as audio from '../../systems/audio.js';
 
 const POOF = 18; // particle puff on vanish/reform (cosmetic, like other death/spawn puffs)
 
+// P2 signature: an even ring + a seeded per-bone jitter = a "scatter" (still has
+// gaps; deterministic/testable via game.rng).
 function fireScatterRing(boss, game) {
   boss.phase += 0.3;
-  const n = boss.ringCount;
-  const j = boss.cfg.scatterJitter;
-  for (let i = 0; i < n; i++) {
-    // even ring + a seeded per-bone jitter = a "scatter" (deterministic/testable)
-    const a = boss.phase + (i / n) * Math.PI * 2 + (game.rng.next() * 2 - 1) * j;
-    game.bullets.spawnEnemy(boss.x, boss.z, Math.sin(a), Math.cos(a), boss.cfg.ringBulletSpeed);
-  }
-  game.juice.shake(0.18);
+  const angles = jitterRing(boss.ringCount, boss.cfg.scatterJitter, game.rng.next, boss.phase);
+  fireAngles(boss, game, angles, boss.cfg.ringBulletSpeed, 0.18);
 }
 
 /** pick a relocate spot far from every living player (seeded; honors teleportMargin) */

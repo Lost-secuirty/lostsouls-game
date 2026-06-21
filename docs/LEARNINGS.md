@@ -380,3 +380,36 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
 - **Parked, NOT changed (Scott's call):** stat-cap scaling ramps too fast / some guns
   (machine gun, homing, rockets) feel OP — noted in `BACKLOG.md` to tune later, because
   changing balance mid-stream is how we'd rework twice. Pistol weak by design, shotgun fine.
+
+## 2026-06-21 — Expansion 7 Stage 1 (emitter library + de-samey attacks + canon fix)
+
+- **Pure pattern library `bosses/emitters.js` (ADR-0021).** Angle-array generators
+  (`ring`/`gapRing`/`jitterRing`/`star`/`nWay`/`arc` + `dirsFromAngles`) — no THREE, no
+  game state, so they unit-test trivially and a new attack is a one-liner. Folded the
+  5–6 duplicate "fire a ring" closures (spider/mushroom/skeleton/human/cat + the basic
+  enemy shooter) onto it via a new `patterns.fireAngles` spawn helper.
+- **Behavior-preserving refactor — the key was the angle convention.** The whole game
+  uses `dir = (sin a, cos a)` (a=0 → +z), so the generators return angles in THAT
+  convention and the bullet directions came out byte-identical for spider/mushroom/
+  skeleton/cat/shooter. The seeded seams matter: `jitterRing` calls its `rng` once per
+  bullet in order (passed `game.rng.next`), and mushroom's gap still uses `game.rng.int(n)`
+  first — so determinism tests stayed green with zero changes.
+- **De-samey (Scott's ask).** The human boss's P2 was literally a copy of the spider's
+  plain ring. Changed it to an aimed **panic-spray cone** (`nWay`, new config
+  `BOSS.human.p2SprayDeg`) — dodged by strafing, not by threading a ring. The five ranged
+  bosses now read distinctly: spider=rotating ring, mushroom=gap ring, skeleton=scatter,
+  human=aimed spray, cat=cross/X.
+- **Telegraph legibility, the cheap+safe slice.** Bumped the wind-up puff (1.25 → ~1.4 +
+  a pulse) in the boss shell. Deliberately did NOT add a ground-ring telegraph yet: a new
+  scene-mesh per boss would reintroduce the exact teardown-leak class the Stage-6 review
+  caught (loadRoom only `scene.remove`s `e.mesh`). The leak-safe ground ring lands with the
+  hitbox/danger overlay in Stage 3.
+- **Carry-overs from the adversarial review, folded in:** orbital blades froze visible on
+  _death_ (not just reset) — `Player.hurt()` now `_hideOrbital()`s on death (re-shows on
+  revive); `package.json` ↔ STATUS version re-synced; size-ladder comment fixed to `2.0–3.0`
+  (cat is the smallest boss at 2.0); noted minion size derives from `ENEMY.chaser.radius`.
+- **Story canon fix (Scott corrected CodeRabbit).** CodeRabbit read "1940 + post-WW2" as a
+  contradiction; the real intent is: **no WW2 in this timeline — a civil war** wrecked a
+  **nameless** place, and "1940s" is only a **tech/era anchor** (period weapons/names/dates,
+  _no uzis_). Rewrote `STORY.md` Setting + canon rules accordingly. Lesson: when a linter
+  flags a "contradiction" in creative canon, confirm intent with the humans before "fixing."

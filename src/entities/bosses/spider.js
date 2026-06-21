@@ -12,16 +12,13 @@ import { getModel } from '../../core/assets.js';
 import { buildSpiderMesh } from '../spiderMesh.js';
 import { spiderlingTarget } from '../../core/progression.js';
 import { topUpMinions } from '../enemies.js';
-import { aimedBurst, telegraphedRing } from './patterns.js';
+import { aimedBurst, telegraphedRing, fireAngles } from './patterns.js';
+import { ring } from './emitters.js';
 
+// P2 signature: a clean ROTATING ring (phase steps each volley → it corkscrews).
 function fireRing(boss, game) {
   boss.phase += 0.35;
-  const n = boss.ringCount;
-  for (let i = 0; i < n; i++) {
-    const a = boss.phase + (i / n) * Math.PI * 2;
-    game.bullets.spawnEnemy(boss.x, boss.z, Math.sin(a), Math.cos(a), boss.cfg.ringBulletSpeed);
-  }
-  game.juice.shake(0.15);
+  fireAngles(boss, game, ring(boss.ringCount, boss.phase), boss.cfg.ringBulletSpeed, 0.15);
 }
 
 export const spider = {

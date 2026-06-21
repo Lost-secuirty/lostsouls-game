@@ -5,8 +5,10 @@
 > "why" behind the monsters and guns. Read it before adding new content so the theme stays whole.
 > It's a **living doc**: when we lock a new story beat, add it here. Co-authored by Scott + Caden.
 >
-> Caden set it in **1940**. (Asked what he knows about the '40s: _"I know one thing — they had
-> nukes."_ So: nukes it is. 🍄☢️)
+> Caden set it in the **1940s**. (Asked what he knows about the '40s: _"I know one thing — they had
+> nukes."_) The decade is an **era / tech anchor**, not real history — it keeps weapons, names, and
+> dates period-consistent (1940s-era tech, _no uzis_). In this timeline there was **no WW2**; the war
+> that wrecked the place was a **civil war** (see Setting). 🍄☢️
 
 ---
 
@@ -19,12 +21,14 @@ whatever is on the other side.
 
 ## Setting
 
-- **Era:** **1940s**, post–WW2. The shooting war is over, but it didn't end clean.
-- **Place:** a **medium-sized city** — not a sprawling metropolis. Streets, barricades, rubble,
-  ruined blocks. Think a war-torn town, not a skyline.
-- **What broke it:** the city was _already_ wrecked. WW2 bled straight into a **civil war** — so
-  even before the monsters, **nobody trusted anybody**. Then an **experiment went wrong** and
-  opened the rift. The monsters are the new disaster on top of an old one.
+- **Era:** the **1940s** — used as a **tech / era anchor** only (period weapons, names, dates). This
+  is an alternate timeline: **there was no WW2.**
+- **Place:** a **nameless, medium-sized city** — not a sprawling metropolis, and deliberately unnamed
+  (the _where_ doesn't matter). Streets, barricades, rubble, ruined blocks; a war-torn town, not a
+  skyline.
+- **What broke it:** a **civil war** (not a world war) had _already_ wrecked the place — so even
+  before the monsters, **nobody trusted anybody**. Then an **experiment went wrong** and opened the
+  rift. The monsters are the new disaster on top of an old one.
 - **The mood:** paranoid, scavenged, desperate. Survivors hole up. Help is temporary and earned.
 
 ## The Rift (the engine of the game)
@@ -86,7 +90,9 @@ gradient.)_
 
 ## Weapons — and the "Living Weapons" arc
 
-- **Base style: WW2-era.** Pistols, shotguns, machine guns, rockets — 1940s silhouettes.
+- **Base style: 1940s-era.** Pistols, shotguns, machine guns, rockets — period silhouettes. **Keep
+  it period-correct:** the 1940s anchor means no anachronistic guns (no uzis, no modern optics) until
+  rift-tech justifies it.
 - **Mix with future / monster / demon tech.** Salvage from the rift fuses with old guns to make
   the exotic weapons (homing, railgun, charge cannon, the orbital blade, etc.).
 - **Weapons can become "ALIVE."** Carry a fused gun long enough and the monster/demon tech in it
@@ -99,12 +105,13 @@ gradient.)_
 
 Keep new content inside these so the theme doesn't get lost:
 
-1. **1940s, post-war, ruined medium city.** Scavenged, paranoid, atmospheric.
+1. **1940s-era, nameless ruined city; the war was a CIVIL war (no WW2).** Scavenged, paranoid,
+   atmospheric — the decade is a tech/era anchor, not real history.
 2. **The rift is the center and the goal.** Everything pushes toward crossing over.
 3. **Harder toward the center.** Spawns escalate as you approach the core.
 4. **NO zombies.** Other undead + demons + warped "other things" only.
 5. **Trust is temporary and earned.** Humans help for a while, or turn on you.
-6. **Weapons: WW2 base × rift-tech, and they can come alive.**
+6. **Weapons: 1940s-era base × rift-tech, period-correct (no anachronisms), and they can come alive.**
 7. **Fun-first, kid-fair** (ADR-0005): readable telegraphs, dodge gaps, nothing cheap.
 
 ## Open questions / placeholders (decide later, then write it here)
@@ -113,7 +120,7 @@ Keep new content inside these so the theme doesn't get lost:
 - **What's across the rift?** The finale destination — a final zone/boss beyond the portal.
 - **"Living Weapons" rules** — how a weapon wakes up, what it does, is it good or a curse?
 - **Survivor ally system** — temp companions, escort/quest rooms, trade, area mini-games.
-- **The experiment** — who ran it, why? (A faction from the civil war? The military and the nukes?)
+- **The experiment** — who ran it, why? (A faction from the **civil war**? Whoever held the city?)
 - **The dad & son** — names? a reason they're still together in the worst place on earth?
 
 ---

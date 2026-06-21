@@ -15,26 +15,16 @@ import { buildMushroomMesh } from '../mushroomMesh.js';
 import { loadAnimated } from '../../core/animModel.js';
 import { puffballTarget } from '../../core/progression.js';
 import { topUpMinions } from '../enemies.js';
-import { aimedBurst, telegraphedRing } from './patterns.js';
+import { aimedBurst, telegraphedRing, fireAngles } from './patterns.js';
+import { gapRing } from './emitters.js';
 
+// P2 signature: a spore ring with a GUARANTEED seeded dodge gap (distinct lane).
 function fireSporeRing(boss, game) {
   boss.phase += 0.3;
   const n = boss.ringCount;
   const gapStart = game.rng.int(n); // seeded dodge lane (deterministic, testable)
-  const gapW = boss.cfg.ringGap;
-  for (let i = 0; i < n; i++) {
-    let inGap = false;
-    for (let g = 0; g < gapW; g++) {
-      if ((gapStart + g) % n === i) {
-        inGap = true;
-        break;
-      }
-    }
-    if (inGap) continue;
-    const a = boss.phase + (i / n) * Math.PI * 2;
-    game.bullets.spawnEnemy(boss.x, boss.z, Math.sin(a), Math.cos(a), boss.cfg.ringBulletSpeed);
-  }
-  game.juice.shake(0.15);
+  const angles = gapRing(n, gapStart, boss.cfg.ringGap, boss.phase);
+  fireAngles(boss, game, angles, boss.cfg.ringBulletSpeed, 0.15);
 }
 
 export const mushroom = {

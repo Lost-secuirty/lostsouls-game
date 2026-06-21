@@ -112,8 +112,10 @@ export class Boss {
     this.behavior.animate?.(this, rage);
     this.anim?.update(dt); // advance the GLB animation clip, if any
 
-    // settle the hit-pop / telegraph scale back toward 1 (charge => puff up)
-    const target = this.charge > 0 ? 1.25 : 1;
+    // settle the hit-pop / telegraph scale back toward 1. While telegraphing
+    // (charge > 0) the boss puffs up AND pulses, so the incoming attack reads
+    // clearly = fair warning (the full ground-ring telegraph lands in a later stage).
+    const target = this.charge > 0 ? 1.4 + 0.08 * Math.sin(this.t * 30) : 1;
     const s = this.mesh.scale.x;
     this.mesh.scale.setScalar(s + (target - s) * Math.min(1, dt * 12));
     this.mesh.position.set(this.x, 0, this.z);
