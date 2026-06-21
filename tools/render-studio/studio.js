@@ -19,7 +19,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { Boss } from '../../src/entities/boss.js';
 import { loadModels } from '../../src/core/assets.js';
 import { createPostFX } from '../../src/core/postfx.js';
-import { MODELS, PROGRESSION, BOSS } from '../../src/config.js';
+import { MODELS, PROGRESSION, BOSS, LIGHTING } from '../../src/config.js';
 
 // transparent cutout mode (?bg=transparent): render raw (no post-FX/ground) so the
 // PNG alpha is preserved for compositing elsewhere. Default = the full game look.
@@ -41,7 +41,17 @@ const SUBJECTS = {
   skeleton: { facing: Math.PI },
   human: { facing: 0 },
 };
-const POSE_TIME = 0.6; // seconds into the idle/walk clip — a fixed, deterministic pose
+
+// the studio's own knob board (dev-tool tuning — the game's feel lives in src/config.js;
+// the base lights are reused from config.LIGHTING so portraits match the game).
+const STUDIO = {
+  fov: 45,
+  poseTime: 0.6, // seconds into the idle/walk clip — a fixed, deterministic pose
+  iblIntensity: 0.35, // RoomEnvironment fill (low so pale models don't bloom-blow to white)
+  framing: { dir: [0.55, 0.42, 1], distMul: 1.15, lookYMul: 0.92 }, // 3/4 hero angle
+  ground: { size: 80, color: 0x140f18 },
+  grid: { size: 80, divisions: 40, color1: 0x3a2a44, color2: 0x2a1f33, opacity: 0.4 },
+};
 
 // Each boss's canonical per-floor palette (so the procedural fallback colors match
 // what the floor actually fights).
@@ -64,41 +74,52 @@ if (TRANSPARENT) renderer.setClearColor(0x000000, 0);
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-if (!TRANSPARENT) scene.background = new THREE.Color(0x0a0810);
+if (!TRANSPARENT) scene.background = new THREE.Color(LIGHTING.background);
 
 // IBL: a soft studio environment so the GLB PBR materials read richer than flat lights.
 // Kept to a SUBTLE fill (the game has no IBL) so it adds depth without over-brightening
 // pale/untextured models into a bloom-blown white blob — keeps portraits close to the game.
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-scene.environmentIntensity = 0.35;
+scene.environmentIntensity = STUDIO.iblIntensity;
 
-// key/fill lights (from core/scene.js, nudged for a clean portrait)
-scene.add(new THREE.HemisphereLight(0x8a6b8a, 0x241826, 1.0));
-scene.add(new THREE.AmbientLight(0x66556a, 0.6));
-const key = new THREE.DirectionalLight(0xffb088, 1.4);
-key.position.set(10, 30, 12);
+// key/fill lights — REUSE the game's lighting (config.LIGHTING) so portraits match the game
+const L = LIGHTING;
+scene.add(new THREE.HemisphereLight(L.hemisphere.sky, L.hemisphere.ground, L.hemisphere.intensity));
+scene.add(new THREE.AmbientLight(L.ambient.color, L.ambient.intensity));
+const key = new THREE.DirectionalLight(L.key.color, L.key.intensity);
+key.position.set(...L.key.pos);
 scene.add(key);
-const fill = new THREE.DirectionalLight(0x6688ff, 0.6);
-fill.position.set(-15, 20, -10);
+const fill = new THREE.DirectionalLight(L.fill.color, L.fill.intensity);
+fill.position.set(...L.fill.pos);
 scene.add(fill);
 
 // ground + grid (the "ruined street" floor) — skipped in transparent cutout mode
 if (!TRANSPARENT) {
   const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(80, 80),
-    new THREE.MeshStandardMaterial({ color: 0x140f18, roughness: 1 }),
+    new THREE.PlaneGeometry(STUDIO.ground.size, STUDIO.ground.size),
+    new THREE.MeshStandardMaterial({ color: STUDIO.ground.color, roughness: 1 }),
   );
   ground.rotation.x = -Math.PI / 2;
   scene.add(ground);
-  const grid = new THREE.GridHelper(80, 40, 0x3a2a44, 0x2a1f33);
+  const grid = new THREE.GridHelper(
+    STUDIO.grid.size,
+    STUDIO.grid.divisions,
+    STUDIO.grid.color1,
+    STUDIO.grid.color2,
+  );
   grid.position.y = 0.02;
-  grid.material.opacity = 0.4;
+  grid.material.opacity = STUDIO.grid.opacity;
   grid.material.transparent = true;
   scene.add(grid);
 }
 
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 500);
+const camera = new THREE.PerspectiveCamera(
+  STUDIO.fov,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  500,
+);
 
 // post-FX: the SAME pipeline as the game (bloom + ACES) so portraits match the live
 // look. In transparent cutout mode we render raw so the alpha survives.
@@ -130,11 +151,12 @@ function frameBoss(boss, sub) {
   const sphere = box.getBoundingSphere(new THREE.Sphere());
   const c = sphere.center;
   const r = Math.max(sphere.radius, 1);
-  // pull back far enough to fit the bounding sphere in the 45° FOV, 3/4 angle
-  const dist = (r / Math.sin((45 * Math.PI) / 360)) * 1.15 * (sub.zoom ?? 1);
-  const dir = new THREE.Vector3(0.55, 0.42, 1).normalize();
+  // pull back far enough to fit the bounding sphere in the FOV, at the 3/4 hero angle
+  const dist =
+    (r / Math.sin((STUDIO.fov * Math.PI) / 360)) * STUDIO.framing.distMul * (sub.zoom ?? 1);
+  const dir = new THREE.Vector3(...STUDIO.framing.dir).normalize();
   camera.position.copy(c).add(dir.multiplyScalar(dist));
-  camera.lookAt(c.x, c.y * 0.92, c.z);
+  camera.lookAt(c.x, c.y * STUDIO.framing.lookYMul, c.z);
 }
 
 function renderFrame() {
@@ -163,9 +185,9 @@ window.showBoss = (type) => {
 
   // Deterministic pose: jump the GLB mixer to a fixed time (frozen, not wall-clock
   // driven), and step the procedural behavior to the same fixed t. Same pose every run.
-  if (current.anim?.mixer?.setTime) current.anim.mixer.setTime(POSE_TIME);
+  if (current.anim?.mixer?.setTime) current.anim.mixer.setTime(STUDIO.poseTime);
   else for (let i = 0; i < 12; i++) current.anim?.update(0.05);
-  current.t = POSE_TIME;
+  current.t = STUDIO.poseTime;
   current.behavior?.animate?.(current, 1);
 
   frameBoss(current, sub);

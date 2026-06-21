@@ -15,6 +15,22 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-21 — Retro fix: centralize lighting/fog into config (v0.7.2, PR #41)
+
+A retro with Scott flagged the recurring config-discipline slip: feel-numbers in files I *edit*
+(not just my new block) staying hardcoded. Concrete fix:
+
+- **New `config.LIGHTING`** — the game's lights (hemisphere/ambient/key/fill colors, intensities,
+  positions), fog (color + far multiplier), and background. Added `CAMERA.near/far` and
+  `GRAPHICS.pixelRatioCap`. `scene.js` now reads all of it (was hardcoded at `scene.js:37-43/23`).
+- **Render studio reuses `config.LIGHTING`** (was a copy-paste of the same lights → now matches the
+  game automatically) + its own `STUDIO` knob block (fov, IBL fill, pose time, framing, ground/grid)
+  and a `CONTACT` block in the driver — no more scattered magic numbers in the tool.
+- Verified: game renders identically (same values), studio re-rendered 6/6 + contact sheet, 0 errors,
+  full gauntlet + both smokes green.
+- **Process change (logged in memory):** sweep adjacent feel-numbers in any file I touch, default to
+  "when in doubt → config," and grep the diff for numeric literals + `0x` hexes before committing.
+
 ## 2026-06-21 — Phase 5: render studio harness (v0.7.1, PR #40)
 
 The "photo harness" — salvaged the boss-portrait harness from the closed PR #35 and upgraded it.

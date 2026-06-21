@@ -40,8 +40,10 @@ and the accessibility/feel layer in [ADR-0023](adr/0023-settings-and-overlays.md
 - **Camera** (`src/core/scene.js`, `CAMERA` config): tilted top-down "Binding of Isaac" angle
   (perspective, FOV 55), positioned to fit the whole `ARENA` (ADR-0020). Screen-shake offsets it per
   frame (`systems/juice.js`).
-- **Lighting** (`src/core/scene.js`): a two-key dynamic rig — warm orange key + cool blue fill
-  directional lights, over a muted-purple hemisphere + ambient. No IBL/environment map (yet).
+- **Lighting** (`src/core/scene.js`, tunable in **`config.LIGHTING`**): a two-key dynamic rig — warm
+  orange key + cool blue fill directional lights, over a muted-purple hemisphere + ambient, plus the
+  fog. All colors/intensities/positions live in config (the render studio reuses them). No
+  IBL/environment map in-game (yet).
 - **Materials**: `MeshStandardMaterial` for the world/characters/bosses (matte, flat-shaded minions),
   `MeshBasicMaterial` (unlit) for bullets, eyes, the door glow, overlays, hazards. **Emissive** is
   used liberally on enemies/pickups/bosses so they read against the dark ground. No image textures —

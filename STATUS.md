@@ -24,11 +24,15 @@ session) lives in [`docs/WORKLOG.md`](docs/WORKLOG.md); the detailed running his
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.7.1)
+## Current state (v0.7.2)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Config cleanup (v0.7.2)** — centralized the game's **lighting + fog** into a new `config.LIGHTING`
+  block (plus `CAMERA.near/far`, `GRAPHICS.pixelRatioCap`); `scene.js` and the render studio now read
+  it (the studio's copy-pasted lights are gone, so portraits track the game). A retro fix for the
+  "feel-numbers should live in config" rule.
 - **Render studio harness (v0.7.1)** — a dev tool ([`tools/render-studio/`](tools/render-studio/),
   `npm run render:studio`) that renders each boss's real in-game mesh through the **same post-FX
   pipeline** (so portraits match the game), with IBL, a deterministic pose, auto camera-fit, and a
