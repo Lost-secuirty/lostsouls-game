@@ -1,9 +1,10 @@
 # Backlog — Lostsouls
 
 A running parking lot for deferred ideas, known gaps, and out-of-scope items, so the working repo
-stays clean and nothing gets lost. Not a roadmap or a promise — just where things wait. Add items
-as `- [ ] <item> — <why deferred / status>`; the running history of _done_ work lives in
-[`docs/LEARNINGS.md`](LEARNINGS.md) and decisions in [`docs/adr/`](adr/).
+stays clean and nothing gets lost. Not a roadmap or a promise — just where things wait. Items that
+become real intentions get **promoted to the curated [`ROADMAP.md`](ROADMAP.md)**; the running history
+of _done_ work lives in [`docs/WORKLOG.md`](WORKLOG.md) / [`docs/LEARNINGS.md`](LEARNINGS.md) and
+decisions in [`docs/adr/`](adr/).
 
 > **Light by design (ADR-0005).** This is a fun-first co-designed game; keep the backlog short and
 > honest. Don't pad it with process for its own sake.
