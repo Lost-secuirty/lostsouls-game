@@ -17,6 +17,11 @@ as `- [ ] <item> — <why deferred / status>`; the running history of _done_ wor
 
 ## Future ideas (parking lot)
 
+- [ ] **Rework the Orbital Blade (playtest feedback, 2026-06-20).** As a standalone weapon it
+      "sucks": only 2 blades, doesn't fire, and forces you into contact range so you can't act
+      without taking damage. Plan: demote it from a weapon to a **power-up / passive** that adds
+      orbiting blades for extra contact damage _on top of_ a real gun — not a slot you're stuck
+      with. (Remove from the weapon drop table / `WEAPON_TYPES` when it becomes a passive.)
 - [ ] Next-phase expansion content — tracked here as it comes up; promoted to an ADR when decided.
 
 ## Cross-repo / org

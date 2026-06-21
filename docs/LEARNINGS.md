@@ -256,3 +256,35 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
   - two HP bars render with the real animated models, the cat summons a kitten,
     killing one beast enrages the survivor + greys its bar, spider single-boss
     unchanged, zero console errors.
+
+## 2026-06-20 — Expansion 6 Stage 4 (skeleton boss 💀 "Rattlebones")
+
+- **New boss on existing systems (no new ADR needed):** `bosses/skeleton.js` — P1
+  aimed bone-bolt volley, P2 scatter ring (even ring + seeded per-bone jitter via
+  `game.rng.next()` = a dodgeable "scatter"), P3 reassemble & relocate, P4 HP-gated
+  bonelings via pure `skeletonWaveTarget()` (unit-tested; tops out at 4 — the skeleton
+  is the summoner). New "The Catacombs" floor; bone-white minions via the `enemies.js`
+  theme branch.
+- **Reassemble/teleport = one reusable shell flag.** Added `boss.invuln` to the generic
+  Boss shell: `hurt()` early-returns AND the contact-damage check is skipped while it's
+  true. The skeleton sets it for its collapse→vanish→reform beat (a free breather +
+  i-frames), reusing one `reassembleTimer` for both the interval-between and the
+  gone-duration. Drove it headless: `hurt()` during the window did nothing, then it
+  reformed far from the players.
+- **Config-first this time (Scott's feedback):** every skeleton feel-number went into
+  `config.BOSS.skeleton` from the START (timings, scatter jitter, teleport margin,
+  boneling scale/hp, spawn ring) — no end-of-PR rework. Construction ratios
+  (skeletonMesh.js) and the SFX recipe (`bossRattle`) stay inline by the established
+  split (spiderMesh/mushroomMesh/sfx precedent). See the `config-tunables-upfront` note.
+- **Quaternius GLB clip names can be DOUBLY mangled:** this skeleton's clips are
+  `CharacterArmature|CharacterArmature|CharacterArmature|Walk|CharacterArmature|Walk`.
+  `AnimModel`'s `split('|').pop()` still yields `Walk`, so it Just Worked — the
+  strip-on-last-`|` choice keeps paying off across every model (mushroom
+  `CharacterArmature|`, animals `AnimalArmature|`/tripled, skeleton this). Confirm clip
+  names by parsing the GLB JSON chunk (`readUInt32LE(12)` → JSON) before wiring.
+- **Models:** Quaternius **Skeleton** (Ultimate Monsters, CC0) in `public/models/`,
+  credited in `ASSETS.md` (~791 KB).
+- **Verified:** lint/format; 69 unit tests (added `skeletonwave`); build; a Playwright
+  drive — boss renders + animates (sword in hand), P1/P2 fire, bonelings rise at ≤50%
+  HP, the reassemble i-frames block damage then it reforms, single-boss bar unchanged,
+  0 console errors.

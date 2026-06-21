@@ -158,6 +158,14 @@ const SOUNDS = {
     noise({ dur: 0.16, vol: 0.18, freq: 2600, q: 1.5 });
     tone({ freq: 1400, slideTo: 500, type: 'square', dur: 0.1, vol: 0.08 });
   },
+  // expansion 6 stage 4 — the skeleton
+  bossRattle: () => {
+    // a dry, descending bone clatter
+    [0, 0.05, 0.1, 0.15].forEach((d, i) =>
+      tone({ freq: 1800 - i * 220, type: 'square', dur: 0.04, vol: 0.08, delay: d }),
+    );
+    noise({ dur: 0.12, vol: 0.1, freq: 1500, q: 1.5 });
+  },
 };
 
 export function play(name) {

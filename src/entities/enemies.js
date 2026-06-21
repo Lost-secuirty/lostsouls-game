@@ -14,6 +14,7 @@ import { AnimModel } from '../core/animModel.js';
 import { buildSpiderMesh } from './spiderMesh.js';
 import { buildMushroomMesh } from './mushroomMesh.js';
 import { buildBeastMesh } from './beastMesh.js';
+import { buildSkeletonMesh } from './skeletonMesh.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { normalize, dist, circleVsCircle } from '../core/math2d.js';
 import * as audio from '../systems/audio.js';
@@ -52,6 +53,22 @@ function makeEnemyMesh(type, theme) {
     }
     const g = buildBeastMesh(ENEMY[type].radius * 1.2, theme.palette || {}, {
       kind,
+      simple: true,
+    }).group;
+    return { group: g, anim: null };
+  }
+
+  // bone-white catacomb minions (bonelings + archers) match the skeleton boss
+  if (theme && theme.boss === 'skeleton') {
+    const m = getAnimated('skeleton');
+    if (m) {
+      const anim = new AnimModel(m.scene, m.clips).fitTo(ENEMY[type].radius * 2.1);
+      anim.play('Walk');
+      const wrap = new THREE.Group(); // base-1 wrapper (hit-pop / spawn scaling)
+      wrap.add(anim.group);
+      return { group: wrap, anim };
+    }
+    const g = buildSkeletonMesh(ENEMY[type].radius * 1.3, theme.palette || {}, {
       simple: true,
     }).group;
     return { group: g, anim: null };
@@ -119,6 +136,7 @@ export class Enemy {
       theme &&
       (theme.boss === 'dog' || theme.boss === 'cat' || theme.boss === 'duo')
     );
+    this.isSkeleton = !!(theme && theme.boss === 'skeleton');
     const built = makeEnemyMesh(type, theme);
     this.mesh = built.group;
     this.anim = built.anim; // AnimModel for GLB minions, else null
@@ -171,7 +189,7 @@ export class Enemy {
     if (s !== 1) this.mesh.scale.setScalar(s + (1 - s) * Math.min(1, dt * 12));
 
     // themed monsters face the player; generic blobs do a slow menacing spin
-    if (this.isSpider || this.isMushroom || this.isBeast)
+    if (this.isSpider || this.isMushroom || this.isBeast || this.isSkeleton)
       this.mesh.rotation.y = Math.atan2(p.x - this.x, p.z - this.z);
     else this.mesh.rotation.y += dt * 1.5;
     this.anim?.update(dt); // advance the GLB animation clip, if any

@@ -182,6 +182,21 @@ export const PROGRESSION = {
         eye: 0xffd23a,
       },
     },
+    {
+      // Expansion 6 Stage 4 — the skeleton boss + bone-white catacomb minions.
+      // (Final boss order spider→human→mushroom→duo→skeleton is set in Stage 5;
+      // for now the skeleton caps off the run.)
+      name: 'The Catacombs',
+      boss: 'skeleton',
+      diff: 2.15,
+      palette: {
+        body: 0xe8e2d0, // bone white
+        emissive: 0x8a8a6a, // dim bone glow
+        leg: 0xb8b09a, // grey bone
+        legEmissive: 0x4a6a3a, // sickly graveyard green accent
+        eye: 0x9bff6a, // green eye-socket glow
+      },
+    },
   ],
 };
 
@@ -302,6 +317,42 @@ export const BOSS = {
     swipeSpeedStep: 0.14,
     kittenInterval: 3.4, // tops up its litter this often while passive
     kittenCap: 2, // small (kid-fair); +1 when enraged
+  },
+
+  // ---- the SKELETON boss — "Rattlebones" 💀 (Expansion 6 Stage 4) ----
+  // P1 = bone throw (aimed bolt volley) · P2 = scatter ring + rattle wind-up ·
+  // P3 = reassemble & relocate (collapses, i-frames, teleports away, free breather) ·
+  // P4 = HP-gated boneling summons (skeletonWaveTarget() in progression.js).
+  skeleton: {
+    hp: 90,
+    radius: 2.6,
+    speed: 3.4,
+    contactDamage: 1,
+    contactCooldown: 0.85,
+
+    // P1 — bone throw: a quick aimed volley of bone bolts
+    p1Interval: 1.5,
+    p1Burst: 3,
+    p1Spread: 12, // degrees across the volley
+    p1BulletSpeed: 13,
+
+    // P2 — scatter ring: a rattle wind-up, then a ring of bones at seeded jittered angles
+    p2Interval: 4.0,
+    telegraph: 0.5, // rattle wind-up (fair warning)
+    ringBullets: 14, // base count (scaled by floor diff in code)
+    ringBulletSpeed: 8, // slow so the ring is dodgeable
+    scatterJitter: 0.22, // radians of seeded angle wobble per bone (the "scatter")
+
+    // P3 — reassemble & relocate: collapse (invulnerable), teleport away, reform
+    reassembleInterval: 9.0, // seconds between disappear-and-reform tricks
+    reassembleTime: 1.4, // invulnerable + gone this long = your free breather
+    teleportMargin: 7, // reappears at least this far from the nearest player
+
+    // P4 — bonelings (count gated by HP in skeletonWaveTarget())
+    spawnInterval: 2.6,
+    spawnDist: 1.6, // ring radius (× boss.radius) the bonelings rise from
+    bonelingScale: 0.62, // boneling size + collision shrink
+    bonelingHp: 1,
   },
 };
 
@@ -490,4 +541,5 @@ export const MODELS = {
   sporeling: 'models/mushnub.glb', // Quaternius "Mushnub" (CC0) — mushroom minions
   dog: 'models/dog.glb', // Stage 3: animated CC0 beast — Fang + pups (warm)
   cat: 'models/cat.glb', // Stage 3: animated CC0 beast — Whisker + kittens (cool)
+  skeleton: 'models/skeleton.glb', // Stage 4: animated CC0 skeleton — Rattlebones + bonelings
 };

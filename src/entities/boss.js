@@ -42,6 +42,7 @@ export class Boss {
     this.t = 0;
     this.enraged = false; // duo: set when a partner falls (no revive)
     this.enrageMul = 1; // permanent rage bump folded into `rage` once enraged
+    this.invuln = false; // skeleton: true during reassemble i-frames (unhittable + intangible)
 
     this.behavior.init?.(this);
 
@@ -92,9 +93,10 @@ export class Boss {
       this.mesh.rotation.y = Math.atan2(dir.x, dir.z);
     }
 
-    // contact damage
+    // contact damage (intangible while reforming -> no touch damage)
     if (
       this.contactTimer <= 0 &&
+      !this.invuln &&
       p.alive &&
       circleVsCircle(this.x, this.z, this.radius, p.x, p.z, p.radius)
     ) {
@@ -118,7 +120,7 @@ export class Boss {
   }
 
   hurt(dmg, game) {
-    if (this.dead) return;
+    if (this.dead || this.invuln) return; // can't be hit mid-reassemble
     this.hp -= dmg;
     game.particles.burst(this.x, this.z, PARTICLES.perHit, PALETTE.blood);
     this.mesh.scale.setScalar(1.15);
