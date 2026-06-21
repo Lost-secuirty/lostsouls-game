@@ -12,6 +12,7 @@ import * as audio from './systems/audio.js';
 import { showStartMenu } from './ui/startmenu.js';
 import { settings } from './systems/settings.js';
 import { initSettingsPanel } from './ui/settingsPanel.js';
+import { initCredits } from './ui/credits.js';
 
 (async () => {
   const { renderer, scene, camera, baseCam, resize } = createScene(document.getElementById('app'));
@@ -49,6 +50,7 @@ import { initSettingsPanel } from './ui/settingsPanel.js';
     if (k === 'muted') audio.setMuted(v);
   });
   initSettingsPanel();
+  initCredits();
 
   addEventListener('keydown', (e) => {
     // ignore OS key-repeat (holding a key shouldn't strobe a toggle) and keys typed

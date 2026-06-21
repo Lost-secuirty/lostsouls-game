@@ -23,11 +23,17 @@ This file is the lifecycle source-of-truth for the repo. The detailed running hi
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.6.6)
+## Current state (v0.6.7)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Audio — placeholder score wired + audio bible (v0.6.7)** — every stage now has real looping
+  music and the bosses share a placeholder theme (CC-BY, Kevin MacLeod), all swappable with no code
+  change. New [`docs/AUDIO.md`](docs/AUDIO.md) is the single home for audio decisions — track map,
+  candidate swaps, and **research-backed design principles** (engaging via horror's tension→release,
+  while deliberately avoiding gambling-style reward manipulation). Added an in-game **Credits** panel
+  (start menu → ♪ Credits) for the CC-BY attribution. Boss themes get designed with Caden later.
 - **Audio overhaul — music engine (v0.6.6, ADR-0024)** — a recorded-music layer via **Howler.js**
   ([`music.js`](src/systems/music.js)): a distinct looping track per stage, a crossfade to each boss
   theme, a menu theme, and music-ducking on hits — driven from game state through the existing

@@ -39,12 +39,19 @@ attribution is required, but we credit the author anyway.
 | `public/models/skeleton.glb`      | [Poly Pizza](https://poly.pizza/m/yq5ATpujSt)  | Quaternius | CC0 1.0 |
 | `public/models/human.glb`         | [Poly Pizza](https://poly.pizza/m/c3Ibh9I3udk) | Quaternius | CC0 1.0 |
 
-### Music (ADR-0024)
+### Music (ADR-0024 · see [docs/AUDIO.md](docs/AUDIO.md))
 
-The music **engine** ships now; **track files are added next** (curated stage tracks +
-AI-generated boss themes). Each non-original track gets a row here as it lands — every
-CC-BY track must also appear in the in-game credits surface.
+Current tracks are **placeholders** by **Kevin MacLeod (incompetech.com)**, licensed
+**Creative Commons BY 4.0** (<https://creativecommons.org/licenses/by/4.0/>) — also credited
+in-game (start menu → ♪ Credits). They'll be swapped for the final score (curated stage tracks +
+AI-generated boss themes). The 5 boss slots share one placeholder until the real themes exist.
 
-| Track id                           | File | Source | Author | License |
-| ---------------------------------- | ---- | ------ | ------ | ------- |
-| _(none shipped yet — engine only)_ |      |        |        |         |
+| Track id(s)      | File                                | Track (Kevin MacLeod) | License   |
+| ---------------- | ----------------------------------- | --------------------- | --------- |
+| `menu`           | `public/audio/menu.mp3`             | "Hush"                | CC BY 4.0 |
+| `stage0`         | `public/audio/stage-outskirts.mp3`  | "Darkest Child"       | CC BY 4.0 |
+| `stage1`         | `public/audio/stage-barricade.mp3`  | "Anxiety"             | CC BY 4.0 |
+| `stage2`         | `public/audio/stage-fungal.mp3`     | "Echoes of Time"      | CC BY 4.0 |
+| `stage3`         | `public/audio/stage-kennels.mp3`    | "Killers"             | CC BY 4.0 |
+| `stage4`         | `public/audio/stage-catacombs.mp3`  | "Dark Times"          | CC BY 4.0 |
+| `boss_*` (all 5) | `public/audio/boss-placeholder.mp3` | "Despair and Triumph" | CC BY 4.0 |
