@@ -36,19 +36,17 @@ as `- [ ] <item> — <why deferred / status>`; the running history of _done_ wor
       with the orbital-blade teardown above. (Found by the Stage 4 review, 2026-06-20.)
 - [ ] Next-phase expansion content — tracked here as it comes up; promoted to an ADR when decided.
 
-## Balance — parked, DO NOT change yet (playtest notes, 2026-06-20)
+## Balance — REWORKED in Exp 7 Stage 2 (now Scott's to fine-tune)
 
-> Scott's call: **note these now, tune later.** Don't touch the numbers in this pass — changing
-> balance mid-stream is how we end up reworking things twice.
-
-- [ ] **Stat-cap scaling ramps too fast and isn't meaningful enough.** Speed / damage / fire-rate
-      currently hit their `CAPS` ceilings in ~2–3 pickups (`PICKUPS.*Amount`, `CAPS.*`), so the
-      run swings between **over-powered too fast** and **under-powered**. Want: a **longer, more
-      meaningful** ramp (more pickups to cap, each one felt). Affects `CAPS` + `PICKUPS` step sizes.
-- [ ] **Some guns are OP at the current scale rate.** **Machine gun, homing missiles, and rockets**
-      feel over-powered once stats ramp. Tie this fix to the cap-scaling rework above (it's the
-      ramp, not just the gun). Intentional by contrast: the **pistol is weak by design**, and the
-      **shotgun feels balanced** as-is — leave those two alone.
+- [x] ~~**Stat-cap scaling ramps too fast.**~~ **DONE (ADR-0022).** Upgrades are now a
+      diminishing-returns curve (`core/scaling.js statBonus`, knobs in `config.UPGRADES`): each
+      pickup adds a stack, power ramps over a whole run, no hard cap-in-3. `CAPS` kept as backstops.
+- [x] ~~**Some guns are OP.**~~ **DONE (ADR-0022).** Gentle nerfs: machine gun cooldown 0.07→0.09,
+      homing damage 3→2, rocket cooldown 0.8→1.0. Pistol stays weak, shotgun unchanged.
+- [x] ~~**Difficulty too kid-fair.**~~ **DONE (ADR-0022).** One `DIFFICULTY` curve (`floorScale`)
+      drives the whole run (finale ≈ 2.52× vs old 2.15×); tuned toward BoI/Gungeon/Doom challenge.
+- [ ] **Final feel-tuning is Scott's.** The above are sensible _defaults_ — crank `UPGRADES` /
+      `DIFFICULTY` / `WEAPONS` in `config.js` (live in `npm run dev`) to taste.
 
 ## Polish — entity scale (follow-up after the Stage 6 arena pass)
 

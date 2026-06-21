@@ -12,10 +12,13 @@
 // =====================================================================
 
 // Good things that can happen.
+// NOTE: the stat UPs add ONE upgrade stack and IGNORE magnitude since ADR-0022 (the
+// diminishing-returns curve in config.UPGRADES sets the strength), so their magnitude
+// is 0 here — not a live knob. Only HEAL/TAKE_DAMAGE/SPAWN_ENEMIES consume magnitude.
 const GOOD_EFFECTS = [
   { effect: 'HEAL', magnitude: 2, message: 'They patch you up! +2 hearts' },
-  { effect: 'FIRE_RATE_UP', magnitude: 0.7, message: 'They tune your gun! Faster shots' },
-  { effect: 'DAMAGE_UP', magnitude: 0.2, message: 'They sharpen your aim! +20% damage' },
+  { effect: 'FIRE_RATE_UP', magnitude: 0, message: 'They tune your gun! Faster shots' },
+  { effect: 'DAMAGE_UP', magnitude: 0, message: 'They sharpen your aim! More damage' },
 ];
 
 // Bad things that can happen.

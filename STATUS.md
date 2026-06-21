@@ -23,11 +23,17 @@ This file is the lifecycle source-of-truth for the repo. The detailed running hi
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.6.2)
+## Current state (v0.6.3)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Expansion 7 Stage 2 (scaling math)** — the balance rework (ADR-0022). A pure
+  [`scaling.js`](src/core/scaling.js): **diminishing-returns upgrades** (`statBonus`, config
+  `UPGRADES`) so power ramps over a whole run instead of capping in ~3 pickups, and a single
+  **difficulty curve** (`floorScale`, config `DIFFICULTY`) that shapes the whole run (finale ≈ 2.52×
+  vs the old 2.15×) toward a real BoI/Gungeon/Doom challenge. Gentle nerfs to the OP guns (machine
+  gun / homing / rocket); pistol stays weak, shotgun unchanged. All knobs are Scott's to fine-tune.
 - **Expansion 7 Stage 1 (foundation)** — a pure **bullet-pattern (emitter) library**
   ([`emitters.js`](src/entities/bosses/emitters.js): `ring`/`gapRing`/`jitterRing`/`star`/`nWay`/
   `arc`), so a new attack is "pick a generator + config numbers" (ADR-0021). The 5–6 duplicate ring
@@ -68,7 +74,7 @@ two-player co-op (keyboard/mouse/gamepad). Most recent work:
 - **Cross-repo hardening** — secret/PII pre-commit + CI scanner (public-repo BLOCK policy),
   ESLint 10, pinned actions.
 
-21 ADRs (0001–0021). Verification: probability/proof tests, coverage gate, production smoke +
+22 ADRs (0001–0022). Verification: probability/proof tests, coverage gate, production smoke +
 browser smoke, OpenSSF scorecard, dependency review, control audit.
 
 ## Scope (unchanged)

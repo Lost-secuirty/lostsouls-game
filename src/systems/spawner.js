@@ -49,19 +49,19 @@ export function populateRoom(game, roomIndex) {
       const ctrl = new DuoController(rng, DUO);
       info.def.duo.forEach((type, i) => {
         const x = i === 0 ? -DUO.spawnX : DUO.spawnX;
-        const boss = new Boss(game.scene, x, z, type, info.def.diff, info.def.palette);
+        const boss = new Boss(game.scene, x, z, type, info.diff, info.def.palette);
         ctrl.add(boss);
         game.addEnemy(boss);
       });
       game.duo = ctrl;
     } else {
-      game.addEnemy(new Boss(game.scene, 0, z, info.def.boss, info.def.diff, info.def.palette));
+      game.addEnemy(new Boss(game.scene, 0, z, info.def.boss, info.diff, info.def.palette));
     }
     return;
   }
 
   // ---- NORMAL ROOM ----
-  const diff = info.def.diff;
+  const diff = info.diff;
   const count = Math.round((ROOMS.baseEnemies + info.roomInFloor * ROOMS.enemiesPerRoom) * diff);
   const roomNo = info.roomInFloor + 1; // 1-based within the floor
   for (let i = 0; i < count; i++) {
