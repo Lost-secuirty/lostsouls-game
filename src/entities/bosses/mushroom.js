@@ -15,8 +15,7 @@ import { buildMushroomMesh } from '../mushroomMesh.js';
 import { loadAnimated } from '../../core/animModel.js';
 import { puffballTarget } from '../../core/progression.js';
 import { topUpMinions } from '../enemies.js';
-import { normalize, spreadDirs } from '../../core/math2d.js';
-import * as audio from '../../systems/audio.js';
+import { aimedBurst, telegraphedRing } from './patterns.js';
 
 function fireSporeRing(boss, game) {
   boss.phase += 0.3;
@@ -59,30 +58,8 @@ export const mushroom = {
 
   attacks(boss, dt, game, p, rage) {
     const cfg = boss.cfg;
-
-    // P1 — slow spore spit
-    boss.p1Timer -= dt;
-    if (boss.p1Timer <= 0) {
-      const aim = normalize(p.x - boss.x, p.z - boss.z);
-      for (const d of spreadDirs(aim.x, aim.z, cfg.p1Burst, cfg.p1Spread)) {
-        game.bullets.spawnEnemy(boss.x, boss.z, d.x, d.z, cfg.p1BulletSpeed);
-      }
-      audio.play('bossShoot');
-      boss.p1Timer = cfg.p1Interval / rage;
-    }
-
-    // P2 — telegraphed spore ring with a guaranteed gap
-    if (boss.charge > 0) {
-      boss.charge -= dt;
-      if (boss.charge <= 0) fireSporeRing(boss, game);
-    } else {
-      boss.p2Timer -= dt;
-      if (boss.p2Timer <= 0) {
-        boss.charge = cfg.telegraph;
-        audio.play('bossRing');
-        boss.p2Timer = cfg.p2Interval;
-      }
-    }
+    aimedBurst(boss, dt, game, p, rage); // P1 — slow spore spit
+    telegraphedRing(boss, dt, game, fireSporeRing); // P2 — spore ring (seeded dodge gap)
 
     // P3 — drop a lingering poison pool at a player's feet (the pool telegraphs itself)
     boss.poolTimer -= dt;

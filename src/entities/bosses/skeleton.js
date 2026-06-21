@@ -18,7 +18,8 @@ import { loadAnimated } from '../../core/animModel.js';
 import { buildSkeletonMesh } from '../skeletonMesh.js';
 import { skeletonWaveTarget } from '../../core/progression.js';
 import { topUpMinions } from '../enemies.js';
-import { normalize, spreadDirs } from '../../core/math2d.js';
+import { aimedBurst, telegraphedRing } from './patterns.js';
+import { normalize } from '../../core/math2d.js';
 import { slideOutOfWalls, clampToArena } from '../../systems/collision.js';
 import * as audio from '../../systems/audio.js';
 
@@ -125,34 +126,8 @@ export const skeleton = {
 
   attacks(boss, dt, game, p, rage) {
     if (boss._reassembling) return; // it's gone — no attacks while reforming
-    const cfg = boss.cfg;
-
-    // P1 — aimed bone-bolt volley
-    boss.p1Timer -= dt;
-    if (boss.p1Timer <= 0) {
-      const aim = normalize(p.x - boss.x, p.z - boss.z);
-      for (const d of spreadDirs(aim.x, aim.z, cfg.p1Burst, cfg.p1Spread)) {
-        game.bullets.spawnEnemy(boss.x, boss.z, d.x, d.z, cfg.p1BulletSpeed);
-      }
-      audio.play('bossShoot');
-      boss.p1Timer = cfg.p1Interval / rage;
-    }
-
-    // P2 — scatter ring with a rattle wind-up
-    if (boss.charge > 0) {
-      boss.charge -= dt;
-      if (boss.charge <= 0) {
-        boss.charge = 0;
-        fireScatterRing(boss, game);
-      }
-    } else {
-      boss.p2Timer -= dt;
-      if (boss.p2Timer <= 0) {
-        boss.charge = cfg.telegraph;
-        audio.play('bossRattle');
-        boss.p2Timer = cfg.p2Interval;
-      }
-    }
+    aimedBurst(boss, dt, game, p, rage); // P1 — aimed bone-bolt volley
+    telegraphedRing(boss, dt, game, fireScatterRing, 'bossRattle'); // P2 — scatter ring
   },
 
   // P4 — keep the HP-gated number of bonelings alive

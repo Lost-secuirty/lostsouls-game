@@ -12,8 +12,7 @@ import { getModel } from '../../core/assets.js';
 import { buildSpiderMesh } from '../spiderMesh.js';
 import { spiderlingTarget } from '../../core/progression.js';
 import { topUpMinions } from '../enemies.js';
-import { normalize, spreadDirs } from '../../core/math2d.js';
-import * as audio from '../../systems/audio.js';
+import { aimedBurst, telegraphedRing } from './patterns.js';
 
 function fireRing(boss, game) {
   boss.phase += 0.35;
@@ -43,29 +42,10 @@ export const spider = {
     boss.ringCount = Math.round(boss.cfg.ringBullets * boss.diff); // P2 denser on later floors
   },
 
-  // P1 (aimed burst) + P2 (telegraphed bullet ring)
+  // P1 (aimed burst) + P2 (telegraphed bullet ring) — shared primitives (patterns.js)
   attacks(boss, dt, game, p, rage) {
-    boss.p1Timer -= dt;
-    if (boss.p1Timer <= 0) {
-      const aim = normalize(p.x - boss.x, p.z - boss.z);
-      for (const d of spreadDirs(aim.x, aim.z, boss.cfg.p1Burst, boss.cfg.p1Spread)) {
-        game.bullets.spawnEnemy(boss.x, boss.z, d.x, d.z, boss.cfg.p1BulletSpeed);
-      }
-      audio.play('bossShoot');
-      boss.p1Timer = boss.cfg.p1Interval / rage;
-    }
-
-    if (boss.charge > 0) {
-      boss.charge -= dt;
-      if (boss.charge <= 0) fireRing(boss, game);
-    } else {
-      boss.p2Timer -= dt;
-      if (boss.p2Timer <= 0) {
-        boss.charge = boss.cfg.telegraph; // rear up (fair warning)
-        audio.play('bossRing');
-        boss.p2Timer = boss.cfg.p2Interval;
-      }
-    }
+    aimedBurst(boss, dt, game, p, rage);
+    telegraphedRing(boss, dt, game, fireRing);
   },
 
   // P3 — keep the HP-gated number of baby spiders alive
