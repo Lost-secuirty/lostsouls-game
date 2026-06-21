@@ -23,8 +23,7 @@ let duckTimer = null;
 function urlFor(id) {
   const file = resolveTrackFile(MUSIC.tracks, id);
   if (!file) return null;
-  const base =
-    (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || './';
+  const base = import.meta.env?.BASE_URL || './'; // Vite base ('./'); honors the build base
   return `${base}${MUSIC.basePath}${file}`;
 }
 
