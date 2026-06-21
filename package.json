@@ -1,7 +1,7 @@
 {
   "name": "lostsouls-game",
   "private": true,
-  "version": "0.6.5",
+  "version": "0.6.6",
   "type": "module",
   "description": "A 3D bullet-hell twin-stick shooter with co-op, procedural systems, deterministic tests, and production smoke checks.",
   "scripts": {
@@ -21,6 +21,7 @@
   "dependencies": {
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
+    "howler": "^2.2.4",
     "lil-gui": "^0.21.0",
     "three": "^0.184.0"
   },

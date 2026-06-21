@@ -519,3 +519,27 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
 - **Doc freshness:** a 24h check caught `STATUS.md` still saying "WW2 × rift-tech" (it
   contradicted both the corrected civil-war canon and its own neighboring line) — fixed to
   "civil-war-era arms". Reminder: re-grep the docs for retired facts after a canon change.
+
+## 2026-06-21 — Audio overhaul, music engine (v0.6.6, ADR-0024)
+
+- **Policy shift:** Scott superseded the zero-dependency posture (it was a learning-phase
+  choice). Free libs are now allowed if they fit the other rules; crossing a specific ADR
+  still means asking to supersede it. First use: **Howler.js** for music, superseding
+  ADR-0006 for the MUSIC layer only (procedural SFX stay).
+- **Two audio systems, one facade.** `sfx.js` (procedural, its own AudioContext) and
+  `music.js` (Howler, its own context) are bridged ONLY through `audio.js`: the settings
+  master-volume/mute (ADR-0023) now drives both (`Howler.volume()/mute()` + the synth), and
+  the **synth drone is the fallback** — `audio.setStageMusic/​setBossMusic` mute the drone
+  (`sfx.setSynthMusicMuted`, a new gain bus) when a recorded track plays, and un-mute it when
+  a track is missing. So a `null`/missing file is never silent (offline/CI-safe).
+- **Plug-and-play + no runtime bloat:** tracks are a `config.MUSIC` id→file map; `music.js`
+  creates `Howl`s lazily with **`html5: true` (streaming)** so big files don't load into
+  memory or stall boot. Swapping a track = drop a file + edit the filename; pure id→file
+  helpers live in `core/musicMap.js` (Howler-free → unit-tested; the rest is drive-verified).
+- **Where boss music triggers:** `loadRoom` picks stage-vs-boss music (boss only when
+  `isBossRoom && def.boss !== 'human' && bosses.length`); the human **decision**-boss stays on
+  the stage track until the fight actually starts (`_onHumanChoice` panic branch).
+- **Verification gotcha:** drove music selection via `__game.loadRoom(n)` and exposed the
+  active track on `__audio.currentMusicTrack()`. The spider boss room is global index **9**
+  (roomsPerFloor=9 → 10/floor), NOT 5 — the old progression.js header comment was stale and
+  said 5; fixed the comment too. Don't trust a comment for room math; use `floorInfo`.

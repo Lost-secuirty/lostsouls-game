@@ -25,6 +25,7 @@ import { initSettingsPanel } from './ui/settingsPanel.js';
 
   // debug handle (poke the game from the dev console, e.g. window.__game.loadRoom(5))
   window.__game = game;
+  window.__audio = audio; // music/sfx facade (used by the verification drive)
 
   // dev menu — lazy-loaded on `?debug=1` or the backtick key (never in normal play)
   let debugGui = null;
@@ -69,8 +70,12 @@ import { initSettingsPanel } from './ui/settingsPanel.js';
     if (document.hidden) input.clearKeys();
   });
 
-  // browsers block audio until a user gesture — unlock + start music on the first one
-  const unlock = () => audio.unlock();
+  // browsers block audio until a user gesture — unlock + start music on the first one.
+  // if we're still on the start menu (no run yet), play the menu theme.
+  const unlock = () => {
+    audio.unlock();
+    if (!game.players || game.players.length === 0) audio.setMenuMusic();
+  };
   for (const ev of ['click', 'keydown', 'touchstart']) {
     addEventListener(ev, unlock, { once: true });
   }

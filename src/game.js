@@ -180,7 +180,13 @@ export class Game {
     this.refreshHud();
 
     const info = floorInfo(index);
-    audio.setMusicFloor(info.floorIndex); // music gets tenser each floor
+    // music: a boss theme in a (non-decision) boss room, else the stage track. The
+    // human decision-boss keeps the stage track until the fight actually starts.
+    if (info.isBossRoom && info.def.boss !== 'human' && this.bosses.length) {
+      audio.setBossMusic(info.def.boss);
+    } else {
+      audio.setStageMusic(info.floorIndex);
+    }
     if (info.isBossRoom && info.def.boss === 'human') {
       // decision-boss: pause for the A/B/C/D approach choice BEFORE any fight
       this.state = State.HUMAN_CHOICE;
@@ -385,6 +391,7 @@ export class Game {
     } else {
       this.state = State.PLAYING; // he panics — the fight is on
       audio.play(this.bosses[0]?.behavior?.roar ?? 'bossRoar');
+      audio.setBossMusic('human'); // now the fight is real, swap to his theme
     }
   }
 
@@ -416,7 +423,8 @@ export class Game {
   _onDefeat() {
     const result = resolveDeath(this.lives, this.checkpointRoom);
     this.lives = result.lives;
-    audio.play(result.action === 'GAMEOVER' ? 'gameover' : 'lifeLost');
+    if (result.action === 'GAMEOVER') audio.stingerGameOver();
+    else audio.play('lifeLost');
 
     if (result.action === 'RESPAWN') {
       hud.banner(`${this.coop ? 'TEAM DOWN' : 'LIFE LOST'} — ${this.lives} left`);
@@ -447,7 +455,7 @@ export class Game {
 
   _onWin() {
     this.state = State.WIN;
-    audio.play('win');
+    audio.stingerWin();
     hud.banner('YOU ESCAPED THE CITY!  —  press R');
     prompts.hide();
   }
