@@ -13,7 +13,8 @@ updated: 2026-06-21
 marked `frozen: true` in the front-matter above. Treat anything here as a current snapshot of an
 in-progress build, not a final release.
 
-This file is the lifecycle source-of-truth for the repo. The detailed running history lives in
+This file is the lifecycle source-of-truth for the repo. The build diary (what was done, per
+session) lives in [`docs/WORKLOG.md`](docs/WORKLOG.md); the detailed running history of gotchas in
 [`docs/LEARNINGS.md`](docs/LEARNINGS.md); the "why" behind decisions lives in
 [`docs/adr/`](docs/adr/).
 
@@ -23,11 +24,17 @@ This file is the lifecycle source-of-truth for the repo. The detailed running hi
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.6.7)
+## Current state (v0.6.8)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Audio studio + OGG migration (v0.6.8)** — kicked off a phased **full package upgrade** (graphics,
+  tooling, deps, decision docs; see [`docs/WORKLOG.md`](docs/WORKLOG.md)). First phase: a dev
+  **audio studio** ([`scripts/audio-studio.mjs`](scripts/audio-studio.mjs), `npm run audio:report` /
+  `audio:process`) that reports per-track LUFS/peak + waveform PNGs and loudness-normalizes (EBU R128,
+  −16 LUFS) + transcodes the placeholder score **MP3 → OGG** (58 MB → 33 MB, consistent volume).
+  Plug-and-play music contract unchanged; synth fallback intact.
 - **Audio — placeholder score wired + audio bible (v0.6.7)** — every stage now has real looping
   music and the bosses share a placeholder theme (CC-BY, Kevin MacLeod), all swappable with no code
   change. New [`docs/AUDIO.md`](docs/AUDIO.md) is the single home for audio decisions — track map,

@@ -43,15 +43,16 @@ attribution is required, but we credit the author anyway.
 
 Current tracks are **placeholders** by **Kevin MacLeod (incompetech.com)**, licensed
 **Creative Commons BY 4.0** (<https://creativecommons.org/licenses/by/4.0/>) — also credited
-in-game (start menu → ♪ Credits). They'll be swapped for the final score (curated stage tracks +
+in-game (start menu → ♪ Credits). OGG, loudness-normalized to −16 LUFS via
+`scripts/audio-studio.mjs`. They'll be swapped for the final score (curated stage tracks +
 AI-generated boss themes). The 5 boss slots share one placeholder until the real themes exist.
 
 | Track id(s)      | File                                | Track (Kevin MacLeod) | License   |
 | ---------------- | ----------------------------------- | --------------------- | --------- |
-| `menu`           | `public/audio/menu.mp3`             | "Hush"                | CC BY 4.0 |
-| `stage0`         | `public/audio/stage-outskirts.mp3`  | "Darkest Child"       | CC BY 4.0 |
-| `stage1`         | `public/audio/stage-barricade.mp3`  | "Anxiety"             | CC BY 4.0 |
-| `stage2`         | `public/audio/stage-fungal.mp3`     | "Echoes of Time"      | CC BY 4.0 |
-| `stage3`         | `public/audio/stage-kennels.mp3`    | "Killers"             | CC BY 4.0 |
-| `stage4`         | `public/audio/stage-catacombs.mp3`  | "Dark Times"          | CC BY 4.0 |
-| `boss_*` (all 5) | `public/audio/boss-placeholder.mp3` | "Despair and Triumph" | CC BY 4.0 |
+| `menu`           | `public/audio/menu.ogg`             | "Hush"                | CC BY 4.0 |
+| `stage0`         | `public/audio/stage-outskirts.ogg`  | "Darkest Child"       | CC BY 4.0 |
+| `stage1`         | `public/audio/stage-barricade.ogg`  | "Anxiety"             | CC BY 4.0 |
+| `stage2`         | `public/audio/stage-fungal.ogg`     | "Echoes of Time"      | CC BY 4.0 |
+| `stage3`         | `public/audio/stage-kennels.ogg`    | "Killers"             | CC BY 4.0 |
+| `stage4`         | `public/audio/stage-catacombs.ogg`  | "Dark Times"          | CC BY 4.0 |
+| `boss_*` (all 5) | `public/audio/boss-placeholder.ogg` | "Despair and Triumph" | CC BY 4.0 |

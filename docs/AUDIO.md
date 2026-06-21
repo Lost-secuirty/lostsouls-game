@@ -4,9 +4,21 @@ Everything about the game's audio lives here: what plays where, why, what's a pl
 candidate swaps, the design principles, and how to add/replace a track. Engine details are in
 [ADR-0024](adr/0024-recorded-music-howler.md); per-file credits are in [`ASSETS.md`](../ASSETS.md).
 
-> **Status (v0.6.7):** music **engine** done; **placeholder** stage tracks + a shared boss
-> placeholder are wired (CC-BY, Kevin MacLeod). SFX are procedural. Boss themes get designed with
-> Caden later; final stage tracks are a curation pass. Everything is swappable with no code change.
+> **Status:** music **engine** done; **placeholder** stage tracks + a shared boss placeholder wired
+> (CC-BY, Kevin MacLeod), now **OGG, loudness-normalized to −16 LUFS** (consistent volume). A dev
+> **audio studio** (`scripts/audio-studio.mjs`) reports LUFS/peak/waveforms and normalizes/transcodes.
+> SFX are procedural. Boss themes get designed with Caden later. Everything is swappable, no code change.
+
+## Audio studio (dev harness) — `scripts/audio-studio.mjs`
+
+Needs **ffmpeg** on PATH (or `$FFMPEG`/`$FFPROBE`; auto-found from a winget install on Windows).
+
+- `npm run audio:report` — prints a per-track table (duration · **integrated LUFS** · true peak ·
+  size), flags any track >3 LU off the −16 target, and writes a **waveform PNG** per track to
+  `artifacts/audio/` (so you can _see_ a track). Read-only.
+- `npm run audio:process` — two-pass EBU-R128 **loudness-normalize** to −16 LUFS + **transcode**
+  every `public/audio/*.mp3` → OGG (smaller, better looping). Then point `config.MUSIC.tracks` at the
+  `.ogg` names. (Used to process the current placeholders: 58 MB → 33 MB, loudness spread 11 LU → ~0.4.)
 
 ---
 

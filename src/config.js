@@ -509,18 +509,19 @@ export const MUSIC = {
   // Current = CC-BY placeholders (Kevin MacLeod, credited in ASSETS.md + the in-game
   // credits panel). Boss themes share one placeholder until Scott + Caden design the real
   // ones — swap each `boss_*` to its own file then. See docs/AUDIO.md for the full plan.
+  // OGG, loudness-normalized to -16 LUFS via scripts/audio-studio.mjs (consistent volume).
   tracks: {
-    menu: 'menu.mp3', // Hush
-    stage0: 'stage-outskirts.mp3', // The Outskirts — Darkest Child
-    stage1: 'stage-barricade.mp3', // The Barricade — Anxiety
-    stage2: 'stage-fungal.mp3', // The Fungal Depths — Echoes of Time
-    stage3: 'stage-kennels.mp3', // The Kennels — Killers
-    stage4: 'stage-catacombs.mp3', // The Catacombs — Dark Times
-    boss_spider: 'boss-placeholder.mp3', // placeholder (Despair and Triumph) — swap per boss later
-    boss_human: 'boss-placeholder.mp3',
-    boss_mushroom: 'boss-placeholder.mp3',
-    boss_duo: 'boss-placeholder.mp3',
-    boss_skeleton: 'boss-placeholder.mp3',
+    menu: 'menu.ogg', // Hush
+    stage0: 'stage-outskirts.ogg', // The Outskirts — Darkest Child
+    stage1: 'stage-barricade.ogg', // The Barricade — Anxiety
+    stage2: 'stage-fungal.ogg', // The Fungal Depths — Echoes of Time
+    stage3: 'stage-kennels.ogg', // The Kennels — Killers
+    stage4: 'stage-catacombs.ogg', // The Catacombs — Dark Times
+    boss_spider: 'boss-placeholder.ogg', // placeholder (Despair and Triumph) — swap per boss later
+    boss_human: 'boss-placeholder.ogg',
+    boss_mushroom: 'boss-placeholder.ogg',
+    boss_duo: 'boss-placeholder.ogg',
+    boss_skeleton: 'boss-placeholder.ogg',
     win: null, // synth stinger for now
     gameover: null, // synth stinger for now
   },
