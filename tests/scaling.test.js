@@ -11,6 +11,12 @@ describe('statBonus (diminishing-returns upgrade curve)', () => {
     expect(statBonus(-3, 1, 5)).toBe(0);
   });
 
+  it('degrades safely on a mis-tuned half<=0 (asymptote, never Infinity / negative)', () => {
+    expect(statBonus(3, 1.0, 0)).toBe(1.0); // not 0/0 NaN or a hard step surprise
+    expect(statBonus(3, 1.0, -5)).toBe(1.0); // not Infinity / negative debuff
+    expect(statBonus(0, 1.0, 0)).toBe(0); // no stacks, no bonus
+  });
+
   it('reaches exactly HALF of maxBonus at `half` stacks (the knee)', () => {
     expect(statBonus(5, 1.0, 5)).toBeCloseTo(0.5);
     expect(statBonus(6, 0.6, 6)).toBeCloseTo(0.3);

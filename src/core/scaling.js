@@ -18,11 +18,13 @@
  *
  * @param {number} stacks   how many of this upgrade you've collected
  * @param {number} maxBonus the eventual ceiling (e.g. 1.0 = up to +100%)
- * @param {number} half     stacks to reach half of maxBonus (higher = slower ramp)
+ * @param {number} half     stacks to reach half of maxBonus; MUST be > 0 (higher =
+ *                          slower ramp). half <= 0 degrades to the asymptote rather
+ *                          than producing Infinity / a negative (debuff) bonus.
  * @returns {number} the bonus to ADD (damage/speed) or convert (fire rate)
  */
 export function statBonus(stacks, maxBonus, half) {
-  if (stacks <= 0) return 0;
+  if (stacks <= 0 || half <= 0) return stacks > 0 ? maxBonus : 0;
   return (maxBonus * stacks) / (stacks + half);
 }
 
