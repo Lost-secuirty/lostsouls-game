@@ -8,8 +8,9 @@ and the accessibility/feel layer in [ADR-0023](adr/0023-settings-and-overlays.md
 
 > **Status:** baseline documented below. A **post-processing overhaul** (selective bloom + ACES tone
 > mapping + a little VFX juice, via the pmndrs `postprocessing` lib) is **planned next** — see
-> "Planned: the post-FX pipeline" and [ADR-0025](adr/0025-postprocessing-pipeline.md) _(landing in
-> the graphics phase)_. The companion **render studio** dev harness (boss portraits / contact sheets)
+> "Planned: the post-FX pipeline" below. (ADR-0025 and the `config.GRAPHICS` block referenced there
+> are intentional forward-references — they land **with** that phase, not yet.) The companion
+> **render studio** dev harness (boss portraits / contact sheets)
 > lands the phase after. Until then the game renders raw (no post-processing), which is the honest
 > current baseline.
 
