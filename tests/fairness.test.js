@@ -28,8 +28,13 @@ describe('fairnessCalc helpers', () => {
 describe('kid-fairness regression — shipped bosses (guards the B5 "twice as hard" pass)', () => {
   const telegraphed = Object.entries(BOSS).filter(([, c]) => c && c.telegraph != null);
 
-  it('finds the telegraphed bosses', () => {
-    expect(telegraphed.length).toBeGreaterThanOrEqual(5);
+  it('every known boss is telegraphed (no silent guard-rail erosion)', () => {
+    const types = telegraphed.map(([t]) => t);
+    for (const expected of ['spider', 'mushroom', 'dog', 'cat', 'skeleton', 'human']) {
+      expect(types, `${expected} should be telegraphed`).toContain(expected);
+    }
+    // and nothing silently dropped its telegraph: every BOSS entry is covered
+    expect(telegraphed.length).toBe(Object.keys(BOSS).length);
   });
 
   it('every telegraphed boss meets the easy telegraph target', () => {
