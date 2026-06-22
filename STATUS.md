@@ -24,11 +24,21 @@ session) lives in [`docs/WORKLOG.md`](docs/WORKLOG.md); the detailed running his
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.7.2)
+## Current state (v0.7.3)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Drift-audit bot (v0.7.3)** — a deterministic PR auditor (`scripts/audit-drift.mjs`; design in
+  [`docs/DRIFT-AUDIT.md`](docs/DRIFT-AUDIT.md), ported from the codex repo) that checks **logged intent
+  vs the actual diff** (phantom claims, scope creep, weakened gates, skipped tests, lint suppressions,
+  missing PR "Deviations") and posts the report as a comment on same-repo PRs via
+  `.github/workflows/audit.yml` (no API key; comment-only — the control policy forbids the push-back
+  pattern, and fork PRs get a read-only token so the audit still runs but can't comment). (A local
+  `auditor` agent / `/audit`
+  for the semantic layer is
+  deferred pending sign-off — agent self-config.) First step of the atmospheric-overhaul run
+  (IBL → shadows → textures → AO next).
 - **Config cleanup (v0.7.2)** — centralized the game's **lighting + fog** into a new `config.LIGHTING`
   block (plus `CAMERA.near/far`, `GRAPHICS.pixelRatioCap`); `scene.js` and the render studio now read
   it (the studio's copy-pasted lights are gone, so portraits track the game). A retro fix for the

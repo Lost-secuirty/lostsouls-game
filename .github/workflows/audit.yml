@@ -1,0 +1,58 @@
+name: Drift Audit
+
+# Audits every PR for "drift" — divergence between what was logged (commit
+# messages, PR body, docs/WORKLOG.md + docs/LEARNINGS.md) and what the diff
+# actually did — via a deterministic Node script, and posts the report as a PR
+# comment. NO API key (built-in GITHUB_TOKEN), NO pushes: the repo's control
+# policy forbids writable-head checkout / persisted credentials / fork-skip, so
+# this is comment-only (auto-format is already gated by ci.yml). See
+# docs/DRIFT-AUDIT.md.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: audit-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write # post the audit report comment
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Fetch base branch
+        env:
+          BASE_REF: ${{ github.base_ref }} # via env, not inline, to avoid template injection
+        run: git fetch origin "${BASE_REF}" --quiet
+
+      - name: Run drift audit
+        env:
+          GITHUB_PR_BODY: ${{ github.event.pull_request.body }}
+          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.base_ref }}
+        run: node scripts/audit-drift.mjs --base "origin/${BASE_REF}" --head HEAD
+
+      # Comment only on same-repo PRs (fork PRs get a read-only token — the job
+      # still runs the audit, it just can't post). The job itself does NOT skip
+      # forks (control-policy: fork-scan).
+      - name: Post audit report comment
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh pr comment "$PR_NUMBER" --body-file audit-report.md
