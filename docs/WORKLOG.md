@@ -15,6 +15,23 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-22 — A1: Codacy `.gitignore` defense (v0.8.4)
+
+Repo-hygiene quick win (process-tightening Track A, from research report (3) on low-drift solo+AI
+dev). The Codacy VS Code extension auto-injects `.github/instructions/codacy.instructions.md` — an
+AI-behavior rules file that is **not** project policy. A blanket ignore stops it (or any IDE-injected
+instruction file) from ever being committed as if it were repo doctrine — exactly the phantom-rules /
+context-bloat failure mode the research warns against.
+
+- **`.gitignore`:** added `/.github/instructions/` (anchored to root, so `.github/workflows/` +
+  `pull_request_template.md` stay tracked). Grouped with the other agent/IDE auto-injection carriers
+  (`.claude/logs/`).
+- **Verified:** `git check-ignore -v` matches the path; a throwaway
+  `.github/instructions/codacy.instructions.md` did not appear in `git status` (then deleted). No such
+  file existed in the repo — purely preventive.
+- **Note for Scott:** also disable the Codacy extension's rule-generation in VS Code so the file isn't
+  recreated locally; the ignore is the repo-side safety net regardless.
+
 ## 2026-06-21 — Phase D: N8AO ambient occlusion (v0.8.3, ADR-0026) — overhaul complete
 
 Final atmospheric phase — soft contact shading for depth. Completes the ADR-0026 overhaul
