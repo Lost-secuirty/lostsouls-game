@@ -14,6 +14,11 @@ shot-*.png
 # local agent observability log (hook events)
 .claude/logs/
 
+# editor-injected AI instruction files (e.g. the Codacy VS Code extension auto-creates
+# .github/instructions/codacy.instructions.md) — NOT project policy; never commit. The
+# real fix is disabling the extension's rule-generation; this is the repo-side safety net.
+/.github/instructions/
+
 # Secrets / credential carriers — never commit
 .env
 .env.*
