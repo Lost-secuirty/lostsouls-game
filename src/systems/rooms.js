@@ -17,6 +17,8 @@ function boxMesh(box, height, color) {
     new THREE.MeshStandardMaterial({ color, roughness: 0.9, flatShading: true }),
   );
   mesh.position.set((box.minX + box.maxX) / 2, height / 2, (box.minZ + box.maxZ) / 2);
+  mesh.castShadow = true; // walls + rubble cast AND catch shadows (ADR-0026)
+  mesh.receiveShadow = true;
   return mesh;
 }
 

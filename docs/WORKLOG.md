@@ -15,6 +15,36 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-21 — Phase B: real-time shadow maps (v0.8.1, ADR-0026)
+
+Second atmospheric-overhaul phase — the highest-perf-risk one, greenlit now that the target device is
+confirmed (Scott's Nitro V15 / RTX 5060). Real-time shadows, config-gated, never-break-the-render.
+
+- **Renderer/light** (`src/core/scene.js`): `renderer.shadowMap.type = PCFShadowMap` set once at init
+  (avoids a mid-run recompile); `enabled` from `GRAPHICS.shadows.enabled`. The warm **key**
+  DirectionalLight is the **sole** caster — a tight orthographic shadow frustum fit to the static
+  `ARENA` (not entity bounds — skinned-GLB boxes lie), `mapSize`/`bias`/`normalBias`/`radius` from
+  config, `updateProjectionMatrix()` after. The fill light never casts (perf).
+- **Casters/receivers:** new `src/core/shadows.js` `castShadows(root)` helper traverses an entity's
+  meshes (incl. GLB hierarchies) and sets `castShadow`. Applied at the three chokepoints — `Enemy` and
+  `Boss` constructors and `makeCharacter()` — so every monster/boss/minion/player/ally/survivor casts,
+  in one line each. Walls + rubble (`rooms.js boxMesh`) cast **and** receive; the ground receives. The
+  glowing `MeshBasic` bullets/eyes/door never call the helper, so they never cast.
+- **reducedEffects:** `createScene` returns `setShadowsEnabled(on)`; `main.js` calls it alongside
+  `postfx.setEnabled` (init + the settings `onChange`), so the one toggle drops shadows + post-FX
+  together. Toggling `shadowMap.enabled` mid-run forces a one-time material recompile so it takes
+  effect.
+- **Config:** `GRAPHICS.shadows = { enabled, mapSize:2048, frustumMargin:4, near:1, far:80,
+normalBias:0.02, bias:-0.0005, radius:2 }`.
+- **Verified:** full gauntlet green; browser smoke clean; drove the game to the **floor-1 spider boss
+  room** headlessly (`startRun` + `loadRoom(9)`) and screenshotted — walls + rubble cast clean soft
+  shadows on the floor, no acne/peter-panning, dark identity + glowing threats intact,
+  `shadowMap.enabled = true`, 0 page errors.
+- **Perf:** one extra depth pass/frame; worst case ~15–25 casters (boss + minions + walls), well under
+  the ~50 best-practice cap (bullets excluded). Dial-back ladder: `mapSize` 2048→1024 → `radius` down →
+  `frustumMargin` tighter → `enabled:false`. Live-FPS confirmation on a packed boss room is Scott's to
+  eyeball on the Nitro; the knobs are ready.
+
 ## 2026-06-21 — Phase A: in-game IBL + richer fog (v0.8.0, ADR-0026)
 
 First graphics phase of the atmospheric overhaul (ADR-0026), preceded by a deep research sweep

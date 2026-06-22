@@ -15,7 +15,7 @@ import { initSettingsPanel } from './ui/settingsPanel.js';
 import { initCredits } from './ui/credits.js';
 
 (async () => {
-  const { renderer, scene, camera, baseCam, resize, postfx } = createScene(
+  const { renderer, scene, camera, baseCam, resize, postfx, setShadowsEnabled } = createScene(
     document.getElementById('app'),
   );
 
@@ -47,11 +47,16 @@ import { initCredits } from './ui/credits.js';
   // persisted settings (ADR-0023): apply volume/mute to audio + post-FX, keep in sync
   audio.setMasterVolume(settings.get('volume'));
   audio.setMuted(settings.get('muted'));
-  postfx?.setEnabled(!settings.get('reducedEffects')); // "reduced effects" = raw render
+  // "reduced effects" = raw render + no shadows (accessibility / low-end, ADR-0023/0026)
+  postfx?.setEnabled(!settings.get('reducedEffects'));
+  setShadowsEnabled(!settings.get('reducedEffects'));
   settings.onChange((k, v) => {
     if (k === 'volume') audio.setMasterVolume(v);
     if (k === 'muted') audio.setMuted(v);
-    if (k === 'reducedEffects') postfx?.setEnabled(!v);
+    if (k === 'reducedEffects') {
+      postfx?.setEnabled(!v);
+      setShadowsEnabled(!v);
+    }
   });
   initSettingsPanel();
   initCredits();
