@@ -15,6 +15,25 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-22 — B4: Kid-fairness telegraph & gap math (guard rail) (v0.8.8)
+
+Codifies the research's fairness equations as pure helpers + a CI regression so the upcoming "twice
+as hard" pass (B5) can't silently make a boss unfair. **No gameplay change** — it only measures.
+
+- **New `src/core/fairnessCalc.js`** (pure): `timeToImpactSec`, `gapWidthAtRadius(radius, ringCount,
+gapSlots)`, `minimumTelegraphMs(moveDistance, playerSpeed, {childMode, choices})` — the
+  recognize + choose + move + margin model (slower child reaction model by default).
+- **Config:** `FAIRNESS_TARGETS { telegraphMinMs:{easy:400,hard:250}, gapMinMul:1.5, childMode:true }`
+  - `DEBUG_FAIRNESS { warnOnInit:false }`.
+- **`boss.js`:** dev-only `console.warn` on init if a boss telegraph is under the easy target (off by
+  default; flip `DEBUG_FAIRNESS.warnOnInit` on while tuning B5 in `npm run dev`).
+- **Tests** (`tests/fairness.test.js`): helper math + a **living regression** — every shipped
+  telegraphed boss meets the easy target (cat is the tightest, exactly 400ms) and mushroom's 2-slot
+  ring gap clears 1.5× the player hurt-diameter at engagement range.
+- **Deferred:** the opt-in in-overlay gap/telegraph **visualizer** — the CI test + dev warn already
+  give the guarantee + feedback; the visual lane renderer can follow if wanted.
+- **Verified:** lint clean, tests pass (+6), build clean, smoke:prod + smoke:browser exit 0.
+
 ## 2026-06-22 — B3: Subtle camera spring-follow + co-op recenter (v0.8.7)
 
 Gameplay-feel (research report (5)). The static full-room camera (ADR-0020) gains a **subtle**

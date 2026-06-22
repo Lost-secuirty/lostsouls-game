@@ -281,6 +281,19 @@ export const DIFFICULTY = {
   growth: 0.26, // per-floor ramp (~+26%/floor)
 };
 
+// ---- kid-fairness targets (research report (5) — core/fairnessCalc.js) ----
+// The guard rail for difficulty: a boss attack is fair if its telegraph window is long enough
+// to recognize + react, and every ring leaves a gap a player body fits through. Asserted in
+// tests/fairness.test.js so the "twice as hard" pass (B5) can't silently cross into unfair.
+export const FAIRNESS_TARGETS = {
+  telegraphMinMs: { easy: 400, hard: 250 }, // min boss wind-up (ms) before a ring/spray fires
+  gapMinMul: 1.5, // a ring's safe lane must clear >= this × the player's hurt DIAMETER
+  childMode: true, // use the slower child reaction model in minimumTelegraphMs
+};
+// Dev convenience: flip true to console.warn on boss init when a boss is below the easy target
+// (handy while tuning B5 in `npm run dev`). Off by default so there's no console noise.
+export const DEBUG_FAIRNESS = { warnOnInit: false };
+
 // ---- the spider boss ----
 // the co-designer's design card: P# = an ATTACK PATTERN (not a health phase).
 //   P1 = base attack (pistol mimic)   P2 = dodgeable bullet ring

@@ -12,7 +12,7 @@
 // casing.
 // =====================================================================
 
-import { BOSS, PALETTE, PARTICLES, DUO } from '../config.js';
+import { BOSS, PALETTE, PARTICLES, DUO, FAIRNESS_TARGETS, DEBUG_FAIRNESS } from '../config.js';
 import { BEHAVIORS } from './bosses/index.js';
 import { hud } from '../ui/hud.js';
 import { castShadows } from '../core/shadows.js';
@@ -28,6 +28,15 @@ export class Boss {
     this.behavior = BEHAVIORS[bossType] || BEHAVIORS.spider;
     this.cfg = BOSS[bossType] || BOSS.spider;
     this.name = this.behavior.name;
+    // dev-only kid-fairness audit (flip DEBUG_FAIRNESS.warnOnInit on while tuning difficulty)
+    if (DEBUG_FAIRNESS.warnOnInit && this.cfg.telegraph != null) {
+      const ms = this.cfg.telegraph * 1000;
+      if (ms < FAIRNESS_TARGETS.telegraphMinMs.easy) {
+        console.warn(
+          `[fairness] boss "${bossType}" telegraph ${ms}ms < easy target ${FAIRNESS_TARGETS.telegraphMinMs.easy}ms`,
+        );
+      }
+    }
     this.palette = palette; // per-floor colors (shared with this boss's minions)
     this.theme = { boss: bossType, palette };
     this.diff = diff;
