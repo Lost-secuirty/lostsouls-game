@@ -67,16 +67,20 @@ export function createScene(container) {
   // key/fill/hemi/ambient rig still lights everything. The render studio uses the same knobs.
   const ibl = L.ibl;
   if (ibl.enabled) {
+    let pmrem;
+    let env;
     try {
-      const pmrem = new THREE.PMREMGenerator(renderer);
-      const env = new RoomEnvironment();
+      pmrem = new THREE.PMREMGenerator(renderer);
+      env = new RoomEnvironment();
       scene.environment = pmrem.fromScene(env, ibl.sigma).texture; // baked texture survives dispose
       scene.environmentIntensity = ibl.intensity;
-      env.dispose();
-      pmrem.dispose();
     } catch (err) {
       console.warn('[scene] IBL disabled — keeping the light-only rig:', err?.message || err);
       scene.environment = null;
+    } finally {
+      // dispose in finally so a throw in fromScene() can't leak the GPU resources
+      env?.dispose();
+      pmrem?.dispose();
     }
   }
 

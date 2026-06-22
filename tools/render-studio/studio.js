@@ -79,8 +79,11 @@ if (!TRANSPARENT) scene.background = new THREE.Color(LIGHTING.background);
 // Reuses config.LIGHTING.ibl — the SAME subtle fill the game now applies in-scene
 // (ADR-0026) — so portraits match the live look instead of drifting from it.
 const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), LIGHTING.ibl.sigma).texture;
+const env = new RoomEnvironment();
+scene.environment = pmrem.fromScene(env, LIGHTING.ibl.sigma).texture; // baked texture survives dispose
 scene.environmentIntensity = LIGHTING.ibl.intensity;
+env.dispose();
+pmrem.dispose();
 
 // key/fill lights — REUSE the game's lighting (config.LIGHTING) so portraits match the game
 const L = LIGHTING;
