@@ -31,7 +31,7 @@ function fireCrossSwipe(boss, game) {
     }
   }
   boss.phase += Math.PI / arms; // rotate 45° -> the next volley lands as the "X"
-  game.juice.shake(0.12);
+  game.juice.addTrauma(game.JUICE.traumaOnCatSwipe);
 }
 
 export const cat = {

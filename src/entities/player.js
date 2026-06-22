@@ -146,7 +146,7 @@ export class Player {
       if (input.shoot(this.device) && this.fireTimer <= 0 && (aim.x !== 0 || aim.z !== 0)) {
         this._fireWeapon(game, aim);
         this.fireTimer = this.weaponDef.cooldown * this.fireRateMul;
-        game.juice.shake(game.JUICE.shakeOnShoot);
+        game.juice.addTrauma(game.JUICE.traumaOnShoot);
         audio.play(SHOOT_SFX[this.weapon] || 'shoot');
         if (this.device !== 'kb' && this.weaponDef.cooldown >= 0.15) input.rumble(0.12, 0.08, 50);
       }
@@ -281,7 +281,7 @@ export class Player {
       color: c.color,
     });
     this.fireTimer = this.weaponDef.cooldown * this.fireRateMul; // cap charge cadence
-    game.juice.shake(game.JUICE.shakeOnShoot + 0.2 * f);
+    game.juice.addTrauma(game.JUICE.traumaOnShoot + game.JUICE.traumaChargeBonus * f);
     audio.play(f > 0.6 ? 'chargeShot' : 'shoot');
     if (this.device !== 'kb') game.input.rumble(0.2 + 0.4 * f, 0.1, 60 + f * 80);
   }
@@ -290,10 +290,12 @@ export class Player {
     if (game.godMode || this.invuln > 0 || !this.alive) return;
     this.hearts -= dmg;
     this.invuln = PLAYER.invuln;
-    game.juice.shake(game.JUICE.shakeOnHurt);
+    game.juice.addTrauma(game.JUICE.traumaOnHurt);
     game.juice.hitStop(game.JUICE.hitStopOnHurt);
     game.particles.burst(this.x, this.z, 10, this._baseColor.getHex());
     hud.flashSplatter();
+    const sf = game.FEEL.screenFlash.hurt;
+    hud.flashScreen(sf.peak, sf.color, sf.ms);
     audio.play('hurt');
     audio.duckMusic(); // dip the music for a beat when you get hit
     if (this.device !== 'kb') game.input.rumble(0.6, 0.4, 200);

@@ -272,7 +272,7 @@ export class Bullets {
       }
     }
     game.particles.burst(b.x, b.z, 26, 0xff7722);
-    game.juice.shake(0.4);
+    game.juice.addTrauma(game.JUICE.traumaOnExplode);
     audio.play('explosion');
   }
 

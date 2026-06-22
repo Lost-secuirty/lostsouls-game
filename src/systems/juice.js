@@ -1,23 +1,29 @@
 // =====================================================================
-// juice.js — the "feel good" system: screen-shake + hit-stop.
+// juice.js — the "feel good" system: trauma-based screen-shake + hit-stop.
 //
-// shake(mag)    : kick the camera; it decays back to center.
-// hitStop(secs) : freeze the whole world for a moment (huge for impact).
+// addTrauma(amount) : an impact adds trauma (0..1); shake magnitude = trauma², so
+//                     small hits barely shake and big ones punch. Trauma decays
+//                     linearly (JUICE.decayPerSec).
+// hitStop(secs)     : freeze the whole world for a moment (huge for impact).
 //
-// The game loop reads getTimeScale() (0 while frozen) and the renderer reads
-// shakeMag to offset the camera.
+// The game loop reads getTimeScale() (0 while frozen); the renderer reads
+// shakeOffsetXZ(now) to offset the camera. That offset is sampled from COHERENT
+// value-noise (math2d.smoothNoise1D) by wall-clock time — NO Math.random — so a
+// seeded run renders identical shake (ADR-0013). reducedEffects scales trauma down.
 // =====================================================================
 
 import { JUICE } from '../config.js';
+import { clamp, smoothNoise1D } from '../core/math2d.js';
+import { settings } from './settings.js';
 
 export class Juice {
-  constructor() {
-    this.shakeMag = 0;
-    this.stopUntil = 0;
-  }
+  trauma = 0; // 0..1; per-frame shake magnitude = trauma²
+  stopUntil = 0;
 
-  shake(mag) {
-    if (mag > this.shakeMag) this.shakeMag = mag;
+  /** An impact adds trauma (clamped to 1). Scaled down (or off) when reducedEffects is on. */
+  addTrauma(amount) {
+    const mul = settings.get('reducedEffects') ? JUICE.reducedEffectsTraumaMul : 1;
+    this.trauma = clamp(this.trauma + amount * mul, 0, 1);
   }
 
   hitStop(secs) {
@@ -31,8 +37,25 @@ export class Juice {
   }
 
   update(dt) {
-    // exponential decay toward 0
-    this.shakeMag *= Math.exp(-JUICE.shakeDecay * dt);
-    if (this.shakeMag < 0.002) this.shakeMag = 0;
+    // linear trauma decay (research): reaches 0 in ~trauma / decayPerSec seconds
+    this.trauma = Math.max(0, this.trauma - JUICE.decayPerSec * dt);
+  }
+
+  /**
+   * Camera shake offset for THIS frame, sampled from coherent value-noise by wall-clock
+   * `timeSec`. PURE of randomness (no Math.random) → a seeded run is byte-identical.
+   * Magnitude scales with trauma² (gentle until a real hit). Returns {x, y, z}; Y is a
+   * smaller kick so the top-down read stays steady.
+   */
+  shakeOffsetXZ(timeSec) {
+    const s = this.trauma * this.trauma;
+    if (s <= 0) return { x: 0, y: 0, z: 0 };
+    const t = timeSec * JUICE.shakeFrequency;
+    const seed = JUICE.shakeSeeds;
+    return {
+      x: smoothNoise1D(t, seed.x) * JUICE.shakeMaxOffset * s,
+      y: smoothNoise1D(t, seed.y) * JUICE.shakeMaxY * s,
+      z: smoothNoise1D(t, seed.z) * JUICE.shakeMaxOffset * s,
+    };
   }
 }

@@ -15,6 +15,34 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-22 — B2: Trauma-based shake + screen-flash, determinism fix (v0.8.6)
+
+The gameplay-feel "punch" pass (research report (5), "game-feel math"). Upgrades the scalar
+screen-shake to a trauma model and adds a config-gated impact screen-flash — AND fixes a real
+**determinism bug**: `game.render()` used `Math.random()` for camera shake, so a "seeded" run
+(ADR-0013) never rendered the same. Shake now comes from coherent value-noise (B1's `smoothNoise1D`),
+so it's reproducible.
+
+- **`juice.js`:** scalar `shakeMag` → `trauma` (0..1); shake magnitude = trauma², linear decay
+  (`JUICE.decayPerSec`). `addTrauma()` scales by `reducedEffectsTraumaMul` when reducedEffects is on.
+  `shakeOffsetXZ(now)` samples coherent noise (no `Math.random`) → seeded-run reproducible. `hitStop`
+  unchanged.
+- **`game.render()`:** `Math.random()` camera offset → `juice.shakeOffsetXZ(performance.now()/1000)`.
+- **Screen-flash:** new `#screenflash` overlay (`index.html`) + `hud.flashScreen(peak,color,ms)`,
+  gated OFF by `reducedEffects`. Wired to player hurt (subtle red, atop the blood splatter) + boss
+  death (white pop).
+- **Config discipline:** every shake magnitude now lives in config — `JUICE.trauma*` knobs + new
+  `FEEL` block; the old hardcoded `1.2` (boss death) / `0.4` (explosion) / `0.12` (cat) literals are
+  gone.
+- **Call sites:** `juice.shake()` → `juice.addTrauma()` across player / enemies / boss / bullets /
+  cat / patterns.
+- **Deferred (deviation):** per-mesh hit-flash tint on character GLB groups — finicky/risky on
+  animated groups, and hurt already has splatter + screen-flash + shake; pushed to `docs/ROADMAP.md`.
+- **Verified:** lint clean, 160 tests pass (+5 `juice.test.js`; coverage 44.31% lines, gate 40), build
+  clean, smoke:prod + smoke:browser exit 0. Determinism fix proven by `tests/juice.test.js`
+  (`shakeOffsetXZ` pure/identical for the same inputs). Feel values are deliberately SUBTLE starting
+  points — tune live in `npm run dev`.
+
 ## 2026-06-22 — B1: Feel-math foundation (pure utils) (v0.8.5)
 
 Prereq for the gameplay-feel pass (research report (5), "game-feel math"). Pure, frame-rate-independent

@@ -24,6 +24,10 @@ neighbours:
       wants Scott's eye. _Trigger:_ after the post-FX pipeline ships and we want more mood.
 - [ ] **WebGPU renderer** — Three's WebGPU path is maturing. _Deferred:_ no concrete need; WebGL2 is
       plenty for our scene. _Trigger:_ a feature that needs compute/instancing WebGPU unlocks.
+- [ ] **Per-mesh hit-flash tint** — brief emissive/color pop on a hurt entity's mesh. _Deferred from
+      B2 (v0.8.6):_ finicky/risky to tint animated GLB character groups without leaving a stuck tint,
+      and hurt already reads via blood splatter + screen-flash + trauma shake. _Trigger:_ if hit
+      feedback still feels weak in playtest, do it defensively (store + restore material state).
 
 ## Audio
 
