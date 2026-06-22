@@ -666,3 +666,24 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
   groups embed glowing **MeshBasic eyes**, so a blanket "set castShadow on every mesh" made the eyes
   cast too, against the "glowing things don't cast" rule (CodeRabbit caught it). Fix: the helper skips
   `isMeshBasicMaterial` meshes (handles material arrays). PBR bodies cast; unlit glow parts don't.
+
+## 2026-06-21 — Phase C: CC0 PBR floor texture + normal map (v0.8.2, ADR-0026)
+
+- **The ground is built INSIDE `createScene` (synchronous), so floor textures must be preloaded
+  BEFORE it** — not after, like `loadModels` (entities are built later, so models can load after the
+  scene; the floor can't). Pattern: `await loadTextures([...])` in `main.js` ahead of `createScene`,
+  then a synchronous `getTexture(path)` from the cache. (Setting `material.map` to a still-loading
+  `TextureLoader.load()` result would show blank on a missing file instead of the color fallback —
+  preloading lets us fall back cleanly.)
+- **Color space is the PBR floor gotcha (r152+):** albedo must be `SRGBColorSpace`, normal/roughness/AO
+  must be `NoColorSpace`. Use `texture.colorSpace` — the old `.encoding` API was removed in r152. Wrong
+  color space = a washed floor or corrupted shading.
+- **Tint the albedo white when textured** (`color: 0xffffff`) so the map isn't double-darkened by the
+  base color; keep `metalness:0` (non-zero mirrors the env map and wrecks readability). Keep the
+  texture itself DARK so the floor never crosses `bloom.threshold` and lights up the whole screen.
+- **ambientCG has a JSON API + direct CC0 downloads:** `GET /api/v2/full_json?type=Material&q=asphalt&include=tagData`
+  lists assets + tags (filter for `wet`/`dark`); `GET /get?file=<id>_1K-PNG.zip` 302-redirects to the
+  download. Use **NormalGL** (OpenGL +Y), not NormalDX, for three.js. The bundled `<id>.png` is a sphere
+  preview — handy for eyeballing the look before committing. Asphalt025C = the dark wet one we shipped.
+- **Vite serves `public/` at root and copies it into `dist/` verbatim** — texture paths like
+  `'textures/floor/asphalt_color.png'` resolve the same in dev + prod (same as the GLB model paths).

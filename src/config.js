@@ -543,6 +543,24 @@ export const GRAPHICS = {
     bias: -0.0005, // depth bias (fine-tunes acne vs peter-panning)
     radius: 2, // PCF soft-edge blur radius
   },
+  // PBR floor texture (ADR-0026 Phase C — src/core/scene.js via core/textures.js).
+  // A dark, wet CC0 asphalt (ambientCG Asphalt025C; credited in ASSETS.md) so the
+  // "ruined street" floor catches the new IBL/shadows. Map paths are under public/.
+  // A MISSING file falls back to the flat PALETTE.ground color (never-throw loader).
+  // Keep the albedo DARK so the floor never crosses bloom.threshold and glows. Swap-
+  // and-see in `npm run dev`. Dial-back: drop roughnessMap → drop normalMap → enabled:false.
+  floor: {
+    enabled: true, // false = flat PALETTE.ground color (exactly the pre-Phase-C look)
+    map: 'textures/floor/asphalt_color.png', // albedo (loaded sRGB)
+    normalMap: 'textures/floor/asphalt_normal.png', // OpenGL-style normals (linear)
+    roughnessMap: 'textures/floor/asphalt_roughness.png', // wet/dry sheen variation (linear)
+    repeat: 8, // how many times the set tiles across the ground plane
+    normalScale: 0.6, // bump strength (0 = flat, 1 = full)
+    roughness: 1.0, // multiplies the roughness map (1 = use the map as-is)
+    metalness: 0.0, // keep 0 — non-zero mirrors the env map and wrecks readability
+    tint: null, // optional 0xRRGGBB multiply over the albedo (null = texture as-is)
+    anisotropy: 'max', // 'max' = renderer max (sharp at grazing angles) | a number | 1
+  },
 };
 
 // ---- readability overlay rings (ADR-0023 — systems/overlays.js) ----

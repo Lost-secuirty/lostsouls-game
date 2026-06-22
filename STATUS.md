@@ -24,11 +24,15 @@ session) lives in [`docs/WORKLOG.md`](docs/WORKLOG.md); the detailed running his
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.8.1)
+## Current state (v0.8.2)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Atmospheric overhaul — Phase C: CC0 PBR floor texture (v0.8.2, ADR-0026)** — the ground now uses a
+  dark, wet **CC0 asphalt** PBR set (albedo + normal + roughness, ambientCG Asphalt025C) so it reacts to
+  the IBL + shadows. Loaded via the never-throw `core/textures.js` (missing map → flat color fallback),
+  tunable in `GRAPHICS.floor`, dark enough to not bloom. Phase 3 of 4; D = N8AO ambient occlusion next.
 - **Atmospheric overhaul — Phase B: real-time shadow maps (v0.8.1, ADR-0026)** — `PCFShadowMap` with
   the warm key light as the sole caster (tight ortho frustum fit to the arena, ~2048 map). Entities +
   walls cast, ground + walls receive; the glowing `MeshBasic` bullets/eyes/door never cast. Config in

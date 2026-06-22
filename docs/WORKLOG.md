@@ -15,6 +15,30 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-21 — Phase C: CC0 PBR floor texture + normal map (v0.8.2, ADR-0026)
+
+Third atmospheric phase — the "ruined street" floor now reacts to the new IBL + shadows. Scott's pick:
+**wet asphalt**. Config-gated, never-break-the-render (missing file → flat color).
+
+- **Asset:** dark, wet **CC0 asphalt** (ambientCG **Asphalt025C**, tagged dark/rain/wet) — Color +
+  OpenGL normal + roughness, 1K PNG (~7.7 MB) in `public/textures/floor/`, credited in `ASSETS.md`.
+  Skipped AO (negligible on a uniform tiled plane) + displacement (no tessellation). Dark so it never
+  crosses `bloom.threshold` and glows.
+- **Loader:** new `src/core/textures.js` — `loadTextures(paths)` (preload, never-throws; a missing
+  map is warned + skipped) + `getTexture(path, {srgb, repeat, anisotropy})` (mirrors `assets.js` for
+  GLBs). `srgb` only for albedo; normal/roughness stay `NoColorSpace` (the r152+ `.colorSpace` API).
+- **Wiring** (`scene.js`): the ground `MeshStandardMaterial` takes `map`/`normalMap`/`roughnessMap`
+  when loaded (white albedo tint so it isn't double-darkened; `metalness:0`), else the flat
+  `PALETTE.ground`. `RepeatWrapping`, `repeat:8`, max anisotropy. `main.js` preloads the maps **before**
+  `createScene` (the ground is built there). `GridHelper` stays on top as the readability cue.
+- **Config:** `GRAPHICS.floor = { enabled, map, normalMap, roughnessMap, repeat:8, normalScale:0.6,
+roughness:1, metalness:0, tint:null, anisotropy:'max' }`.
+- **Verified:** full gauntlet green; build copies `public/textures/` into `dist/`; headless boss-room
+  screenshot shows the dark wet floor tiling cleanly under the grid, world stays dark, threats still
+  glow, `map`/`normalMap`/`roughnessMap` all bound, 0 page errors.
+- **Perf:** negligible — the floor is one draw call; just switches the shader to its textured branch.
+  VRAM ~16 MB for 3×1K w/ mips. Dial-back: drop roughnessMap → drop normalMap → `enabled:false`.
+
 ## 2026-06-21 — Phase B: real-time shadow maps (v0.8.1, ADR-0026)
 
 Second atmospheric-overhaul phase — the highest-perf-risk one, greenlit now that the target device is

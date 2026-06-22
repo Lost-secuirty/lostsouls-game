@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { ARENA, CAMERA, PALETTE, LIGHTING, GRAPHICS } from '../config.js';
 import { createPostFX } from './postfx.js';
+import { getTexture } from './textures.js';
 
 export function createScene(container) {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -108,9 +109,36 @@ export function createScene(container) {
   }
 
   // ---- ground: dark plane + a grid for the "ruined street" feel ----
+  // floor material: a CC0 wet-asphalt PBR set when present (ADR-0026 Phase C —
+  // textures preloaded in main.js), else the flat PALETTE.ground color. The albedo
+  // is tinted white when textured so it isn't double-darkened; metalness stays 0.
+  const fl = GRAPHICS.floor;
+  const aniso =
+    fl.anisotropy === 'max' ? renderer.capabilities.getMaxAnisotropy() : fl.anisotropy || 1;
+  const floorMap = fl.enabled
+    ? getTexture(fl.map, { srgb: true, repeat: fl.repeat, anisotropy: aniso })
+    : null;
+  const floorNormal = fl.enabled
+    ? getTexture(fl.normalMap, { repeat: fl.repeat, anisotropy: aniso })
+    : null;
+  const floorRough = fl.enabled
+    ? getTexture(fl.roughnessMap, { repeat: fl.repeat, anisotropy: aniso })
+    : null;
+  const groundMat = new THREE.MeshStandardMaterial({
+    color: fl.tint ?? (floorMap ? 0xffffff : PALETTE.ground),
+    roughness: fl.roughness ?? 1,
+    metalness: fl.metalness ?? 0,
+  });
+  if (floorMap) groundMat.map = floorMap;
+  if (floorNormal) {
+    groundMat.normalMap = floorNormal;
+    groundMat.normalScale.set(fl.normalScale, fl.normalScale);
+  }
+  if (floorRough) groundMat.roughnessMap = floorRough;
+
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(ARENA.width + 20, ARENA.depth + 20),
-    new THREE.MeshStandardMaterial({ color: PALETTE.ground, roughness: 1 }),
+    groundMat,
   );
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true; // the floor catches entity + wall shadows (ADR-0026)
