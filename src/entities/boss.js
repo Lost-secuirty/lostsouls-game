@@ -14,6 +14,7 @@
 
 import { BOSS, PALETTE, PARTICLES, DUO } from '../config.js';
 import { BEHAVIORS } from './bosses/index.js';
+import { castShadows } from '../core/shadows.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { normalize, circleVsCircle } from '../core/math2d.js';
 import * as audio from '../systems/audio.js';
@@ -51,6 +52,7 @@ export class Boss {
     this.legs = built.legs || []; // spider leg joints (procedural animate)
     this.cap = built.cap || null; // mushroom procedural cap (pulsed in animate)
     this.anim = built.anim || null; // animated GLB model (plays its own clip)
+    castShadows(this.mesh); // the boss casts a shadow (covers procedural + GLB meshes)
     this.mesh.position.set(x, 0, z);
     scene.add(this.mesh);
     audio.play(this.behavior.roar || 'bossRoar');

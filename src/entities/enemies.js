@@ -16,6 +16,7 @@ import { buildMushroomMesh } from './mushroomMesh.js';
 import { buildBeastMesh } from './beastMesh.js';
 import { buildSkeletonMesh } from './skeletonMesh.js';
 import { makeCharacter } from './characterMesh.js';
+import { castShadows } from '../core/shadows.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { normalize, dist, circleVsCircle } from '../core/math2d.js';
 import { ring } from './bosses/emitters.js';
@@ -137,6 +138,7 @@ export class Enemy {
     const built = makeEnemyMesh(type, theme);
     this.mesh = built.group;
     this.anim = built.anim; // AnimModel for GLB minions, else null
+    castShadows(this.mesh); // monsters cast shadows (covers every mesh variant + GLBs)
     this.mesh.position.set(x, 0, z);
     scene.add(this.mesh);
   }

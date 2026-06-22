@@ -638,3 +638,27 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
   resolves cleanly under Vite.
 - **postprocessing 6.39 peer range is `>=0.168 <0.185`** — r184 is in range; do NOT bump three to
   r185+ without bumping postprocessing too, or the composer's color pipeline can desync.
+
+## 2026-06-21 — Phase B: real-time shadow maps (v0.8.1, ADR-0026)
+
+- **Toggling `renderer.shadowMap.enabled` after the first render needs a material recompile** to take
+  effect — set `material.needsUpdate = true` across the scene when flipping it (done in
+  `setShadowsEnabled`). Conversely, set `renderer.shadowMap.type` **once at init** (before the first
+  render) so you don't pay an unexpected recompile mid-run.
+- **`shadow.camera.updateProjectionMatrix()` is REQUIRED** after editing a directional light's ortho
+  shadow frustum (`left/right/top/bottom/near/far`). Skip it and the frustum silently keeps its
+  defaults → shadows land in the wrong place or vanish.
+- **Fit the shadow frustum to the static `ARENA` constants, NOT entity bounds.** Skinned-GLB
+  bounding boxes lie (the render-studio learned this for framing); a Box3-fit frustum would jitter or
+  clip. The arena is fixed, so a tight ortho box around it + a small margin is correct and stable.
+- **One caster is enough.** Only the warm key DirectionalLight casts; the fill light stays shadowless
+  (a 2nd caster doubles the depth-pass cost for no readability gain). `castShadow` set on hundreds of
+  MeshBasic bullets would tank the pass — they're left untouched (they don't even use the helper).
+- **`castShadow` is free while `shadowMap.enabled` is false**, so the `castShadows()` helper is called
+  unconditionally at mesh creation (one line in the `Enemy`/`Boss` ctors + `makeCharacter`) — no need
+  to thread the config flag through every mesh site. The master switch lives on the renderer + key
+  light. Traversing the entity root covers GLB sub-meshes in one call.
+- **Headless shadow verification:** drive the game past the menu with `window.__game.startRun(seed)` +
+  `loadRoom(9)` (floor-1 boss room), then **hide the `#startmenu` DOM overlay** (`startRun` loads the
+  room underneath but doesn't dismiss the menu) before screenshotting — otherwise you shoot the menu,
+  not the game. `normalBias 0.02` + `bias -0.0005` gave clean soft shadows (no acne/peter-panning).

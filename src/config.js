@@ -527,6 +527,22 @@ export const GRAPHICS = {
     sparkCount: 4,
     sparkColor: 0xffd27a, // warm spark; bloom makes it pop
   },
+  // real-time shadow maps (ADR-0026 Phase B — src/core/scene.js). ONE shadow-casting
+  // light (the warm key); a tight orthographic frustum fit to the ARENA. Bullets, eyes,
+  // and the door (MeshBasic) never cast. The in-game "reduced effects" toggle turns this
+  // off (with IBL + post-FX). Uses PCFShadowMap (soft; PCFSoftShadowMap is deprecated).
+  // Dial-back ladder if a packed boss room ever drops frames: mapSize 2048→1024 →
+  // radius down → frustumMargin tighter → enabled:false. Swap-and-see in `npm run dev`.
+  shadows: {
+    enabled: true, // master switch (also gated off by the reducedEffects setting)
+    mapSize: 2048, // shadow-map resolution per side (1024 = softer + cheaper)
+    frustumMargin: 4, // world-unit slack around the arena for the ortho shadow frustum
+    near: 1, // shadow camera near plane
+    far: 80, // shadow camera far plane (must exceed the key light → floor distance)
+    normalBias: 0.02, // primary acne fix (offsets the sample along the surface normal)
+    bias: -0.0005, // depth bias (fine-tunes acne vs peter-panning)
+    radius: 2, // PCF soft-edge blur radius
+  },
 };
 
 // ---- readability overlay rings (ADR-0023 — systems/overlays.js) ----

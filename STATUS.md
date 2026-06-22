@@ -24,11 +24,16 @@ session) lives in [`docs/WORKLOG.md`](docs/WORKLOG.md); the detailed running his
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.8.0)
+## Current state (v0.8.1)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Atmospheric overhaul — Phase B: real-time shadow maps (v0.8.1, ADR-0026)** — `PCFShadowMap` with
+  the warm key light as the sole caster (tight ortho frustum fit to the arena, ~2048 map). Entities +
+  walls cast, ground + walls receive; the glowing `MeshBasic` bullets/eyes/door never cast. Config in
+  `GRAPHICS.shadows`; the `reducedEffects` toggle drops shadows with the rest. Verified via a headless
+  boss-room screenshot (clean soft shadows, no acne). Phase 2 of 4; C = CC0 PBR floor, D = N8AO next.
 - **Atmospheric overhaul — Phase A: in-game IBL + richer fog (v0.8.0, ADR-0026)** — a subtle
   image-based-lighting fill (`PMREMGenerator` + `RoomEnvironment` → `scene.environment`, intensity
   kept low so pale models don't wash out; glowing `MeshBasic` threats untouched) plus config-driven

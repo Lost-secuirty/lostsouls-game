@@ -34,9 +34,13 @@ and the accessibility/feel layer in [ADR-0023](adr/0023-settings-and-overlays.md
 ## How it works (the render pipeline)
 
 - **Renderer** (`src/core/scene.js`): `WebGLRenderer({ antialias: true })`, pixel ratio capped at 2,
-  shadows off. Each frame goes through the **post-FX composer** (`src/core/postfx.js`, below); tone
-  mapping is owned there (the renderer stays `NoToneMapping` to avoid double tone-mapping). The
-  composer self-falls-back to a plain `renderer.render(scene, camera)` if it can't initialize.
+  **real-time shadows on** (ADR-0026 Phase B): `PCFShadowMap`, the warm **key** light is the sole
+  caster with a tight orthographic frustum fit to the `ARENA` (~2048 map); entities + walls cast,
+  ground + walls receive, the glowing `MeshBasic` bullets/eyes/door never cast. Tuned in
+  `config.GRAPHICS.shadows`; the **reduced-effects** toggle turns shadows off with the rest. Each frame
+  goes through the **post-FX composer** (`src/core/postfx.js`, below); tone mapping is owned there (the
+  renderer stays `NoToneMapping` to avoid double tone-mapping). The composer self-falls-back to a plain
+  `renderer.render(scene, camera)` if it can't initialize.
 - **Camera** (`src/core/scene.js`, `CAMERA` config): tilted top-down "Binding of Isaac" angle
   (perspective, FOV 55), positioned to fit the whole `ARENA` (ADR-0020). Screen-shake offsets it per
   frame (`systems/juice.js`).
@@ -122,7 +126,7 @@ Curated in [`ROADMAP.md`](ROADMAP.md); parking lot in [`BACKLOG.md`](BACKLOG.md)
 - [x] **Post-FX pipeline** (bloom + ACES + vignette + MSAA + impact sparks) — **done** (ADR-0025).
 - [x] **Render studio** harness (boss portraits + contact sheet) — **done** (`tools/render-studio/`).
 - [~] **Atmospheric overhaul** (ADR-0026, phased, subtle + perf-gated): **[x] Phase A — in-game IBL +
-  richer fog (done)**; [ ] Phase B — real-time shadows; [ ] Phase C — CC0 PBR floor + normal map;
-  [ ] Phase D — N8AO ambient occlusion. Depth-of-field + wall textures stay out of scope.
+  richer fog (done)**; **[x] Phase B — real-time shadow maps (done)**; [ ] Phase C — CC0 PBR floor +
+  normal map; [ ] Phase D — N8AO ambient occlusion. Depth-of-field + wall textures stay out of scope.
 - [ ] **Muzzle flash** (subtle brief flash, not per-bullet noise) — parked.
 - [ ] **WebGPU renderer** (someday) — only if there's a reason.

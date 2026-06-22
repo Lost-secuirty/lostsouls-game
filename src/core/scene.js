@@ -12,7 +12,12 @@ export function createScene(container) {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, GRAPHICS.pixelRatioCap));
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = false;
+  // Real-time shadows (ADR-0026 Phase B). Type is set ONCE here (before first render)
+  // to avoid a mid-run shader recompile; PCFShadowMap is the current soft type.
+  // `enabled` starts from config; main.js then reconciles it with the reducedEffects
+  // setting via the returned setShadowsEnabled().
+  renderer.shadowMap.type = THREE.PCFShadowMap;
+  renderer.shadowMap.enabled = GRAPHICS.shadows.enabled;
   // Explicit color-management contract (ADR-0026): the post-FX composer follows the
   // renderer's outputColorSpace, so pin it rather than leaning on the three default.
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -59,6 +64,24 @@ export function createScene(container) {
   fill.position.set(...L.fill.pos);
   scene.add(fill);
 
+  // ---- shadows: the KEY light is the sole caster (ADR-0026 Phase B) ----
+  // A tight orthographic frustum fit to the static ARENA (not entity bounds — skinned
+  // GLB boxes lie). The fill light never casts (perf). Tunable in config.GRAPHICS.shadows.
+  const sh = GRAPHICS.shadows;
+  key.castShadow = true;
+  key.shadow.mapSize.set(sh.mapSize, sh.mapSize);
+  key.shadow.bias = sh.bias;
+  key.shadow.normalBias = sh.normalBias;
+  key.shadow.radius = sh.radius;
+  const sc = key.shadow.camera; // an OrthographicCamera for a directional light
+  sc.left = -(ARENA.width / 2 + sh.frustumMargin);
+  sc.right = ARENA.width / 2 + sh.frustumMargin;
+  sc.top = ARENA.depth / 2 + sh.frustumMargin;
+  sc.bottom = -(ARENA.depth / 2 + sh.frustumMargin);
+  sc.near = sh.near;
+  sc.far = sh.far;
+  sc.updateProjectionMatrix(); // REQUIRED — without it the frustum keeps defaults
+
   // ---- image-based lighting (ADR-0026): a subtle environment fill ----
   // One-time PMREM bake of a RoomEnvironment at boot (zero per-frame cost). Adds depth
   // to the PBR materials (ground/walls/characters); does NOT affect the MeshBasic glowing
@@ -90,6 +113,7 @@ export function createScene(container) {
     new THREE.MeshStandardMaterial({ color: PALETTE.ground, roughness: 1 }),
   );
   ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true; // the floor catches entity + wall shadows (ADR-0026)
   scene.add(ground);
 
   const grid = new THREE.GridHelper(
@@ -114,5 +138,19 @@ export function createScene(container) {
     postfx.setSize(window.innerWidth, window.innerHeight);
   }
 
-  return { renderer, scene, camera, baseCam, resize, postfx };
+  // runtime on/off for shadows (the reducedEffects toggle in main.js). Toggling
+  // shadowMap.enabled after the first render needs a material recompile to take effect.
+  function setShadowsEnabled(on) {
+    const active = on && GRAPHICS.shadows.enabled;
+    if (renderer.shadowMap.enabled === active) return;
+    renderer.shadowMap.enabled = active;
+    scene.traverse((o) => {
+      const mat = o.material;
+      if (!mat) return;
+      if (Array.isArray(mat)) mat.forEach((m) => (m.needsUpdate = true));
+      else mat.needsUpdate = true;
+    });
+  }
+
+  return { renderer, scene, camera, baseCam, resize, postfx, setShadowsEnabled };
 }
