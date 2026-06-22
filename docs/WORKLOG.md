@@ -27,7 +27,7 @@ Research report (5): extend the pure emitter library and extract homing into a t
 - **`layeredFlower(layers, baseCount, phaseStep, countStep)`**: concentric rings with growing petal
   count per layer, each phase-offset so petals interleave — keep counts modest for kid-fair gaps.
 - **`src/core/homingMath.js`** (new pure module): `turnRateHomingVelocity(pos, vel, target, dt,
-  {speed, turnRate})` — clamped heading turn (at most `turnRate*dt` per tick), re-sped to `speed`.
+{speed, turnRate})` — clamped heading turn (at most `turnRate*dt` per tick), re-sped to `speed`.
   A perpendicular juke still loses it — fair for a young dodger (instant correction feels unfair).
 - **`bullets.js _steerHoming`** now delegates to `turnRateHomingVelocity` — behavior identical,
   now unit-testable and reusable for future seeker-minion boss threats.
