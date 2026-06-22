@@ -15,6 +15,25 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-22 — B5: "Twice as hard" difficulty knob (v0.8.9, ADR-0027)
+
+Scott's headline ask. A single master `DIFFICULTY.hardnessMul` (default **2** = twice as hard)
+distributed across difficulty facets by `0..1` weights, so 2× total doesn't compound to ~8× brutal.
+Stays kid-fair (B4 guards it).
+
+- **New pure `hardnessFacet(mul, weight)`** in `core/scaling.js` = `1 + (max(1,mul)-1)*weight`.
+- **Config `DIFFICULTY`:** `hardnessMul:2, hpWeight:1.0, countWeight:0.35`. Shipped flavor: enemy +
+  boss HP **×2** (boss.js, enemies.js + summoned minions) and **~1.35×** enemies per room (spawner.js).
+  **Ring density + contact damage untouched** (weight 0) — bullet gaps stay fair, no new one-shots.
+  Bullet speed never scales (unchanged repo rule).
+- **Tests** (`tests/scaling.test.js`): golden values on `hardnessFacet` + the shipped config doubles
+  HP / crowds rooms. Fairness regression (B4) still green → harder, not unfair.
+- **Docs:** [ADR-0027](adr/0027-difficulty-and-scaling.md); `docs/COMBAT_CORRIDOR.md` (TTK reference).
+- **Caveat / tune-me:** HP ×2 **compounds with the per-floor ramp** (a floor-4 boss ≈ 5× base HP), so
+  boss fights are longer — `hardnessMul` (or `hpWeight`) is the one knob to dial at the table with
+  Caden. Log reactions in `docs/playtest/kid-feedback-log.md`.
+- **Verified:** lint clean, tests pass (+10 scaling), build clean, smoke:prod + smoke:browser exit 0.
+
 ## 2026-06-22 — B4: Kid-fairness telegraph & gap math (guard rail) (v0.8.8)
 
 Codifies the research's fairness equations as pure helpers + a CI regression so the upcoming "twice

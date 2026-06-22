@@ -47,3 +47,22 @@ export function statBonus(stacks, maxBonus, half) {
 export function floorScale(floorIndex, { base, growth }) {
   return base * Math.pow(1 + growth, Math.max(0, floorIndex));
 }
+
+/**
+ * Distribute the "twice as hard" master knob across one difficulty FACET (PURE):
+ *
+ *     facet(mul, weight) = 1 + (mul - 1) * weight
+ *
+ * `hardnessMul` is the single dial (1 = the original game, 2 = "twice as hard"). Applying it
+ * 1:1 to EVERY facet would compound (2× HP × 2× count × 2× damage ≈ brutal), so each facet
+ * takes a `weight` (0..1) share of it: weight 1 = full doubling, 0 = untouched. This keeps the
+ * harder game FAIR — e.g. ring density + contact damage stay at weight 0 so bullet gaps
+ * (tests/fairness.test.js) and one-hit risk don't change. `mul<1` clamps to 1 (no easier-mode here).
+ *
+ * @param {number} hardnessMul config.DIFFICULTY.hardnessMul
+ * @param {number} weight 0..1 share of the hardness this facet absorbs
+ * @returns {number} the per-facet multiplier (>= 1)
+ */
+export function hardnessFacet(hardnessMul, weight) {
+  return 1 + (Math.max(1, hardnessMul) - 1) * weight;
+}

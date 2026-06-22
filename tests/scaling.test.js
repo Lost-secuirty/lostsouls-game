@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { statBonus, floorScale } from '../src/core/scaling.js';
+import { statBonus, floorScale, hardnessFacet } from '../src/core/scaling.js';
 import { UPGRADES, DIFFICULTY } from '../src/config.js';
 
 // Exp7 Stage 2 / ADR-0022 — the balance curves. Pure functions, golden-value tests
@@ -61,6 +61,41 @@ describe('floorScale (difficulty curve)', () => {
     const diffs = [0, 1, 2, 3, 4].map((i) => floorScale(i, DIFFICULTY));
     for (let i = 1; i < diffs.length; i++) expect(diffs[i]).toBeGreaterThan(diffs[i - 1]);
     expect(diffs[4]).toBeGreaterThan(diffs[0] * 2); // finale clearly harder than floor 0
+  });
+});
+
+describe('hardnessFacet (B5 "twice as hard" knob distribution)', () => {
+  it('is 1 (no change) at hardnessMul 1, or at weight 0', () => {
+    expect(hardnessFacet(1, 1)).toBe(1);
+    expect(hardnessFacet(2, 0)).toBe(1);
+  });
+
+  it('weight 1 applies the full multiplier (2× at hardnessMul 2)', () => {
+    expect(hardnessFacet(2, 1)).toBeCloseTo(2);
+    expect(hardnessFacet(3, 1)).toBeCloseTo(3);
+  });
+
+  it('a partial weight takes a share (the count facet)', () => {
+    expect(hardnessFacet(2, 0.35)).toBeCloseTo(1.35);
+  });
+
+  it('clamps an easier-mode (mul < 1) to 1 — this knob only adds difficulty', () => {
+    expect(hardnessFacet(0.5, 1)).toBe(1);
+  });
+});
+
+describe('DIFFICULTY "twice as hard" config', () => {
+  it('has the master knob + facet weights in range', () => {
+    expect(DIFFICULTY.hardnessMul).toBeGreaterThanOrEqual(1);
+    for (const w of ['hpWeight', 'countWeight']) {
+      expect(DIFFICULTY[w]).toBeGreaterThanOrEqual(0);
+      expect(DIFFICULTY[w]).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('ships at "twice as hard": HP doubles, rooms get a bit more crowded', () => {
+    expect(hardnessFacet(DIFFICULTY.hardnessMul, DIFFICULTY.hpWeight)).toBeCloseTo(2);
+    expect(hardnessFacet(DIFFICULTY.hardnessMul, DIFFICULTY.countWeight)).toBeGreaterThan(1);
   });
 });
 
