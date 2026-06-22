@@ -64,5 +64,6 @@ export function floorScale(floorIndex, { base, growth }) {
  * @returns {number} the per-facet multiplier (>= 1)
  */
 export function hardnessFacet(hardnessMul, weight) {
-  return 1 + (Math.max(1, hardnessMul) - 1) * weight;
+  const w = weight < 0 ? 0 : weight > 1 ? 1 : weight; // clamp to the documented 0..1 share
+  return 1 + (Math.max(1, hardnessMul) - 1) * w;
 }
