@@ -15,6 +15,27 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-22 — B6: Parametric pattern library + homing extraction (v0.8.10)
+
+Research report (5): extend the pure emitter library and extract homing into a testable module.
+**No live-boss change** — all new generators are library primitives, gated by a per-boss
+`complexityTier` flag before any boss opts in.
+
+- **`multiArmSpiral(arms, perArm, phase, step)`** in `emitters.js`: N rotating spiral arms, each
+  `perArm` bullets `step` rad apart, arms evenly distributed. Fire repeatedly while advancing `phase`
+  → classic danmaku spiral. `max(1, arms)` guards divide-by-zero.
+- **`layeredFlower(layers, baseCount, phaseStep, countStep)`**: concentric rings with growing petal
+  count per layer, each phase-offset so petals interleave — keep counts modest for kid-fair gaps.
+- **`src/core/homingMath.js`** (new pure module): `turnRateHomingVelocity(pos, vel, target, dt,
+  {speed, turnRate})` — clamped heading turn (at most `turnRate*dt` per tick), re-sped to `speed`.
+  A perpendicular juke still loses it — fair for a young dodger (instant correction feels unfair).
+- **`bullets.js _steerHoming`** now delegates to `turnRateHomingVelocity` — behavior identical,
+  now unit-testable and reusable for future seeker-minion boss threats.
+- **Tests** (`tests/patterns.test.js`): 7 tests — arm count/spacing/step, divide-by-zero guard,
+  layer total (8+10+12=30), pure reproducibility, speed preservation, turn clamping, curve convergence.
+- **Verified:** lint clean, format clean, 184 tests all pass (+7), coverage 47%, build clean,
+  smoke:prod + smoke:browser exit 0.
+
 ## 2026-06-22 — B5: "Twice as hard" difficulty knob (v0.8.9, ADR-0027)
 
 Scott's headline ask. A single master `DIFFICULTY.hardnessMul` (default **2** = twice as hard)

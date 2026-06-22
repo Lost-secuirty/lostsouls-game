@@ -90,6 +90,38 @@ export function arc(count, phase = 0, step = 0.25) {
   return out;
 }
 
+/**
+ * `arms` spiral arms, each `perArm` bullets `step` radians apart; arms evenly spaced around the
+ * circle and offset by `phase`. Fire repeatedly while advancing `phase` and it reads as rotating
+ * spiral arms (a denser cousin of `arc`). Returns a flat angle array. (Library primitive — ready
+ * for a future boss to opt into; pair with a telegraph + the fairness check before going live.)
+ */
+export function multiArmSpiral(arms, perArm, phase = 0, step = 0.25) {
+  const armGap = TAU / Math.max(1, arms);
+  const out = [];
+  for (let a = 0; a < arms; a++) {
+    const base = phase + a * armGap;
+    for (let i = 0; i < perArm; i++) out.push(base + i * step);
+  }
+  return out;
+}
+
+/**
+ * A layered "flower": `layers` concentric rings, ring L having `baseCount + L*countStep` bullets,
+ * each layer phase-offset by `L*phaseStep` so the petals interleave. One speed at the fire site
+ * (vary per-layer speed there for the classic look). Returns a flat angle array. (Library
+ * primitive — ready for a future boss; keep counts modest so gaps stay kid-fair.)
+ */
+export function layeredFlower(layers, baseCount, phaseStep = 0, countStep = 2) {
+  const out = [];
+  for (let L = 0; L < layers; L++) {
+    const count = Math.max(1, baseCount + L * countStep);
+    const phase = L * phaseStep;
+    for (let i = 0; i < count; i++) out.push(phase + (i / count) * TAU);
+  }
+  return out;
+}
+
 /** Convert an angle array to unit {x, z} directions (x = sin, z = cos). */
 export function dirsFromAngles(angles) {
   return angles.map((a) => ({ x: Math.sin(a), z: Math.cos(a) }));
