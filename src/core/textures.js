@@ -43,16 +43,13 @@ export async function loadTextures(paths) {
 }
 
 /**
- * Get a preloaded texture configured for tiling, or null if it isn't loaded.
- * `srgb` ONLY for albedo/color maps — normal/roughness/AO maps must stay linear
- * (NoColorSpace) or the PBR shading is wrong. ADR-0026.
- * @param {string|null|undefined} path
+ * Configure a texture for tiling in place (pure — no cache/loader). `srgb` ONLY for
+ * albedo/color maps; normal/roughness/AO maps must stay linear (NoColorSpace) or the
+ * PBR shading is wrong (the r152+ `.colorSpace` API). Returns the same texture. ADR-0026.
+ * @param {import('three').Texture} tex
  * @param {{ srgb?: boolean, repeat?: number, anisotropy?: number }} [opts]
- * @returns {import('three').Texture | null}
  */
-export function getTexture(path, { srgb = false, repeat = 1, anisotropy = 1 } = {}) {
-  const tex = path ? cache.get(path) : null;
-  if (!tex) return null;
+export function configureTexture(tex, { srgb = false, repeat = 1, anisotropy = 1 } = {}) {
   tex.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.RepeatWrapping;
@@ -60,4 +57,15 @@ export function getTexture(path, { srgb = false, repeat = 1, anisotropy = 1 } = 
   tex.anisotropy = anisotropy;
   tex.needsUpdate = true;
   return tex;
+}
+
+/**
+ * Get a preloaded texture configured for tiling, or null if it isn't loaded.
+ * @param {string|null|undefined} path
+ * @param {{ srgb?: boolean, repeat?: number, anisotropy?: number }} [opts]
+ * @returns {import('three').Texture | null}
+ */
+export function getTexture(path, opts = {}) {
+  const tex = path ? cache.get(path) : null;
+  return tex ? configureTexture(tex, opts) : null;
 }
