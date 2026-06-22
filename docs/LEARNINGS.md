@@ -687,3 +687,21 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
   preview — handy for eyeballing the look before committing. Asphalt025C = the dark wet one we shipped.
 - **Vite serves `public/` at root and copies it into `dist/` verbatim** — texture paths like
   `'textures/floor/asphalt_color.png'` resolve the same in dev + prod (same as the GLB model paths).
+
+## 2026-06-21 — Phase D: N8AO ambient occlusion (v0.8.3, ADR-0026) — overhaul complete
+
+- **`N8AOPostPass`, not `N8AOPass`, for the pmndrs `postprocessing` composer.** `N8AOPass` is for
+  three's vanilla `EffectComposer` and replaces the RenderPass; `N8AOPostPass` slots into pmndrs'
+  composer as a normal pass. n8ao@^1.10.2 exports both (`import { N8AOPostPass } from 'n8ao'`).
+- **Config lives on `pass.configuration.*` (a sub-object), not the pass directly:** `aoRadius`,
+  `distanceFalloff`, `intensity`, `halfRes`, `color` (a THREE.Color → `.set()`), plus `setQualityMode(preset)`.
+  `aoRadius` is in **world units** — n8ao's default 5 is too big for ~1–3 unit entities; 2.0 reads right.
+- **Pass ORDER + gamma:** AO must sit `RenderPass → N8AO → EffectPass(bloom/tonemapping)`. Keep AO's
+  `gammaCorrection = false` mid-pipeline (the final EffectPass owns color) or you double-correct.
+- **Per-feature fallback isolation:** wrap the AO construction in its OWN inner try/catch so an AO
+  failure skips only AO — letting it bubble to the composer's outer catch would nuke the whole
+  pipeline (bloom included). One feature failing must not take down the rest.
+- **Coverage gate is global over the `include` set** (`src/core/**` + a couple files). Each browser-only
+  render module added (scene/postfx/textures, all 0% under unit tests) drags the ratio down; budget a
+  small unit test for any _pure_ seam you add (e.g. `castShadows`, `configureTexture`) to stay over the
+  40% floor instead of weakening the gate.

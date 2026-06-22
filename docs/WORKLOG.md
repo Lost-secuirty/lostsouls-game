@@ -15,6 +15,29 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-21 — Phase D: N8AO ambient occlusion (v0.8.3, ADR-0026) — overhaul complete
+
+Final atmospheric phase — soft contact shading for depth. Completes the ADR-0026 overhaul
+(IBL → shadows → PBR floor → AO). Config-gated, own fallback, drops with `reducedEffects`.
+
+- **Dep:** `npm install n8ao@^1.10.2` (peers satisfied: postprocessing ≥6.30, three ≥0.137).
+- **Pass** (`src/core/postfx.js`): `N8AOPostPass` (NOT `N8AOPass`) added **between** the `RenderPass`
+  and the bloom/tone-mapping `EffectPass`, gated on `GRAPHICS.ao.enabled` inside its **own inner
+  try/catch** so an AO failure skips only AO — the composer still renders bloom (the outer catch that
+  nulls the whole composer is never hit). `gammaCorrection` forced off mid-pipeline (the final
+  EffectPass owns color); depth is auto-wired by the composer (no DepthDownsamplingPass needed).
+- **Config:** `GRAPHICS.ao = { enabled, quality:'Low', halfRes:true, radius:2.0, distanceFalloff:1.0,
+intensity:1.5, color:0x000000, gammaCorrection:'auto' }`. `aoRadius` is WORLD units — 2.0 for our
+  ~1–3 unit entities (n8ao's default 5 muddies our scale). `reducedEffects` already drops the whole
+  composer, so AO turns off with it (no extra wiring). The render studio shares `createPostFX`, so AO
+  flows into portraits too.
+- **Verified:** lint clean, 143 tests pass, coverage 41.2% lines (gate 40); build bundles n8ao
+  (+~144 KB); browser smoke clean; headless boss-room screenshot shows soft contact shading at wall
+  bases/rubble/corners — subtle, readability intact, world stays dark, `window.__postfx.active=true`,
+  0 page errors.
+- **Perf:** halfRes + 'Low' ≈ 1–3 ms/frame on a mid laptop iGPU (well within 60 fps on the Nitro's
+  5060). Dial-back: keep halfRes → quality 'Performance' → smaller `radius` → `enabled:false`.
+
 ## 2026-06-21 — Phase C: CC0 PBR floor texture + normal map (v0.8.2, ADR-0026)
 
 Third atmospheric phase — the "ruined street" floor now reacts to the new IBL + shadows. Scott's pick:

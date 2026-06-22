@@ -84,9 +84,13 @@ Juice is tuned in `JUICE` (shake magnitudes + decay, hit-stop durations) and `PA
 ## The post-FX pipeline (live — ADR-0025, `src/core/postfx.js`)
 
 `createPostFX()` wraps the renderer in a pmndrs **`postprocessing`** `EffectComposer`:
-`RenderPass → EffectPass( Bloom + [Vignette] + ToneMapping(ACES) )`, with a `HalfFloatType` HDR buffer
-and WebGL2 **MSAA**. `game.render()` calls `postfx.render()` instead of `renderer.render()`.
+`RenderPass → [N8AO] → EffectPass( Bloom + [Vignette] + ToneMapping(ACES) )`, with a `HalfFloatType`
+HDR buffer and WebGL2 **MSAA**. `game.render()` calls `postfx.render()` instead of `renderer.render()`.
 
+- **Ambient occlusion** (ADR-0026 Phase D) — **N8AO** (`N8AOPostPass`) between the render and the
+  effect pass adds soft contact shading where surfaces meet (wall bases, rubble, monster feet) for
+  depth. Half-res + a quality preset for perf; tuned subtle so it doesn't muddy readability. Its own
+  init fallback (failure → skip AO, the composer still renders bloom). `config.GRAPHICS.ao`.
 - **Luminance-gated bloom** — only pixels brighter than `bloom.threshold` glow, so the dark world
   stays dark and the emissive threats (bullets/enemies/pickups/door) pop. (We use brightness-gated
   bloom rather than object-selection `SelectiveBloomEffect` — simpler + more robust cross-browser; see
@@ -98,7 +102,7 @@ and WebGL2 **MSAA**. `game.render()` calls `postfx.render()` instead of `rendere
 - **Fallback contract:** if the composer can't initialize (no WebGL2 / a feature gap / headless quirk)
   or a frame throws, it falls back to `renderer.render(scene, camera)`. Never a black screen.
 - **Accessibility / low-end:** the `#settings` panel's ✨ button (the `reducedEffects` setting,
-  extending ADR-0023) flips post-FX off → raw render, persisted across reloads.
+  extending ADR-0023) flips post-FX off → raw render (which drops AO with it), persisted across reloads.
 
 ### `config.GRAPHICS` (the knobs)
 
@@ -110,6 +114,9 @@ All swap-and-see in `npm run dev`:
 - `bloom` — `{ intensity, threshold, smoothing, radius }` (threshold keeps the dark world dark).
 - `vignette` — `{ enabled, darkness, offset }`.
 - `vfx` — `{ impactSparks, sparkCount, sparkColor }`.
+- `shadows` — `{ enabled, mapSize, frustumMargin, near, far, normalBias, bias, radius }` (ADR-0026 B).
+- `floor` — `{ enabled, map, normalMap, roughnessMap, repeat, normalScale, … }` (ADR-0026 C).
+- `ao` — `{ enabled, quality, halfRes, radius, distanceFalloff, intensity, color }` (ADR-0026 D).
 
 ## Render studio (dev harness — `tools/render-studio/`, `npm run render:studio`)
 
@@ -129,7 +136,7 @@ Curated in [`ROADMAP.md`](ROADMAP.md); parking lot in [`BACKLOG.md`](BACKLOG.md)
 - [x] **Render studio** harness (boss portraits + contact sheet) — **done** (`tools/render-studio/`).
 - [~] **Atmospheric overhaul** (ADR-0026, phased, subtle + perf-gated): **[x] Phase A — in-game IBL +
   richer fog (done)**; **[x] Phase B — real-time shadow maps (done)**; **[x] Phase C — CC0 PBR floor +
-  normal map (done)**; [ ] Phase D — N8AO ambient occlusion. Depth-of-field + wall textures stay out of
-  scope.
+  normal map (done)**; **[x] Phase D — N8AO ambient occlusion (done)**. Atmospheric overhaul complete;
+  depth-of-field + wall textures stay out of scope (→ ROADMAP).
 - [ ] **Muzzle flash** (subtle brief flash, not per-bullet noise) — parked.
 - [ ] **WebGPU renderer** (someday) — only if there's a reason.
