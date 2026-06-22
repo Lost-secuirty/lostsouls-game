@@ -24,11 +24,17 @@ session) lives in [`docs/WORKLOG.md`](docs/WORKLOG.md); the detailed running his
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.8.2)
+## Current state (v0.8.3)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Atmospheric overhaul COMPLETE (ADR-0026)** — the four-phase visual upgrade is done: in-game
+  image-based lighting with richer fog (A), **real-time shadows** (B), a **wet-asphalt PBR floor** (C),
+  and **N8AO ambient occlusion** (D, v0.8.3). The dark world now has real depth — image-based fill,
+  grounded contact shadows, a textured floor, and soft occlusion — while keeping readability and the
+  glowing-threats identity, all config-gated with graceful fallbacks and behind the `reducedEffects`
+  toggle.
 - **Atmospheric overhaul — Phase C: CC0 PBR floor texture (v0.8.2, ADR-0026)** — the ground now uses a
   dark, wet **CC0 asphalt** PBR set (albedo + normal + roughness, ambientCG Asphalt025C) so it reacts to
   the IBL + shadows. Loaded via the never-throw `core/textures.js` (missing map → flat color fallback),

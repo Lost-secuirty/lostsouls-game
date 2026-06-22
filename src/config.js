@@ -561,6 +561,23 @@ export const GRAPHICS = {
     tint: null, // optional 0xRRGGBB multiply over the albedo (null = texture as-is)
     anisotropy: 'max', // 'max' = renderer max (sharp at grazing angles) | a number | 1
   },
+  // ambient occlusion (ADR-0026 Phase D — src/core/postfx.js, N8AO). Adds soft contact
+  // shading where surfaces meet (wall bases, rubble, monster feet) for depth, WITHOUT
+  // muddying readability. A screen-space pass that slots into the composer BETWEEN the
+  // render and the bloom/tone-mapping pass; it has its OWN fallback (init failure → skip
+  // AO, composer still renders), and the "reduced effects" toggle drops the whole composer
+  // (so AO with it). aoRadius is in WORLD units — small for our ~1–3 unit entities.
+  // Dial-back if it ever costs frames: keep halfRes → quality 'Performance' → smaller radius.
+  ao: {
+    enabled: true, // master switch (off here = composer renders without the AO pass)
+    quality: 'Low', // N8AO preset: 'Performance' | 'Low' | 'Medium' | 'High' | 'Ultra'
+    halfRes: true, // sample AO at half resolution (the big perf win; fine for soft AO)
+    radius: 2.0, // world-space sample radius (n8ao default 5 is too big for our scale)
+    distanceFalloff: 1.0, // how quickly AO fades with distance
+    intensity: 1.5, // AO strength (higher = darker contacts)
+    color: 0x000000, // occlusion tint (black = neutral shadowing)
+    gammaCorrection: 'auto', // 'auto' (mid-pipeline → off) | true | false override
+  },
 };
 
 // ---- readability overlay rings (ADR-0023 — systems/overlays.js) ----

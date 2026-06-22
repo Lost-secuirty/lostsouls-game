@@ -24,6 +24,7 @@ import {
   ToneMappingEffect,
   ToneMappingMode,
 } from 'postprocessing';
+import { N8AOPostPass } from 'n8ao';
 import { GRAPHICS } from '../config.js';
 
 const TONE_MODES = {
@@ -45,6 +46,30 @@ export function createPostFX({ renderer, scene, camera }) {
         frameBufferType: HalfFloatType, // HDR buffer so bloom + tone mapping read true brightness
       });
       composer.addPass(new RenderPass(scene, camera));
+
+      // Ambient occlusion (ADR-0026 Phase D) — slots BETWEEN the render and the
+      // bloom/tone-mapping EffectPass. Its OWN try/catch so an AO failure skips only
+      // AO, never the whole composer (bloom must survive). gammaCorrection stays off
+      // mid-pipeline (the final EffectPass owns color); the composer feeds it depth.
+      if (g.ao?.enabled) {
+        try {
+          const ao = new N8AOPostPass(scene, camera, window.innerWidth, window.innerHeight);
+          ao.configuration.aoRadius = g.ao.radius;
+          ao.configuration.distanceFalloff = g.ao.distanceFalloff;
+          ao.configuration.intensity = g.ao.intensity;
+          ao.configuration.halfRes = !!g.ao.halfRes;
+          ao.configuration.color.set(g.ao.color);
+          ao.configuration.gammaCorrection =
+            g.ao.gammaCorrection === 'auto' ? false : !!g.ao.gammaCorrection;
+          ao.setQualityMode(g.ao.quality);
+          composer.addPass(ao);
+        } catch (err) {
+          console.warn(
+            '[postfx] AO disabled — composer continues without it:',
+            err?.message || err,
+          );
+        }
+      }
 
       const effects = [
         new BloomEffect({
