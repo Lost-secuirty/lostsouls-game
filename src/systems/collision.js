@@ -66,7 +66,10 @@ export function advanceKnockback(entity, dt, walls) {
   const step = knockbackStep(k, dt, { drag: FEEL.knockback.drag });
   entity.x += step.dx;
   entity.z += step.dz;
-  entity.knock = Math.hypot(step.vel.x, step.vel.z) < 0.05 ? { x: 0, z: 0 } : step.vel;
+  entity.knock =
+    Math.hypot(step.vel.x, step.vel.z) < FEEL.knockback.settleSpeedEpsilon
+      ? { x: 0, z: 0 }
+      : step.vel;
   let q = slideOutOfWalls(entity.x, entity.z, entity.radius, walls);
   q = clampToArena(q.x, q.z, entity.radius);
   entity.x = q.x;

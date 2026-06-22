@@ -736,6 +736,7 @@ export const FEEL = {
     enabled: true, // master switch — false = exactly the old no-shove behavior
     drag: 9, // 1/sec exponential decay of the shove velocity (higher = shorter, snappier shove)
     maxSpeed: 14, // clamp stacked impulses (u/sec) so rapid fire can't fling an enemy across the room
+    settleSpeedEpsilon: 0.05, // snap a residual shove speed below this (u/sec) to zero (the frame the shove "ends")
     bossDefault: 0, // bosses get NO knockback unless their BOSS cfg sets `knockback`
     impulse: {
       // initial shove SPEED (world u/sec) by enemy type — heavier shooter takes a bit less
