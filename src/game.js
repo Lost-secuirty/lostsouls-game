@@ -89,6 +89,9 @@ export class Game {
     this.lives = CAPS.lives.start;
     this.checkpointRoom = 0;
     this.bossesBeaten = 0;
+    // reset the camera pan so a new run starts centered (no carry-over from a prior run)
+    this.camPan.x = this.camPan.z = 0;
+    this.camVel.x = this.camVel.z = 0;
 
     this._teardownActors();
     this.player = new Player(this.scene, {
