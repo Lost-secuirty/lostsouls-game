@@ -69,3 +69,14 @@ A **scale pass**, all tunable in `config.js`:
 - [What Other Games Can Learn From the Bullet Hell Genre — AV Club](https://www.avclub.com/what-other-games-can-learn-from-the-bullet-hell-ge)
 - [Design Tips: In-Game Proportions and Scale — Game Developer](https://www.gamedeveloper.com/design/design-tips-in-game-proportions-and-scale)
 - [Metrics — The Level Design Book](https://book.leveldesignbook.com/process/blockout/metrics)
+
+## Amendment (2026-06-22, v0.8.7 — B3, ADR-0026 follow-up)
+
+The "static full-room camera, no follow-cam" call above is **softened, not reversed.** Scott opted
+into a **subtle spring-follow** (`config.CAMERA.follow*`, `src/core/camera.js`): the camera gently
+pans toward the live-player centroid, but the pan is **hard-clamped to `followMaxPan` (5 units)** so
+the whole room stays on screen — the "see every bullet" fairness intent is preserved. In co-op the
+pan eases back to center as the players separate so both stay framed (we render one shared camera,
+not split-screen). It's config-gated (`followEnabled`, default on) and pinned to the old static view
+under `reducedEffects` + `calmCamera` (motion-sensitive play). The rejected "follow-cam (constant
+zoom)" alternative remains rejected — this is a small bounded pan, not a zoom that hides the room.

@@ -15,6 +15,25 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-22 — B3: Subtle camera spring-follow + co-op recenter (v0.8.7)
+
+Gameplay-feel (research report (5)). The static full-room camera (ADR-0020) gains a **subtle**
+spring-follow toward the live-player centroid — bounded so the whole room stays readable. **Amends
+ADR-0020** (which chose static framing over a follow-cam); Scott opted into a default-ON follow.
+
+- **New `src/core/camera.js`** (pure): `cameraTarget(players, {maxPan, splitInner, splitOuter})` —
+  centroid, hard-clamped to ±maxPan; in co-op it eases the pan back to center as the pair separates so
+  both stay on the one shared screen (quadInOut feather on `splitWeight`).
+- **`game.js`:** `camPan`/`camVel` state; `_updateCamera(dt)` springs the pan toward the target
+  (`springCritDampedXZ`, B1) each tick; `render()` adds the pan to `baseCam` + the B2 shake and looks
+  at the panned point. Pinned to center under `reducedEffects` + `calmCamera`.
+- **Config:** `CAMERA.followEnabled:true, followOmega:6, followMaxPan:5, coopSplitInner:14,
+coopSplitOuter:28, calmCamera:true` — all tunable; `followEnabled:false` = exactly the old static cam.
+- **Determinism:** the pan derives from player positions (no `Math.random`) — seeded runs stay
+  reproducible (ADR-0013).
+- **Verified:** lint clean, tests pass (+5 `camerafollow.test.js`), build clean, smokes green.
+  Default-ON + subtle — tune `followMaxPan`/`followOmega` live in `npm run dev`.
+
 ## 2026-06-22 — B2: Trauma-based shake + screen-flash, determinism fix (v0.8.6)
 
 The gameplay-feel "punch" pass (research report (5), "game-feel math"). Upgrades the scalar
