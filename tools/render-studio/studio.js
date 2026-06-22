@@ -47,7 +47,6 @@ const SUBJECTS = {
 const STUDIO = {
   fov: 45,
   poseTime: 0.6, // seconds into the idle/walk clip — a fixed, deterministic pose
-  iblIntensity: 0.35, // RoomEnvironment fill (low so pale models don't bloom-blow to white)
   framing: { dir: [0.55, 0.42, 1], distMul: 1.15, lookYMul: 0.92 }, // 3/4 hero angle
   ground: { size: 80, color: 0x140f18 },
   grid: { size: 80, divisions: 40, color1: 0x3a2a44, color2: 0x2a1f33, opacity: 0.4 },
@@ -77,11 +76,14 @@ const scene = new THREE.Scene();
 if (!TRANSPARENT) scene.background = new THREE.Color(LIGHTING.background);
 
 // IBL: a soft studio environment so the GLB PBR materials read richer than flat lights.
-// Kept to a SUBTLE fill (the game has no IBL) so it adds depth without over-brightening
-// pale/untextured models into a bloom-blown white blob — keeps portraits close to the game.
+// Reuses config.LIGHTING.ibl — the SAME subtle fill the game now applies in-scene
+// (ADR-0026) — so portraits match the live look instead of drifting from it.
 const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-scene.environmentIntensity = STUDIO.iblIntensity;
+const env = new RoomEnvironment();
+scene.environment = pmrem.fromScene(env, LIGHTING.ibl.sigma).texture; // baked texture survives dispose
+scene.environmentIntensity = LIGHTING.ibl.intensity;
+env.dispose();
+pmrem.dispose();
 
 // key/fill lights — REUSE the game's lighting (config.LIGHTING) so portraits match the game
 const L = LIGHTING;

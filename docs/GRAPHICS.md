@@ -41,14 +41,20 @@ and the accessibility/feel layer in [ADR-0023](adr/0023-settings-and-overlays.md
   (perspective, FOV 55), positioned to fit the whole `ARENA` (ADR-0020). Screen-shake offsets it per
   frame (`systems/juice.js`).
 - **Lighting** (`src/core/scene.js`, tunable in **`config.LIGHTING`**): a two-key dynamic rig — warm
-  orange key + cool blue fill directional lights, over a muted-purple hemisphere + ambient, plus the
-  fog. All colors/intensities/positions live in config (the render studio reuses them). No
-  IBL/environment map in-game (yet).
-- **Materials**: `MeshStandardMaterial` for the world/characters/bosses (matte, flat-shaded minions),
-  `MeshBasicMaterial` (unlit) for bullets, eyes, the door glow, overlays, hazards. **Emissive** is
-  used liberally on enemies/pickups/bosses so they read against the dark ground. No image textures —
-  colors only (`PALETTE` + per-floor palettes in `PROGRESSION`).
-- **Atmosphere**: linear `Fog` matched to the background color, depth-cued to the arena size.
+  orange key + cool blue fill directional lights, over a muted-purple hemisphere + ambient — **plus a
+  subtle image-based-lighting (IBL) fill** (ADR-0026): a one-time `PMREMGenerator` bake of a
+  `RoomEnvironment` sets `scene.environment` (intensity kept low at `LIGHTING.ibl.intensity` so pale
+  models don't wash out). All colors/intensities/positions live in config (the render studio reuses
+  them, IBL included). `renderer.outputColorSpace` is pinned to `SRGBColorSpace`.
+- **Materials**: `MeshStandardMaterial` for the world/characters/bosses (matte, flat-shaded minions)
+  — these pick up the IBL fill; `MeshBasicMaterial` (unlit) for bullets, eyes, the door glow,
+  overlays, hazards — these are **untouched by IBL**, so the glowing threats and their bloom are
+  unchanged. **Emissive** is used liberally on enemies/pickups/bosses so they read against the dark
+  ground. No image textures yet — colors only (`PALETTE` + per-floor palettes in `PROGRESSION`); a CC0
+  PBR floor lands in a later phase of ADR-0026.
+- **Atmosphere**: `Fog` matched to the background color, depth-cued to the arena size. Config-driven
+  mode (`LIGHTING.fog.mode`): `linear` (near/far — the default, keeps the far wall readable) or
+  `exp2` (density — a moodier closing-in haze).
 - **Scene composition** (`systems/rooms.js`): ground plane + grid, perimeter walls with a door gap,
   2–5 rubble obstacles, a glowing cyan door that appears when the room is cleared.
 
@@ -115,7 +121,8 @@ Curated in [`ROADMAP.md`](ROADMAP.md); parking lot in [`BACKLOG.md`](BACKLOG.md)
 
 - [x] **Post-FX pipeline** (bloom + ACES + vignette + MSAA + impact sparks) — **done** (ADR-0025).
 - [x] **Render studio** harness (boss portraits + contact sheet) — **done** (`tools/render-studio/`).
-- [ ] **Atmospheric overhaul (later):** in-game IBL/environment lighting, PBR textures/normal maps,
-      depth-of-field, richer fog — bigger mood, weighed against readability + perf.
+- [~] **Atmospheric overhaul** (ADR-0026, phased, subtle + perf-gated): **[x] Phase A — in-game IBL +
+  richer fog (done)**; [ ] Phase B — real-time shadows; [ ] Phase C — CC0 PBR floor + normal map;
+  [ ] Phase D — N8AO ambient occlusion. Depth-of-field + wall textures stay out of scope.
 - [ ] **Muzzle flash** (subtle brief flash, not per-bullet noise) — parked.
 - [ ] **WebGPU renderer** (someday) — only if there's a reason.

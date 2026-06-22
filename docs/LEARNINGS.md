@@ -614,3 +614,27 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
   removes closed comments; an unclosed one runs to end-of-document in HTML anyway). After that no `<!--`
   survives, and pathological input errs to "missing" (a nag) — the safe direction. The auditor getting
   flagged by the security scanner on its first PR is the system working; we fixed it, didn't suppress it.
+
+## 2026-06-21 — Phase A: in-game IBL + richer fog (v0.8.0, ADR-0026)
+
+- **`scene.environmentIntensity` defaults to `1` (the #1 IBL trap):** setting `scene.environment`
+  without also setting `environmentIntensity` hits the IBL at full strength and washes pale
+  `MeshStandardMaterial` bodies (the bone-white human `0xe8e2d0` / skeleton) to white. Always set it
+  explicitly — we use a low `0.30`. (Verified in `three/src/scenes/Scene.js`: `this.environmentIntensity = 1`.)
+- **IBL does NOT touch `MeshBasicMaterial`:** `scene.environment` only feeds the PBR diffuse/specular
+  path, so the unlit bullets/eyes/door are untouched — the glowing threats and their bloom are
+  unchanged. Don't expect IBL to brighten them (and don't "fix" it).
+- **r182 moved `RoomEnvironment`'s internal position**, so IBL "looks different now" vs older
+  tutorials — any intensity copied from a pre-r182 blog post is miscalibrated. Our `0.30/0.35` were
+  tuned on r184 (the render studio is the trustworthy reference). r181 also made rough PBR surfaces
+  (roughness > 0.5) conserve energy better, so `roughness:1` ground/walls respond slightly darker —
+  tune via config, don't fight it.
+- **PMREM lifecycle:** `pmrem.fromScene(env, sigma).texture` stays valid after `pmrem.dispose()` +
+  `env.dispose()` — the baked texture is independent of the generator. Dispose both right after the
+  bake (createScene runs once at boot; no per-frame cost). `scene.environment` is independent of
+  `scene.background`, so leaving the solid clear color is correct (no skybox).
+- **`three/addons/*` is the canonical r184 import alias** for `examples/jsm/*` (verified in
+  `three/package.json` exports) — `import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'`
+  resolves cleanly under Vite.
+- **postprocessing 6.39 peer range is `>=0.168 <0.185`** — r184 is in range; do NOT bump three to
+  r185+ without bumping postprocessing too, or the composer's color pipeline can desync.
