@@ -189,8 +189,10 @@ export function springCritDamped(pos, vel, target, dt, omega) {
 /**
  * Critically-damped spring on the XZ plane. Mutates `pos`/`vel` ({x,z}) in place and returns them
  * so the camera can advance toward a moving centroid smoothly. PURE w.r.t. `target`.
+ * `omega` (stiffness) is a feel tunable — callers MUST pass it from config (e.g. CAMERA.followOmega);
+ * no default lives here so no feel-number is baked into this pure module.
  */
-export function springCritDampedXZ(pos, vel, target, dt, { omega = 12 } = {}) {
+export function springCritDampedXZ(pos, vel, target, dt, { omega } = {}) {
   const sx = springCritDamped(pos.x, vel.x, target.x, dt, omega);
   const sz = springCritDamped(pos.z, vel.z, target.z, dt, omega);
   pos.x = sx.pos;
@@ -201,11 +203,13 @@ export function springCritDampedXZ(pos, vel, target, dt, { omega = 12 } = {}) {
 }
 
 /**
- * Cheap asymptotic follow (Eiserloh) as a spring fallback: pos += (target - pos) * a, with `a`
- * corrected for frame time so it's stable across refresh rates. Mutates + returns `pos` ({x,z}).
+ * Cheap asymptotic follow (Eiserloh) as a spring fallback: pos += (target - pos) * a. `a` uses an
+ * EXPONENTIAL remap of the per-60Hz-frame weight so it's genuinely frame-rate independent (the
+ * weight compounds correctly across variable dt). Mutates + returns `pos` ({x,z}).
+ * `weightPer60HzFrame` (0..1) is a feel tunable — callers pass it from config (no default here).
  */
-export function asymptoticFollowXZ(pos, target, dt, { weightPer60HzFrame = 0.1 } = {}) {
-  const a = clamp(weightPer60HzFrame * (dt * 60), 0, 1);
+export function asymptoticFollowXZ(pos, target, dt, { weightPer60HzFrame } = {}) {
+  const a = clamp(1 - Math.pow(1 - weightPer60HzFrame, dt * 60), 0, 1);
   pos.x += (target.x - pos.x) * a;
   pos.z += (target.z - pos.z) * a;
   return pos;
@@ -214,8 +218,9 @@ export function asymptoticFollowXZ(pos, target, dt, { weightPer60HzFrame = 0.1 }
 /**
  * Co-op camera split weight: 0 (merged) at/below `inner`, 1 (fully split) at/above `outer`, a
  * raw linear ramp between. Feather it with an ease (e.g. quadInOut) at the call site. PURE.
+ * `inner`/`outer` are feel tunables — callers pass them from config (no defaults baked here).
  */
-export function splitWeight(distance, { inner = 8, outer = 14 } = {}) {
+export function splitWeight(distance, { inner, outer } = {}) {
   if (outer <= inner) return distance >= outer ? 1 : 0;
   return clamp((distance - inner) / (outer - inner), 0, 1);
 }
