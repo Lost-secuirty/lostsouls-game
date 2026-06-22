@@ -18,8 +18,10 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 ## 2026-06-22 — B6: Parametric pattern library + homing extraction (v0.8.10)
 
 Research report (5): extend the pure emitter library and extract homing into a testable module.
-**No live-boss change** — all new generators are library primitives, gated by a per-boss
-`complexityTier` flag before any boss opts in.
+**No live-boss change** — the new generators are pure library primitives that **no boss calls yet**.
+A later PR will debut one on a low-stakes boss behind a B4 fairness check (and a gating flag)
+before it goes live; the live debut and the `PATTERNS`/`HOMING` config block are deferred to that PR
+(see _Deviation_ below).
 
 - **`multiArmSpiral(arms, perArm, phase, step)`** in `emitters.js`: N rotating spiral arms, each
   `perArm` bullets `step` rad apart, arms evenly distributed. Fire repeatedly while advancing `phase`
@@ -35,6 +37,12 @@ Research report (5): extend the pure emitter library and extract homing into a t
   layer total (8+10+12=30), pure reproducibility, speed preservation, turn clamping, curve convergence.
 - **Verified:** lint clean, format clean, 184 tests all pass (+7), coverage 47%, build clean,
   smoke:prod + smoke:browser exit 0.
+- **Deviation from plan:** B6 planned to also debut one pattern on a live boss (gated by a per-boss
+  `complexityTier`) + add `PATTERNS`/`HOMING` config. Held back to keep this PR a pure, reversible
+  library addition — wiring a live attack is a gameplay change that needs the B4 fairness check on the
+  real telegraph + a perf pass, so it earns its own PR. No `complexityTier` flag or new config ships
+  here. (The new generators' `step`/`countStep` defaults stay inline as function-signature defaults,
+  matching the existing `arc(count, phase, step=0.25)` style — no feel-numbers are live to tune yet.)
 
 ## 2026-06-22 — B5: "Twice as hard" difficulty knob (v0.8.9, ADR-0027)
 
