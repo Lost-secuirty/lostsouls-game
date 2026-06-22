@@ -23,7 +23,8 @@ export const typesByTier = (() => {
   const m = {};
   for (const t of RARITY.tiers) m[t] = [];
   for (const [type, tier] of Object.entries(RARITY.itemRarity)) {
-    (m[tier] ??= []).push(type);
+    if (!m[tier]) m[tier] = []; // tolerate a tier not in `tiers` (misconfig) without dropping it
+    m[tier].push(type);
   }
   return m;
 })();
@@ -65,7 +66,7 @@ export function rollDrop(rng, weights, { minTier = null } = {}) {
   let chosen;
   if (total > 0) {
     let roll = rng.next() * total;
-    chosen = eligible[eligible.length - 1]; // last-bucket fallback for float drift
+    chosen = eligible.at(-1); // last-bucket fallback for float drift
     for (const t of eligible) {
       roll -= weights[t] ?? 0;
       if (roll <= 0) {

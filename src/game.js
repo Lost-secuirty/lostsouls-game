@@ -402,20 +402,29 @@ export class Game {
       // checkpoint: respawn at the next floor if you die from here on
       if (!info.isLastRoom) this.checkpointRoom = this.roomIndex + 1;
       hud.banner(info.isLastRoom ? 'BOSS DOWN — FINAL EXIT!' : 'BOSS DOWN — CHECKPOINT SAVED!');
-      // boss always drops a great reward: a heal + a weapon chest (rare+, no commons — B8)
-      this.spawnPickup('HEAL', -2, 0);
-      const bossDrop = rollDrop(this.rng, PICKUPS.rarity.bossChestWeights);
-      this.spawnPickup(bossDrop.type, 2, 0);
+      this._dropBossReward();
     } else {
       // normal room: roll a rarity-tiered reward (floor-scaled + hard pity), warn if the boss is next
       audio.play('roomClear');
-      const weights = PICKUPS.rarity.regularChestWeights[rarityBand(info.floorIndex)];
-      const drop = rollDrop(this.rng, weights, { minTier: pityMinTier(this.commonStreak) });
-      // a common extends the dry streak; anything rarer (or a pity-forced drop) resets it
-      this.commonStreak = drop.tier === PICKUPS.rarity.tiers[0] ? this.commonStreak + 1 : 0;
-      this.spawnPickup(drop.type, 0, 0);
+      this._dropRoomReward(info);
       hud.banner(nextIsBoss(this.roomIndex) ? '⚠  BOSS AHEAD  ⚠' : 'ROOM CLEAR — RUN!');
     }
+  }
+
+  /** boss reward: a heal + a weapon chest (rare+, no commons — B8). */
+  _dropBossReward() {
+    this.spawnPickup('HEAL', -2, 0);
+    const drop = rollDrop(this.rng, PICKUPS.rarity.bossChestWeights);
+    this.spawnPickup(drop.type, 2, 0);
+  }
+
+  /** normal-room reward: a rarity-tiered drop, floor-scaled + hard pity (B8). */
+  _dropRoomReward(info) {
+    const weights = PICKUPS.rarity.regularChestWeights[rarityBand(info.floorIndex)];
+    const drop = rollDrop(this.rng, weights, { minTier: pityMinTier(this.commonStreak) });
+    // a common extends the dry streak; anything rarer (or a pity-forced drop) resets it
+    this.commonStreak = drop.tier === PICKUPS.rarity.tiers[0] ? this.commonStreak + 1 : 0;
+    this.spawnPickup(drop.type, 0, 0);
   }
 
   /** the player picked an approach at the human decision-boss (A/B/C/D) */
