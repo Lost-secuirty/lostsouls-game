@@ -1,6 +1,6 @@
 # ADR-0026: Atmospheric rendering (IBL, real-time shadows, PBR floor, ambient occlusion)
 
-- **Status:** Accepted (phased — A + B landed; C/D follow as separate PRs)
+- **Status:** Accepted (phased — A + B + C landed; D follows as a separate PR)
 - **Date:** 2026-06-21
 
 ## Context

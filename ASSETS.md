@@ -39,6 +39,16 @@ attribution is required, but we credit the author anyway.
 | `public/models/skeleton.glb`      | [Poly Pizza](https://poly.pizza/m/yq5ATpujSt)  | Quaternius | CC0 1.0 |
 | `public/models/human.glb`         | [Poly Pizza](https://poly.pizza/m/c3Ibh9I3udk) | Quaternius | CC0 1.0 |
 
+### Textures (ADR-0026 Phase C)
+
+PBR floor texture — **CC0 (Public Domain)**, no attribution required, credited anyway.
+The set is the dark, wet **Asphalt025C** from ambientCG (Color + OpenGL normal + roughness,
+1K PNG); applied to the ground in `src/core/scene.js` via `config.GRAPHICS.floor`.
+
+| File                                  | Source                                                 | Author    | License |
+| ------------------------------------- | ------------------------------------------------------ | --------- | ------- |
+| `public/textures/floor/asphalt_*.png` | [ambientCG](https://ambientcg.com/view?id=Asphalt025C) | ambientCG | CC0 1.0 |
+
 ### Music (ADR-0024 · see [docs/AUDIO.md](docs/AUDIO.md))
 
 Current tracks are **placeholders** by **Kevin MacLeod (incompetech.com)**, licensed

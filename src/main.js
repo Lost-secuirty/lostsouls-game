@@ -4,10 +4,11 @@
 
 import { createScene } from './core/scene.js';
 import { loadModels } from './core/assets.js';
+import { loadTextures } from './core/textures.js';
 import { Input, isEditable } from './systems/input.js';
 import { Game } from './game.js';
 import { startLoop } from './core/loop.js';
-import { MODELS } from './config.js';
+import { MODELS, GRAPHICS } from './config.js';
 import * as audio from './systems/audio.js';
 import { showStartMenu } from './ui/startmenu.js';
 import { settings } from './systems/settings.js';
@@ -15,6 +16,12 @@ import { initSettingsPanel } from './ui/settingsPanel.js';
 import { initCredits } from './ui/credits.js';
 
 (async () => {
+  // preload the floor PBR maps BEFORE the scene (the ground is built in createScene);
+  // never-throws, so a missing file just leaves the floor on its flat fallback color.
+  if (GRAPHICS.floor.enabled) {
+    await loadTextures([GRAPHICS.floor.map, GRAPHICS.floor.normalMap, GRAPHICS.floor.roughnessMap]);
+  }
+
   const { renderer, scene, camera, baseCam, resize, postfx, setShadowsEnabled } = createScene(
     document.getElementById('app'),
   );

@@ -54,8 +54,10 @@ and the accessibility/feel layer in [ADR-0023](adr/0023-settings-and-overlays.md
   — these pick up the IBL fill; `MeshBasicMaterial` (unlit) for bullets, eyes, the door glow,
   overlays, hazards — these are **untouched by IBL**, so the glowing threats and their bloom are
   unchanged. **Emissive** is used liberally on enemies/pickups/bosses so they read against the dark
-  ground. No image textures yet — colors only (`PALETTE` + per-floor palettes in `PROGRESSION`); a CC0
-  PBR floor lands in a later phase of ADR-0026.
+  ground. The **ground** now uses a dark, wet **CC0 asphalt PBR set** (albedo + normal + roughness —
+  ambientCG Asphalt025C, `config.GRAPHICS.floor`, loaded via the never-throw `core/textures.js`; falls
+  back to the flat `PALETTE.ground` color if a map is missing). Everything else is colors only
+  (`PALETTE` + per-floor palettes in `PROGRESSION`); walls keep their flat color for now.
 - **Atmosphere**: `Fog` matched to the background color, depth-cued to the arena size. Config-driven
   mode (`LIGHTING.fog.mode`): `linear` (near/far — the default, keeps the far wall readable) or
   `exp2` (density — a moodier closing-in haze).
@@ -126,7 +128,8 @@ Curated in [`ROADMAP.md`](ROADMAP.md); parking lot in [`BACKLOG.md`](BACKLOG.md)
 - [x] **Post-FX pipeline** (bloom + ACES + vignette + MSAA + impact sparks) — **done** (ADR-0025).
 - [x] **Render studio** harness (boss portraits + contact sheet) — **done** (`tools/render-studio/`).
 - [~] **Atmospheric overhaul** (ADR-0026, phased, subtle + perf-gated): **[x] Phase A — in-game IBL +
-  richer fog (done)**; **[x] Phase B — real-time shadow maps (done)**; [ ] Phase C — CC0 PBR floor +
-  normal map; [ ] Phase D — N8AO ambient occlusion. Depth-of-field + wall textures stay out of scope.
+  richer fog (done)**; **[x] Phase B — real-time shadow maps (done)**; **[x] Phase C — CC0 PBR floor +
+  normal map (done)**; [ ] Phase D — N8AO ambient occlusion. Depth-of-field + wall textures stay out of
+  scope.
 - [ ] **Muzzle flash** (subtle brief flash, not per-bullet noise) — parked.
 - [ ] **WebGPU renderer** (someday) — only if there's a reason.
