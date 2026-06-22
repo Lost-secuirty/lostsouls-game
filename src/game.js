@@ -10,7 +10,7 @@
 // revives when the room is cleared; Game Over only on a full wipe.
 // =====================================================================
 
-import { PLAYER, CAMERA, JUICE, FEEL, ARENA, CAPS, PALETTE } from './config.js';
+import { PLAYER, CAMERA, JUICE, FEEL, ARENA, CAPS, PALETTE, PICKUPS } from './config.js';
 import { State } from './states.js';
 import { makeRng } from './core/rng.js';
 import { floorInfo, nextIsBoss, resolveDeath, weaponSlotsForBosses } from './core/progression.js';
@@ -20,7 +20,8 @@ import { Enemy } from './entities/enemies.js';
 import { Bullets } from './entities/bullets.js';
 import { Hazards } from './systems/hazards.js';
 import { Overlays } from './systems/overlays.js';
-import { dropRandomPickup, Pickup } from './entities/pickups.js';
+import { Pickup } from './entities/pickups.js';
+import { rollDrop, rarityBand, pityMinTier } from './core/drops.js';
 import { Particles } from './systems/particles.js';
 import { Juice } from './systems/juice.js';
 import { buildRoom } from './systems/rooms.js';
@@ -60,6 +61,7 @@ export class Game {
     this.roomIndex = 0;
     this.lives = CAPS.lives.start;
     this.checkpointRoom = 0;
+    this.commonStreak = 0; // consecutive common normal-room drops → drives hard pity (B8)
     this.bossesBeaten = 0; // drives weapon-slot unlocks
     this.godMode = false; // debug menu toggle
 
@@ -88,6 +90,7 @@ export class Game {
     this.rng = makeRng(seed);
     this.lives = CAPS.lives.start;
     this.checkpointRoom = 0;
+    this.commonStreak = 0; // fresh pity counter each run
     this.bossesBeaten = 0;
     // reset the camera pan so a new run starts centered (no carry-over from a prior run)
     this.camPan.x = this.camPan.z = 0;
@@ -399,13 +402,18 @@ export class Game {
       // checkpoint: respawn at the next floor if you die from here on
       if (!info.isLastRoom) this.checkpointRoom = this.roomIndex + 1;
       hud.banner(info.isLastRoom ? 'BOSS DOWN — FINAL EXIT!' : 'BOSS DOWN — CHECKPOINT SAVED!');
-      // boss always drops a great reward
+      // boss always drops a great reward: a heal + a weapon chest (rare+, no commons — B8)
       this.spawnPickup('HEAL', -2, 0);
-      this.spawnPickup(dropRandomPickup(this.rng, true), 2, 0);
+      const bossDrop = rollDrop(this.rng, PICKUPS.rarity.bossChestWeights);
+      this.spawnPickup(bossDrop.type, 2, 0);
     } else {
-      // normal room: drop a reward in the middle, warn if the boss is next
+      // normal room: roll a rarity-tiered reward (floor-scaled + hard pity), warn if the boss is next
       audio.play('roomClear');
-      this.spawnPickup(dropRandomPickup(this.rng, false), 0, 0);
+      const weights = PICKUPS.rarity.regularChestWeights[rarityBand(info.floorIndex)];
+      const drop = rollDrop(this.rng, weights, { minTier: pityMinTier(this.commonStreak) });
+      // a common extends the dry streak; anything rarer (or a pity-forced drop) resets it
+      this.commonStreak = drop.tier === PICKUPS.rarity.tiers[0] ? this.commonStreak + 1 : 0;
+      this.spawnPickup(drop.type, 0, 0);
       hud.banner(nextIsBoss(this.roomIndex) ? '⚠  BOSS AHEAD  ⚠' : 'ROOM CLEAR — RUN!');
     }
   }

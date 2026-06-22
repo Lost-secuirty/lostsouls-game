@@ -863,24 +863,43 @@ export const WEAPONS = {
 // ---- pickups you walk over to grab ----
 export const PICKUPS = {
   radius: 0.7, // grab range
-  // weighted drop table for the reward after clearing a normal room
-  dropTable: [
-    { type: 'HEAL', weight: 3 },
-    { type: 'DAMAGE_UP', weight: 2 },
-    { type: 'FIRE_RATE_UP', weight: 2 },
-    { type: 'SPEED_UP', weight: 2 },
-    { type: 'SHOTGUN', weight: 2 },
-    { type: 'MACHINEGUN', weight: 2 },
-    { type: 'ROCKET', weight: 1 },
-    { type: 'HOMING', weight: 1 },
-    { type: 'RAILGUN', weight: 1 },
-    { type: 'BOUNCER', weight: 1 },
-    { type: 'CHARGE', weight: 1 },
-    { type: 'ORBITAL', weight: 1 },
-  ],
-  // DAMAGE_UP / FIRE_RATE_UP / SPEED_UP now add ONE stack each and the stat is
-  // recomputed from the diminishing-returns curve (see UPGRADES + core/scaling.js),
-  // so there are no per-pickup step sizes any more — tune the ramp in UPGRADES.
+  // ---- drop rarity tiers + pity (B8, research report (4)) ----
+  // The per-clear reward rolls a TIER (floor-scaled, descending falloff) then a uniform TYPE within
+  // it; hard pity guarantees a rare+ after a dry run of commons so a kid never reads a run as "mean".
+  // Boss chests skip commons (a hard fight always pays a weapon). All seeded (ADR-0013) → testable.
+  rarity: {
+    tiers: ['common', 'rare', 'epic'], // low → high
+    // each pickup type's tier (anything unlisted falls back to the lowest tier)
+    itemRarity: {
+      HEAL: 'common',
+      DAMAGE_UP: 'common',
+      FIRE_RATE_UP: 'common',
+      SPEED_UP: 'common',
+      SHOTGUN: 'rare',
+      MACHINEGUN: 'rare',
+      BOUNCER: 'rare',
+      ROCKET: 'epic',
+      HOMING: 'epic',
+      RAILGUN: 'epic',
+      CHARGE: 'epic',
+      ORBITAL: 'epic',
+    },
+    // floors at/after each edge bump up a band → rarer drops deeper in the run.
+    // bandEdges [2,4] ⇒ floors 0–1 = band 0, 2–3 = band 1, 4 = band 2.
+    bandEdges: [2, 4],
+    // tier weights for a NORMAL room clear, one row per band (descending falloff deeper in)
+    regularChestWeights: [
+      { common: 70, rare: 25, epic: 5 }, // band 0 — early floors
+      { common: 55, rare: 33, epic: 12 }, // band 1 — mid
+      { common: 45, rare: 37, epic: 18 }, // band 2 — the finale stretch
+    ],
+    // boss chest: a hard fight always pays a weapon (no commons), leaning epic
+    bossChestWeights: { common: 0, rare: 55, epic: 45 },
+    // hard pity: after this many consecutive COMMON normal-room drops, force the next to rare+
+    hardPity: { commonStreakMax: 4, minTier: 'rare' },
+  },
+  // DAMAGE_UP / FIRE_RATE_UP / SPEED_UP each add ONE stack; the stat is recomputed from the
+  // diminishing-returns curve (UPGRADES + core/scaling.js), so there are no per-pickup step sizes.
   healAmount: 2, // hearts restored by a HEAL pickup
 };
 

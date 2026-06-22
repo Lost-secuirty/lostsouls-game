@@ -57,18 +57,8 @@ const LOOK = {
   ORBITAL: { color: 0x66ffd0, label: 'ORBITAL BLADE!', weapon: true },
 };
 
-/** weighted random pickup type. bossReward => always a weapon. */
-export function dropRandomPickup(rng, bossReward) {
-  if (bossReward) return rng.pick(WEAPON_TYPES);
-  const table = PICKUPS.dropTable;
-  const total = table.reduce((s, e) => s + e.weight, 0);
-  let roll = rng.next() * total;
-  for (const e of table) {
-    roll -= e.weight;
-    if (roll <= 0) return e.type;
-  }
-  return table[0].type;
-}
+// Drop SELECTION (rarity tiers + hard pity) now lives in the pure, THREE-free core/drops.js so it
+// stays unit-testable; this file owns only the THREE-backed Pickup an actual drop becomes.
 
 export class Pickup {
   constructor(scene, type, x, z) {
