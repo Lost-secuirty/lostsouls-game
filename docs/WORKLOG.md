@@ -15,6 +15,35 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-21 — Phase A: in-game IBL + richer fog (v0.8.0, ADR-0026)
+
+First graphics phase of the atmospheric overhaul (ADR-0026), preceded by a deep research sweep
+(5 parallel threads + synthesis, every claim verified against the live `three@0.184.0` +
+`postprocessing@6.39.1` source). Verdict: **GO** — run A→B→C→D all-out, each a perf-gated PR; the
+overhaul is safe because every feature is config-gated, additive, and degrades gracefully. Scott's
+calls: subtle mood, perf target = his Nitro V15 laptop, single `reducedEffects` toggle, wet-asphalt
+floor (Phase C).
+
+- **IBL** (`src/core/scene.js`): after the lights, a one-time `PMREMGenerator.fromScene(new
+RoomEnvironment(), sigma)` bake sets `scene.environment` (the render studio's proven recipe, now
+  shared). `scene.environmentIntensity` is set **explicitly** to `LIGHTING.ibl.intensity` (0.30) — it
+  defaults to **1**, which washes the pale bone-white human/skeleton to white (the #1 trap). Wrapped
+  in try/catch: any failure drops the env and the key/fill/hemi/ambient rig still lights everything
+  (never breaks boot). IBL only touches `MeshStandardMaterial` — the `MeshBasic` glowing bullets/
+  eyes/door (and their bloom) are unchanged.
+- **Color contract:** `renderer.outputColorSpace = SRGBColorSpace` set explicitly (the composer
+  follows the renderer) — cheap insurance against a future three default shift.
+- **Fog** (`config.LIGHTING.fog`): now mode-driven — `linear` (near/far, default, keeps the far wall
+  readable; identical math to before when `nearMul=1`) or `exp2` (density, a parked moodier
+  experiment). New knobs: `mode`, `nearMul`, `density`.
+- **Config:** added `LIGHTING.ibl = { enabled, intensity:0.30, sigma:0.04 }`; enriched `LIGHTING.fog`.
+- **Render studio** (`tools/render-studio/studio.js`): dropped its local `STUDIO.iblIntensity` and
+  repointed the env bake at `LIGHTING.ibl.{intensity,sigma}`, so portraits == game (the plan's "align
+  IBL to config" deliverable).
+- **Perf:** effectively free — a one-time PMREM bake at boot, zero per-frame cost beyond the texture
+  taps `MeshStandardMaterial` already does. Dial-back ladder: lower `ibl.intensity` → `enabled:false`.
+- Docs: ADR-0026 (the full four-phase plan), GRAPHICS.md (IBL now in-game; fog modes), LEARNINGS.
+
 ## 2026-06-21 — Audit bot: drift auditor ported from Codex-Speed-Test (v0.7.3, PR #42)
 
 Kicks off the atmospheric-overhaul run (next: IBL → shadows → floor texture → AO). Scott asked for

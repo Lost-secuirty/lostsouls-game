@@ -43,7 +43,18 @@ export const LIGHTING = {
   ambient: { color: 0x66556a, intensity: 0.6 },
   key: { color: 0xffb088, intensity: 1.3, pos: [10, 30, 12] }, // warm main light
   fill: { color: 0x6688ff, intensity: 0.5, pos: [-15, 20, -10] }, // cool backlight
-  fog: { color: 0x07060a, farMul: 1.6 }, // fog far = camDist + max(arena) × farMul
+  // image-based lighting (ADR-0026): a subtle RoomEnvironment fill so PBR surfaces
+  // (ground/walls/characters) read with depth. `intensity` is scene.environmentIntensity
+  // — KEEP IT LOW (the default is 1, which washes pale models to white). It does NOT
+  // touch the glowing MeshBasic bullets/eyes/door. The render studio reads the same knob
+  // so portraits match the game. `sigma` = PMREM blur (higher = softer/flatter fill).
+  ibl: { enabled: true, intensity: 0.3, sigma: 0.04 },
+  // fog fades the far wall so the world dissolves at its edge. `mode`:'linear' uses
+  // near/far planes (recommended for this fit-the-room top-down arena — keeps the far
+  // wall readable); 'exp2' uses `density` for a moodier closing-in haze (an experiment).
+  //   linear near = camDist × nearMul ; linear far = camDist + max(arena) × farMul
+  // Keep `color` === `background` so the far edge dissolves instead of showing a wall.
+  fog: { color: 0x07060a, mode: 'linear', nearMul: 1.0, farMul: 1.6, density: 0.012 },
 };
 
 // ---- colors / palette ----

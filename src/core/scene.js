@@ -4,6 +4,7 @@
 // =====================================================================
 
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { ARENA, CAMERA, PALETTE, LIGHTING, GRAPHICS } from '../config.js';
 import { createPostFX } from './postfx.js';
 
@@ -12,15 +13,27 @@ export function createScene(container) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, GRAPHICS.pixelRatioCap));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = false;
+  // Explicit color-management contract (ADR-0026): the post-FX composer follows the
+  // renderer's outputColorSpace, so pin it rather than leaning on the three default.
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
   container.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(LIGHTING.background);
   // Fog sized to the camera distance + arena span so the far wall stays readable as
   // the arena grows (it scales with config CAMERA/ARENA instead of fixed 45–90).
+  // `mode` picks linear (near/far) vs exp2 (density) — see config.LIGHTING.fog.
   const camDist = Math.hypot(CAMERA.back, CAMERA.height);
   const arenaSpan = Math.max(ARENA.width, ARENA.depth);
-  scene.fog = new THREE.Fog(LIGHTING.fog.color, camDist, camDist + arenaSpan * LIGHTING.fog.farMul);
+  const fogCfg = LIGHTING.fog;
+  scene.fog =
+    fogCfg.mode === 'exp2'
+      ? new THREE.FogExp2(fogCfg.color, fogCfg.density)
+      : new THREE.Fog(
+          fogCfg.color,
+          camDist * (fogCfg.nearMul ?? 1),
+          camDist + arenaSpan * fogCfg.farMul,
+        );
 
   // ---- camera: high up and tilted back, looking at the arena center ----
   const camera = new THREE.PerspectiveCamera(
@@ -45,6 +58,27 @@ export function createScene(container) {
   const fill = new THREE.DirectionalLight(L.fill.color, L.fill.intensity);
   fill.position.set(...L.fill.pos);
   scene.add(fill);
+
+  // ---- image-based lighting (ADR-0026): a subtle environment fill ----
+  // One-time PMREM bake of a RoomEnvironment at boot (zero per-frame cost). Adds depth
+  // to the PBR materials (ground/walls/characters); does NOT affect the MeshBasic glowing
+  // bullets/eyes/door. environmentIntensity defaults to 1 (too strong — washes pale models),
+  // so we set it explicitly low. Never breaks boot: on any failure we drop the env and the
+  // key/fill/hemi/ambient rig still lights everything. The render studio uses the same knobs.
+  const ibl = L.ibl;
+  if (ibl.enabled) {
+    try {
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      const env = new RoomEnvironment();
+      scene.environment = pmrem.fromScene(env, ibl.sigma).texture; // baked texture survives dispose
+      scene.environmentIntensity = ibl.intensity;
+      env.dispose();
+      pmrem.dispose();
+    } catch (err) {
+      console.warn('[scene] IBL disabled — keeping the light-only rig:', err?.message || err);
+      scene.environment = null;
+    }
+  }
 
   // ---- ground: dark plane + a grid for the "ruined street" feel ----
   const ground = new THREE.Mesh(

@@ -3,7 +3,7 @@ lifecycle: growing
 frozen: false
 visibility: public
 maturity: active-development
-updated: 2026-06-21
+updated: 2026-06-22
 ---
 
 # Status — Lostsouls
@@ -24,11 +24,17 @@ session) lives in [`docs/WORKLOG.md`](docs/WORKLOG.md); the detailed running his
 - **frozen:** `false` — no freeze declared.
 - **visibility:** `public`.
 
-## Current state (v0.7.3)
+## Current state (v0.8.0)
 
 A browser 3D bullet-hell shooter (Three.js + Vite + Express): solo with an AI ally and local
 two-player co-op (keyboard/mouse/gamepad). Most recent work:
 
+- **Atmospheric overhaul — Phase A: in-game IBL + richer fog (v0.8.0, ADR-0026)** — a subtle
+  image-based-lighting fill (`PMREMGenerator` + `RoomEnvironment` → `scene.environment`, intensity
+  kept low so pale models don't wash out; glowing `MeshBasic` threats untouched) plus config-driven
+  fog modes (linear/exp2) and an explicit sRGB output color space. The render studio shares the same
+  IBL knobs, so portraits match. First of four phased, perf-gated graphics PRs (B = shadows, C = CC0
+  PBR floor, D = N8AO ambient occlusion next), each backed by a verified deep-research spec.
 - **Drift-audit bot (v0.7.3)** — a deterministic PR auditor (`scripts/audit-drift.mjs`; design in
   [`docs/DRIFT-AUDIT.md`](docs/DRIFT-AUDIT.md), ported from the codex repo) that checks **logged intent
   vs the actual diff** (phantom claims, scope creep, weakened gates, skipped tests, lint suppressions,
