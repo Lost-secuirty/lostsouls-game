@@ -8,11 +8,21 @@
 //
 // Entities CAST but do not RECEIVE shadows (cheaper, and it avoids self-shadow speckle
 // on small/animated meshes). The ground + walls are the receivers — set where built.
-// The glowing MeshBasic bullets/eyes/door simply never call this, so they never cast.
+//
+// Glowing/unlit MeshBasic sub-meshes (e.g. an enemy's emissive eyes) are SKIPPED even
+// when they live inside a caster's group — "glowing things don't cast" is the visual
+// identity, and bloom already carries them. PBR (MeshStandard/Physical) meshes cast.
 // =====================================================================
+
+function isUnlit(material) {
+  if (!material) return false;
+  return Array.isArray(material)
+    ? material.some((m) => m?.isMeshBasicMaterial)
+    : !!material.isMeshBasicMaterial;
+}
 
 export function castShadows(root) {
   root.traverse((o) => {
-    if (o.isMesh || o.isSkinnedMesh) o.castShadow = true;
+    if ((o.isMesh || o.isSkinnedMesh) && !isUnlit(o.material)) o.castShadow = true;
   });
 }

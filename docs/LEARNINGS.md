@@ -662,3 +662,7 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
   `loadRoom(9)` (floor-1 boss room), then **hide the `#startmenu` DOM overlay** (`startRun` loads the
   room underneath but doesn't dismiss the menu) before screenshotting — otherwise you shoot the menu,
   not the game. `normalBias 0.02` + `bias -0.0005` gave clean soft shadows (no acne/peter-panning).
+- **A traversing `castShadows(root)` catches sub-meshes you forgot about** — enemy/boss procedural
+  groups embed glowing **MeshBasic eyes**, so a blanket "set castShadow on every mesh" made the eyes
+  cast too, against the "glowing things don't cast" rule (CodeRabbit caught it). Fix: the helper skips
+  `isMeshBasicMaterial` meshes (handles material arrays). PBR bodies cast; unlit glow parts don't.
