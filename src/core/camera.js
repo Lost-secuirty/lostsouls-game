@@ -20,7 +20,7 @@ import { clamp, dist, quadInOut, splitWeight } from './math2d.js';
  * @returns {{x:number, z:number}} pan offset from arena center (0,0), clamped to ±maxPan
  */
 export function cameraTarget(players, { maxPan = 0, splitInner = 0, splitOuter = 0 } = {}) {
-  const alive = (players ?? []).filter((p) => p && p.alive);
+  const alive = (players ?? []).filter((p) => p?.alive);
   if (alive.length === 0) return { x: 0, z: 0 };
 
   let cx = 0;
