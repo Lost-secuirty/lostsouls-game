@@ -15,6 +15,41 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-22 — B8: Drop rarity tiers + hard pity (v0.8.12)
+
+Research report (4) progression: the flat 12-entry drop table becomes **rarity-tiered** with
+floor-scaled odds + a **hard-pity** safety net, so deeper floors feel richer and a run can never go
+"mean" on a kid. **Honest, not slot-machine:** rewards are still earned by clearing rooms; pity only
+prevents a frustrating dry streak (no variable-ratio craving loops — matches the design ethics).
+
+- **New pure `src/core/drops.js`** (no THREE → unit-testable): `rarityOf`, `typesByTier` (derived
+  from config so they can't drift), `rarityBand(floor)`, `pityMinTier(streak)`, and `rollDrop(rng,
+weights, {minTier})` — pick a TIER by weight, then a uniform TYPE within it; `minTier` removes
+  tiers below the pity floor. Seeded (ADR-0013) → chi-square provable, like the old table.
+- **`config.js PICKUPS.rarity`:** `tiers:[common,rare,epic]`, `itemRarity` (heal+gems=common,
+  shotgun/mg/bouncer=rare, rocket/homing/railgun/charge/orbital=epic), `bandEdges:[2,4]`,
+  `regularChestWeights` (3 bands, descending falloff), `bossChestWeights` (no commons, leans epic),
+  `hardPity:{commonStreakMax:4, minTier:rare}`. The old flat `dropTable` is **removed**.
+- **`game.js`:** `commonStreak` counter (reset each run); normal clears roll the floor-banded reward
+  with the pity floor and advance/reset the streak; boss chests roll `bossChestWeights` (always a
+  weapon). `pickups.js` keeps only the THREE-backed `Pickup` (drop selection moved out).
+- **Tests:** `rarity.proof.test.js` (tagging consistency, chi-square distribution, boss-never-common,
+  determinism); `pity.test.js` (the floor decision, `rollDrop` honoring the floor, and a streak-loop
+  proving a rare+ is guaranteed within `commonStreakMax+1`). `determinism.test.js` updated to drive the
+  new seam. drops.js coverage 97%; overall 48.8%.
+- **Docs:** `GAMEPLAY.md` Economy pillar + tuning note. **No ADR** here — the drop+offer system ADR
+  (ADR-0028) lands with B9 (soft pity + the pick-1-of-3 offer screen), which builds on this.
+- **Deviation from plan:** plan said put the rarity logic in `pickups.js`; I put it in a **pure
+  `core/drops.js`** instead so the THREE-free selection logic stays unit-testable + counts toward the
+  scoped coverage gate (matches the repo's "pure logic separate" rule). No visual rarity treatment
+  yet — items already read by their distinct color/label; explicit rarity UI comes with B9's offer
+  screen.
+- **Tune at the table:** tier assignments + band weights + pity cap are all in `PICKUPS.rarity` —
+  Scott + Caden's to feel in `npm run dev`. (Balance note: normal rooms now drop heal/stat commons
+  more often early; weapons concentrate at rare/epic + boss chests.)
+- **Verified:** lint clean, format clean, 199 tests pass (+13 net; `input.proof` hook-timeout flake is
+  pre-existing + passes isolated), build clean, prod-health + browser smoke (fresh build) exit 0.
+
 ## 2026-06-22 — B7: Knockback impulse + decay (v0.8.11)
 
 Research report (5) feel layer: a hit now **shoves an enemy back a little**, and the shove decays
