@@ -10,7 +10,7 @@ import { PLAYER, WEAPONS, PALETTE, CAPS, UPGRADES } from '../config.js';
 import { statBonus } from '../core/scaling.js';
 import { makeCharacter } from './characterMesh.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
-import { spreadDirs, circleVsCircle } from '../core/math2d.js';
+import { spreadDirs, circleVsCircle, normalize } from '../core/math2d.js';
 import * as audio from '../systems/audio.js';
 import { hud } from '../ui/hud.js';
 
@@ -220,7 +220,7 @@ export class Player {
       for (const e of game.enemies) {
         if (e.dead || (orb.cd.get(e) || 0) > 0) continue;
         if (circleVsCircle(bx, bz, 0.5, e.x, e.z, e.radius)) {
-          e.hurt(def.damage * this.damageMul, game);
+          e.hurt(def.damage * this.damageMul, game, normalize(e.x - this.x, e.z - this.z)); // shove away (B7)
           orb.cd.set(e, def.hitCooldown);
         }
       }

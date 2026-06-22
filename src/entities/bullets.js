@@ -15,7 +15,7 @@
 
 import * as THREE from 'three';
 import { BULLET, PALETTE, GRAPHICS } from '../config.js';
-import { circleVsCircle } from '../core/math2d.js';
+import { circleVsCircle, normalize } from '../core/math2d.js';
 import { turnRateHomingVelocity } from '../core/homingMath.js';
 import { hitsAnyWall } from '../systems/collision.js';
 import * as audio from '../systems/audio.js';
@@ -214,7 +214,7 @@ export class Bullets {
             this._kill(b);
             continue;
           }
-          hit.hurt(b.damage, game);
+          hit.hurt(b.damage, game, normalize(b.vx, b.vz)); // shove along the bullet's travel (B7)
           if (b.pierce > 0) {
             b.pierce -= 1;
             b.hitSet.add(hit); // don't re-hit the same enemy while passing through
@@ -273,7 +273,7 @@ export class Bullets {
     for (const e of game.enemies) {
       if (e.dead) continue;
       if (circleVsCircle(b.x, b.z, b.explodeRadius, e.x, e.z, e.radius)) {
-        e.hurt(b.damage, game);
+        e.hurt(b.damage, game, normalize(e.x - b.x, e.z - b.z)); // shove outward from the blast (B7)
       }
     }
     game.particles.burst(b.x, b.z, 26, 0xff7722);

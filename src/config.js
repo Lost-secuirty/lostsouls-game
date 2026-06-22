@@ -728,6 +728,22 @@ export const FEEL = {
     hurt: { peak: 0.22, color: '#ff2a2a', ms: 90 }, // subtle red, on top of the blood splatter
     bossDeath: { peak: 0.4, color: '#ffffff', ms: 140 }, // white pop when a boss falls
   },
+  // ---- knockback (research report (5)) — a hit shoves an enemy back a little, then it decays.
+  // Pure GAMEPLAY (it moves enemies), so it is NOT gated by reducedEffects. Bosses are immovable by
+  // default (knockback would wreck their telegraph cadence — kid-fairness); a boss opts in only via
+  // BOSS[type].knockback. Every shove is resolved through the wall collision so it can't tunnel.
+  knockback: {
+    enabled: true, // master switch — false = exactly the old no-shove behavior
+    drag: 9, // 1/sec exponential decay of the shove velocity (higher = shorter, snappier shove)
+    maxSpeed: 14, // clamp stacked impulses (u/sec) so rapid fire can't fling an enemy across the room
+    settleSpeedEpsilon: 0.05, // snap a residual shove speed below this (u/sec) to zero (the frame the shove "ends")
+    bossDefault: 0, // bosses get NO knockback unless their BOSS cfg sets `knockback`
+    impulse: {
+      // initial shove SPEED (world u/sec) by enemy type — heavier shooter takes a bit less
+      chaser: 7,
+      shooter: 5.5,
+    },
+  },
 };
 
 // ---- blood / particles ----

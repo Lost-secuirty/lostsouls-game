@@ -20,12 +20,18 @@ import {
   DIFFICULTY,
   FAIRNESS_TARGETS,
   DEBUG_FAIRNESS,
+  FEEL,
 } from '../config.js';
 import { hardnessFacet } from '../core/scaling.js';
 import { BEHAVIORS } from './bosses/index.js';
 import { hud } from '../ui/hud.js';
 import { castShadows } from '../core/shadows.js';
-import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
+import {
+  slideOutOfWalls,
+  clampToArena,
+  advanceKnockback,
+  applyKnockImpulse,
+} from '../systems/collision.js';
 import { normalize, circleVsCircle } from '../core/math2d.js';
 import * as audio from '../systems/audio.js';
 
@@ -58,6 +64,7 @@ export class Boss {
     this.hp = this.maxHp;
     this.speed = this.cfg.speed * (0.9 + diff * 0.1);
     this.dead = false;
+    this.knock = { x: 0, z: 0 }; // knockback velocity (B7); stays 0 unless this.cfg.knockback opts in
     this.contactTimer = 0;
     this.charge = 0; // >0 while telegraphing (drives the puff-up scale)
     this.phase = 0;
@@ -116,6 +123,10 @@ export class Boss {
       this.mesh.rotation.y = Math.atan2(dir.x, dir.z);
     }
 
+    // apply + decay any knockback (no-op for bosses unless cfg.knockback opts in — telegraphs stay
+    // on-beat by default), re-resolving walls so a shove can't tunnel
+    advanceKnockback(this, dt, game.walls);
+
     // contact damage (intangible while reforming -> no touch damage)
     if (
       this.contactTimer <= 0 &&
@@ -144,9 +155,11 @@ export class Boss {
     this.mesh.position.set(this.x, 0, this.z);
   }
 
-  hurt(dmg, game) {
+  hurt(dmg, game, knockDir = null) {
     if (this.dead || this.invuln) return; // can't be hit mid-reassemble
     this.hp -= dmg;
+    // bosses ignore knockback by default (telegraph protection); opt in via cfg.knockback
+    applyKnockImpulse(this, knockDir, this.cfg.knockback ?? FEEL.knockback.bossDefault);
     game.particles.burst(this.x, this.z, PARTICLES.perHit, PALETTE.blood);
     this.mesh.scale.setScalar(1.15);
     audio.play('bossHit');

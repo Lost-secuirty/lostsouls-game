@@ -15,6 +15,35 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-22 — B7: Knockback impulse + decay (v0.8.11)
+
+Research report (5) feel layer: a hit now **shoves an enemy back a little**, and the shove decays
+smoothly. Adds weight to every shot without changing balance much (enemies still close the gap).
+
+- **New pure `knockbackStep(vel, dt, {drag})`** in `math2d.js`: exponentially-decaying impulse;
+  the returned displacement is the **exact integral** of the decay over `dt`, so it's frame-rate
+  independent (one big step == many small steps — no tunneling-by-framerate). Degrades to `v·dt` as
+  `drag→0`.
+- **`collision.js advanceKnockback(entity, dt, walls)`**: steps + decays `entity.knock`, moves it,
+  then re-runs the existing `slideOutOfWalls`/`clampToArena` so a shove **never tunnels a wall**.
+  No-op when not knocked (free to call every tick). Shared by Enemy + Boss.
+- **`enemies.js` / `boss.js`:** `this.knock` velocity + `_applyKnock(dir)` (normalizes the hit dir,
+  adds the per-type impulse, clamps stacked impulses to `maxSpeed`). `hurt()` gains an optional
+  `knockDir`. **Bosses ignore knockback by default** (`bossDefault: 0`) — a shove would wreck their
+  telegraph cadence (kid-fairness); a boss opts in only via `BOSS[type].knockback`.
+- **Hit sources pass a direction:** bullets shove along travel; explosions shove **outward from the
+  blast**; the orbital weapon shoves **away from the player** (`bullets.js`, `player.js`).
+- **Config `FEEL.knockback`:** `enabled, drag:9, maxSpeed:14, bossDefault:0, impulse:{chaser:7,
+shooter:5.5}`. Pure gameplay → **not** gated by `reducedEffects`; `enabled:false` = the old
+  no-shove combat exactly.
+- **Tests** (`tests/knockback.test.js`): 7 — decay-to-rest, direction, **frame-rate independence**
+  (1 big step == 60 small, to 6 digits), settling distance = `v0/drag`, `drag→0` fallback, zero-vel
+  no-op, higher-drag-shorter-shove.
+- **Docs:** `GAMEPLAY.md` Feel pillar + tuning note (no ADR — it's a config-gated feel knob, fully
+  reversible). **Tune at the table:** `impulse`/`drag` are Scott+Caden's to feel in `npm run dev`.
+- **Verified:** lint clean, format clean, 191 tests all pass (+7), coverage 47.3%, build clean,
+  prod-health + browser smoke (re-run against the **fresh** B7 build) exit 0.
+
 ## 2026-06-22 — B6: Parametric pattern library + homing extraction (v0.8.10)
 
 Research report (5): extend the pure emitter library and extract homing into a testable module.
