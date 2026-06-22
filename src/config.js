@@ -287,7 +287,7 @@ export const DIFFICULTY = {
   // game stays kid-fair (ring gaps + no new one-shots; guarded by tests/fairness.test.js).
   // Dial `hardnessMul` (or the weights, for a different flavor) live in `npm run dev`.
   hardnessMul: 2, // 1 = original, 2 = twice as hard
-  hpWeight: 1.0, // enemy + boss HP absorb the full hardness (×2 at hardnessMul 2)
+  hpWeight: 1, // enemy + boss HP absorb the full hardness (×2 at hardnessMul 2)
   countWeight: 0.35, // a little into enemy count (more mobs, perf-safe — not ×2)
 };
 
