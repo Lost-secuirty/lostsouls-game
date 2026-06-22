@@ -15,7 +15,8 @@
 
 import * as THREE from 'three';
 import { BULLET, PALETTE, GRAPHICS } from '../config.js';
-import { circleVsCircle, turnAngle } from '../core/math2d.js';
+import { circleVsCircle } from '../core/math2d.js';
+import { turnRateHomingVelocity } from '../core/homingMath.js';
 import { hitsAnyWall } from '../systems/collision.js';
 import * as audio from '../systems/audio.js';
 
@@ -256,11 +257,15 @@ export class Bullets {
       }
     }
     if (tx === null) return;
-    const cur = Math.atan2(b.vx, b.vz);
-    const des = Math.atan2(tx - b.x, tz - b.z);
-    const a = turnAngle(cur, des, b.turnRate * dt);
-    b.vx = Math.sin(a) * b.speed;
-    b.vz = Math.cos(a) * b.speed;
+    const v = turnRateHomingVelocity(
+      { x: b.x, z: b.z },
+      { x: b.vx, z: b.vz },
+      { x: tx, z: tz },
+      dt,
+      { speed: b.speed, turnRate: b.turnRate },
+    );
+    b.vx = v.x;
+    b.vz = v.z;
   }
 
   /** rocket area-of-effect: damage every enemy within the blast radius */
