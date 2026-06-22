@@ -12,7 +12,16 @@
 // casing.
 // =====================================================================
 
-import { BOSS, PALETTE, PARTICLES, DUO, FAIRNESS_TARGETS, DEBUG_FAIRNESS } from '../config.js';
+import {
+  BOSS,
+  PALETTE,
+  PARTICLES,
+  DUO,
+  DIFFICULTY,
+  FAIRNESS_TARGETS,
+  DEBUG_FAIRNESS,
+} from '../config.js';
+import { hardnessFacet } from '../core/scaling.js';
 import { BEHAVIORS } from './bosses/index.js';
 import { hud } from '../ui/hud.js';
 import { castShadows } from '../core/shadows.js';
@@ -43,7 +52,9 @@ export class Boss {
     this.x = x;
     this.z = z;
     this.radius = this.cfg.radius;
-    this.maxHp = Math.round(this.cfg.hp * diff);
+    this.maxHp = Math.round(
+      this.cfg.hp * diff * hardnessFacet(DIFFICULTY.hardnessMul, DIFFICULTY.hpWeight),
+    );
     this.hp = this.maxHp;
     this.speed = this.cfg.speed * (0.9 + diff * 0.1);
     this.dead = false;

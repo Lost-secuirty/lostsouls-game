@@ -31,3 +31,5 @@ below).
 | [0023](0023-settings-and-overlays.md)              | Persisted settings + readability overlay (a11y/feel)       | Accepted |
 | [0024](0024-recorded-music-howler.md)              | Recorded music layer (Howler) + deps-allowed policy        | Accepted |
 | [0025](0025-postprocessing-pipeline.md)            | Post-processing pipeline (bloom + ACES) via postprocessing | Accepted |
+| [0026](0026-atmospheric-rendering.md)              | Atmospheric rendering (IBL, shadows, PBR floor, AO)        | Accepted |
+| [0027](0027-difficulty-and-scaling.md)             | "Twice as hard" master difficulty knob + fair weights      | Accepted |

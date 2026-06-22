@@ -279,6 +279,16 @@ export const UPGRADES = {
 export const DIFFICULTY = {
   base: 1.0, // floor 0 (the tutorial floor)
   growth: 0.26, // per-floor ramp (~+26%/floor)
+  // ---- "twice as hard" master knob (B5 / ADR-0027 — see core/scaling.js hardnessFacet) ----
+  // ONE dial for overall challenge: 1 = the original game, 2 = "twice as hard" (Scott's ask).
+  // It is NOT applied 1:1 to every facet (that compounds to brutal); each facet below takes a
+  // 0..1 WEIGHT of it. Default flavor: enemies/bosses are ~2× tankier and rooms are ~1.35× more
+  // crowded, while bullet DENSITY and CONTACT DAMAGE stay UNCHANGED (weight 0) — so the harder
+  // game stays kid-fair (ring gaps + no new one-shots; guarded by tests/fairness.test.js).
+  // Dial `hardnessMul` (or the weights, for a different flavor) live in `npm run dev`.
+  hardnessMul: 2, // 1 = original, 2 = twice as hard
+  hpWeight: 1, // enemy + boss HP absorb the full hardness (×2 at hardnessMul 2)
+  countWeight: 0.35, // a little into enemy count (more mobs, perf-safe — not ×2)
 };
 
 // ---- kid-fairness targets (research report (5) — core/fairnessCalc.js) ----

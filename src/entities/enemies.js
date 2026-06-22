@@ -8,7 +8,8 @@
 // =====================================================================
 
 import * as THREE from 'three';
-import { ENEMY, BULLET, PALETTE, PARTICLES } from '../config.js';
+import { ENEMY, BULLET, PALETTE, PARTICLES, DIFFICULTY } from '../config.js';
+import { hardnessFacet } from '../core/scaling.js';
 import { getModel } from '../core/assets.js';
 import { loadAnimated } from '../core/animModel.js';
 import { buildSpiderMesh } from './spiderMesh.js';
@@ -122,7 +123,7 @@ export class Enemy {
     this.x = x;
     this.z = z;
     this.radius = this.cfg.radius;
-    this.hp = this.cfg.hp;
+    this.hp = Math.round(this.cfg.hp * hardnessFacet(DIFFICULTY.hardnessMul, DIFFICULTY.hpWeight));
     this.dead = false;
     this.contactTimer = 0;
     this.fireTimer = this.cfg.fireInterval ? this.cfg.fireInterval * Math.random() : 0;
@@ -244,7 +245,7 @@ export function topUpMinions(boss, game, target, tag, opts = {}, after = null) {
     e[tag] = true;
     e.mesh.scale.setScalar(scale);
     e.radius *= 0.6;
-    e.hp = hp;
+    e.hp = Math.round(hp * hardnessFacet(DIFFICULTY.hardnessMul, DIFFICULTY.hpWeight));
     if (after) after(e);
     game.addEnemy(e);
   }

@@ -3,8 +3,9 @@
 // monsters (more/tougher deeper into a floor) and the occasional survivor.
 // =====================================================================
 
-import { ARENA, ROOMS, ENEMY, NPC, DUO } from '../config.js';
+import { ARENA, ROOMS, ENEMY, NPC, DUO, DIFFICULTY } from '../config.js';
 import { floorInfo } from '../core/progression.js';
+import { hardnessFacet } from '../core/scaling.js';
 import { Enemy } from '../entities/enemies.js';
 import { Boss } from '../entities/boss.js';
 import { DuoController } from '../entities/bosses/duo.js';
@@ -62,7 +63,10 @@ export function populateRoom(game, roomIndex) {
 
   // ---- NORMAL ROOM ----
   const diff = info.diff;
-  const count = Math.round((ROOMS.baseEnemies + info.roomInFloor * ROOMS.enemiesPerRoom) * diff);
+  const countMul = hardnessFacet(DIFFICULTY.hardnessMul, DIFFICULTY.countWeight);
+  const count = Math.round(
+    (ROOMS.baseEnemies + info.roomInFloor * ROOMS.enemiesPerRoom) * diff * countMul,
+  );
   const roomNo = info.roomInFloor + 1; // 1-based within the floor
   for (let i = 0; i < count; i++) {
     const useShooter = roomNo >= ROOMS.shooterFromRoom && rng.chance(0.4);
