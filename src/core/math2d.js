@@ -224,3 +224,21 @@ export function splitWeight(distance, { inner, outer } = {}) {
   if (outer <= inner) return distance >= outer ? 1 : 0;
   return clamp((distance - inner) / (outer - inner), 0, 1);
 }
+
+/**
+ * Advance an exponentially-decaying knockback impulse for ONE step (PURE, frame-rate independent).
+ * The shove velocity decays as v·e^(−drag·dt); the returned displacement is the EXACT integral of
+ * that decay over dt, so one big step and many small steps land in the same place (no tunneling-by-
+ * framerate). Caller adds {dx,dz} to the entity position, stores `vel`, then runs the displaced
+ * circle through collision so a shove never pushes it through a wall. `drag` (1/sec) is a feel
+ * tunable — callers pass it from config; as drag→0 the displacement degrades gracefully to v·dt.
+ * @param {{x:number,z:number}} vel current knockback velocity
+ * @param {number} dt seconds this step
+ * @param {{drag:number}} opts exponential decay rate (1/sec)
+ * @returns {{vel:{x:number,z:number}, dx:number, dz:number}}
+ */
+export function knockbackStep(vel, dt, { drag }) {
+  const e = Math.exp(-drag * dt);
+  const k = drag > 1e-6 ? (1 - e) / drag : dt; // ∫₀ᵈᵗ e^(−drag·t) dt, → dt as drag→0
+  return { vel: { x: vel.x * e, z: vel.z * e }, dx: vel.x * k, dz: vel.z * k };
+}

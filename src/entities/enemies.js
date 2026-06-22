@@ -8,7 +8,7 @@
 // =====================================================================
 
 import * as THREE from 'three';
-import { ENEMY, BULLET, PALETTE, PARTICLES, DIFFICULTY } from '../config.js';
+import { ENEMY, BULLET, PALETTE, PARTICLES, DIFFICULTY, FEEL } from '../config.js';
 import { hardnessFacet } from '../core/scaling.js';
 import { getModel } from '../core/assets.js';
 import { loadAnimated } from '../core/animModel.js';
@@ -18,7 +18,7 @@ import { buildBeastMesh } from './beastMesh.js';
 import { buildSkeletonMesh } from './skeletonMesh.js';
 import { makeCharacter } from './characterMesh.js';
 import { castShadows } from '../core/shadows.js';
-import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
+import { slideOutOfWalls, clampToArena, advanceKnockback } from '../systems/collision.js';
 import { normalize, dist, circleVsCircle } from '../core/math2d.js';
 import { ring } from './bosses/emitters.js';
 import * as audio from '../systems/audio.js';
@@ -125,6 +125,7 @@ export class Enemy {
     this.radius = this.cfg.radius;
     this.hp = Math.round(this.cfg.hp * hardnessFacet(DIFFICULTY.hardnessMul, DIFFICULTY.hpWeight));
     this.dead = false;
+    this.knock = { x: 0, z: 0 }; // active knockback velocity (B7); decays in update()
     this.contactTimer = 0;
     this.fireTimer = this.cfg.fireInterval ? this.cfg.fireInterval * Math.random() : 0;
     this.phase = Math.random() * Math.PI * 2;
@@ -174,6 +175,9 @@ export class Enemy {
     this.x = q.x;
     this.z = q.z;
 
+    // apply + decay any knockback shove (no-op when not knocked), re-resolving walls
+    advanceKnockback(this, dt, game.walls);
+
     // contact damage
     if (
       this.contactTimer <= 0 &&
@@ -203,13 +207,31 @@ export class Enemy {
     }
   }
 
-  hurt(dmg, game) {
+  hurt(dmg, game, knockDir = null) {
     if (this.dead) return;
     this.hp -= dmg;
+    this._applyKnock(knockDir);
     game.particles.burst(this.x, this.z, PARTICLES.perHit, PALETTE.blood);
     this.mesh.scale.setScalar(1.35); // pop
     audio.play('hit');
     if (this.hp <= 0) this.die(game);
+  }
+
+  /** add a decaying shove away from a hit (B7). `dir` is a {x,z} hit direction (need not be unit). */
+  _applyKnock(dir) {
+    const kb = FEEL.knockback;
+    if (!dir || !kb.enabled) return;
+    const imp = kb.impulse[this.type] ?? 0;
+    if (imp <= 0) return;
+    const u = normalize(dir.x, dir.z); // {0,0} if the hit had no direction → no shove
+    this.knock.x += u.x * imp;
+    this.knock.z += u.z * imp;
+    const sp = Math.hypot(this.knock.x, this.knock.z); // clamp stacked impulses
+    if (sp > kb.maxSpeed) {
+      const s = kb.maxSpeed / sp;
+      this.knock.x *= s;
+      this.knock.z *= s;
+    }
   }
 
   die(game) {

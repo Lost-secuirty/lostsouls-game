@@ -48,15 +48,15 @@ gambling-style tricks that hook rather than delight. Concretely:
 
 ## The pillars
 
-| Pillar               | What it is                                                                                          | Config block(s)                       | Key ADRs                           |
-| -------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------- | ---------------------------------- |
-| **Progression**      | 5 floors × (9 rooms + boss); each floor has a boss + a palette its minions share                    | `PROGRESSION`, `ROOMS`, `CAPS`        | 0007, 0015, 0020                   |
-| **Combat / weapons** | 10 guns with distinct behaviors (pierce/homing/bounce/charge/rocket/orbital); shared pooled bullets | `WEAPONS`, `BULLET`, `PLAYER`         | 0012, 0015, 0021                   |
-| **Enemies**          | chaser (melee) + shooter (ring volleys); HP-gated minions sized off `ENEMY.chaser`                  | `ENEMY`, `ROOMS`                      | 0014, 0020                         |
-| **Bosses**           | data-driven behavior modules; per-pattern numbers (P# = attack pattern, not HP phase)               | `BOSS`, `DUO`, `HUMAN_BOSS`, `HAZARD` | 0009, 0014, 0016, 0018, 0019, 0021 |
-| **Economy/upgrades** | earned pickups (heal, damage/firerate/speed stacks, weapons) on a diminishing-returns curve         | `PICKUPS`, `UPGRADES`, `CAPS`         | 0012, 0022                         |
-| **Difficulty**       | one curve scales the safe knobs per floor (`diff = base × (1+growth)^floor`)                        | `DIFFICULTY`                          | 0022                               |
-| **Feel / a11y**      | screen shake + hit-stop juice; persisted settings (volume/mute/hitbox overlay); telegraph rings     | `JUICE`, `SETTINGS`, `OVERLAY`        | 0023                               |
+| Pillar               | What it is                                                                                          | Config block(s)                        | Key ADRs                           |
+| -------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------- | ---------------------------------- |
+| **Progression**      | 5 floors × (9 rooms + boss); each floor has a boss + a palette its minions share                    | `PROGRESSION`, `ROOMS`, `CAPS`         | 0007, 0015, 0020                   |
+| **Combat / weapons** | 10 guns with distinct behaviors (pierce/homing/bounce/charge/rocket/orbital); shared pooled bullets | `WEAPONS`, `BULLET`, `PLAYER`          | 0012, 0015, 0021                   |
+| **Enemies**          | chaser (melee) + shooter (ring volleys); HP-gated minions sized off `ENEMY.chaser`                  | `ENEMY`, `ROOMS`                       | 0014, 0020                         |
+| **Bosses**           | data-driven behavior modules; per-pattern numbers (P# = attack pattern, not HP phase)               | `BOSS`, `DUO`, `HUMAN_BOSS`, `HAZARD`  | 0009, 0014, 0016, 0018, 0019, 0021 |
+| **Economy/upgrades** | earned pickups (heal, damage/firerate/speed stacks, weapons) on a diminishing-returns curve         | `PICKUPS`, `UPGRADES`, `CAPS`          | 0012, 0022                         |
+| **Difficulty**       | one curve scales the safe knobs per floor (`diff = base × (1+growth)^floor`)                        | `DIFFICULTY`                           | 0022                               |
+| **Feel / a11y**      | trauma shake + hit-stop + screen-flash + hit knockback; persisted settings (volume/mute/overlay)    | `JUICE`, `FEEL`, `SETTINGS`, `OVERLAY` | 0023                               |
 
 ### Bosses & the trust mechanic
 
@@ -86,7 +86,9 @@ and watch it live in `npm run dev`. Common knobs:
 - **Too hard / too easy?** `DIFFICULTY.growth` (whole-run ramp) and per-floor `diffMul`.
 - **A gun feels off?** `WEAPONS.<name>` (cooldown, damage, pellets, spread, behavior flags).
 - **Upgrades too fast/slow?** `UPGRADES` (the diminishing-returns curve), `CAPS` (hard backstops).
-- **More/less juice?** `JUICE` (shake + hit-stop), `PARTICLES` (blood).
+- **More/less juice?** `JUICE` (trauma shake + hit-stop), `FEEL` (screen-flash + knockback), `PARTICLES`
+  (blood). Knockback is pure gameplay (not gated by `reducedEffects`); bosses ignore it by default so
+  their telegraphs stay on-beat — flip `FEEL.knockback.enabled` off for the old no-shove combat.
 - **Room density / pacing?** `ROOMS`, `PROGRESSION.roomsPerFloor`.
 
 ## Adding content (keep it inside the canon)
