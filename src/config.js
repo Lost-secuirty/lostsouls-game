@@ -30,6 +30,17 @@ export const CAMERA = {
   lookAtY: 0,
   near: 0.1, // near clip plane
   far: 300, // far clip plane (well past the arena + fog)
+  // ---- subtle spring-follow (ADR-0026 / B3 — amends ADR-0020's static framing) ----
+  // The camera gently pans toward the live-player centroid, HARD-CLAMPED to ±followMaxPan so the
+  // whole room stays readable (ADR-0020's "see every bullet" promise is preserved by the small
+  // clamp). In co-op it eases back to center as the pair separates so both stay on the shared
+  // screen. reducedEffects + calmCamera pins it to the static full-room view. Swap-and-see in dev.
+  followEnabled: true, // false = exactly the old static framing
+  followOmega: 6, // spring stiffness (higher = snappier, lower = floatier) — kept gentle
+  followMaxPan: 5, // MAX world-unit pan from center (small, so the room stays framed)
+  coopSplitInner: 14, // co-op: begin recentering once the two players are this far apart
+  coopSplitOuter: 28, // ...fully recentered (whole-room) at this separation
+  calmCamera: true, // pin the camera (no follow) when reducedEffects is on (motion-sensitive)
 };
 
 // ---- lighting + fog (scene.js) ----

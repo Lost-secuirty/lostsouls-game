@@ -27,7 +27,9 @@ import { buildRoom } from './systems/rooms.js';
 import { populateRoom } from './systems/spawner.js';
 import { resolveDecision } from './systems/npcDecision.js';
 import { resolveHuman } from './systems/humanDecision.js';
-import { circleVsBox, circleVsCircle } from './core/math2d.js';
+import { circleVsBox, circleVsCircle, springCritDampedXZ } from './core/math2d.js';
+import { cameraTarget } from './core/camera.js';
+import { settings } from './systems/settings.js';
 import { hud } from './ui/hud.js';
 import { prompts } from './ui/prompts.js';
 import { showHumanChoice, moveChoiceFocus, confirmChoice } from './ui/humanchoice.js';
@@ -43,6 +45,9 @@ export class Game {
     this.input = input;
     this.JUICE = JUICE;
     this.FEEL = FEEL;
+    // B3 camera spring-follow: a small pan offset from arena center (XZ) + its velocity.
+    this.camPan = { x: 0, z: 0 };
+    this.camVel = { x: 0, z: 0 };
 
     this.enemies = [];
     this.npcs = [];
@@ -285,6 +290,25 @@ export class Game {
 
     this.particles.update(dt);
     this.juice.update(dt);
+    this._updateCamera(dt);
+  }
+
+  /**
+   * Advance the subtle camera pan toward the live-player centroid (B3, ADR-0026; amends
+   * ADR-0020's static framing). Hard-clamped to ±followMaxPan so the whole room stays
+   * readable; pinned to center when reducedEffects + calmCamera (motion-sensitive play).
+   */
+  _updateCamera(dt) {
+    const c = CAMERA;
+    const follow = c.followEnabled && !(c.calmCamera && settings.get('reducedEffects'));
+    const target = follow
+      ? cameraTarget(this.players, {
+          maxPan: c.followMaxPan,
+          splitInner: c.coopSplitInner,
+          splitOuter: c.coopSplitOuter,
+        })
+      : { x: 0, z: 0 };
+    springCritDampedXZ(this.camPan, this.camVel, target, dt, { omega: c.followOmega });
   }
 
   _handlePickups() {
@@ -464,11 +488,16 @@ export class Game {
 
   render() {
     this.overlays.sync(this); // boss telegraph rings + (opt-in) hitbox overlay
-    // trauma-driven shake from COHERENT noise (juice.js) — no Math.random, so a seeded
-    // run renders identical camera motion (ADR-0013). B3 will add spring-follow here.
+    // trauma-driven shake from COHERENT noise (juice.js) — no Math.random, so a seeded run
+    // renders identical camera motion (ADR-0013) — composed with the B3 spring-follow pan.
     const sh = this.juice.shakeOffsetXZ(performance.now() / 1000);
-    this.camera.position.set(this.baseCam.x + sh.x, this.baseCam.y + sh.y, this.baseCam.z + sh.z);
-    this.camera.lookAt(0, CAMERA.lookAtY, 0);
+    const pan = this.camPan;
+    this.camera.position.set(
+      this.baseCam.x + pan.x + sh.x,
+      this.baseCam.y + sh.y,
+      this.baseCam.z + pan.z + sh.z,
+    );
+    this.camera.lookAt(pan.x, CAMERA.lookAtY, pan.z);
     // post-FX pipeline if present (it self-falls-back to raw render); else raw render.
     if (this.postfx) this.postfx.render();
     else this.renderer.render(this.scene, this.camera);
