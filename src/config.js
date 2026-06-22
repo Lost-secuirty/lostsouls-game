@@ -674,10 +674,11 @@ export const JUICE = {
   traumaOnExplode: 0.3, // rocket / explosive-bullet AoE
   traumaOnBossDeath: 0.45, // a boss died (trauma² keeps it punchy without nausea)
   traumaOnCatSwipe: 0.12, // Whisker's cross-swipe volley
-  decayPerSec: 2.0, // trauma shed per second (higher = snappier, shorter shake)
+  decayPerSec: 2, // trauma shed per second (higher = snappier, shorter shake)
   shakeMaxOffset: 0.35, // world-unit camera X/Z offset at trauma = 1
   shakeMaxY: 0.12, // smaller vertical kick (keeps the top-down read steady)
   shakeFrequency: 24, // Hz the coherent noise is sampled at
+  shakeSeeds: { x: 11, y: 53, z: 29 }, // distinct noise streams per axis (decorrelation seeds)
   reducedEffectsTraumaMul: 0.4, // scale ALL trauma when reducedEffects is on (0 = no shake)
   hitStopOnKill: 0.06, // seconds the world freezes on a kill
   hitStopOnHurt: 0.09,

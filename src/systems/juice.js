@@ -17,10 +17,8 @@ import { clamp, smoothNoise1D } from '../core/math2d.js';
 import { settings } from './settings.js';
 
 export class Juice {
-  constructor() {
-    this.trauma = 0; // 0..1; per-frame shake magnitude = trauma²
-    this.stopUntil = 0;
-  }
+  trauma = 0; // 0..1; per-frame shake magnitude = trauma²
+  stopUntil = 0;
 
   /** An impact adds trauma (clamped to 1). Scaled down (or off) when reducedEffects is on. */
   addTrauma(amount) {
@@ -53,10 +51,11 @@ export class Juice {
     const s = this.trauma * this.trauma;
     if (s <= 0) return { x: 0, y: 0, z: 0 };
     const t = timeSec * JUICE.shakeFrequency;
+    const seed = JUICE.shakeSeeds;
     return {
-      x: smoothNoise1D(t, 11) * JUICE.shakeMaxOffset * s,
-      y: smoothNoise1D(t, 53) * JUICE.shakeMaxY * s,
-      z: smoothNoise1D(t, 29) * JUICE.shakeMaxOffset * s,
+      x: smoothNoise1D(t, seed.x) * JUICE.shakeMaxOffset * s,
+      y: smoothNoise1D(t, seed.y) * JUICE.shakeMaxY * s,
+      z: smoothNoise1D(t, seed.z) * JUICE.shakeMaxOffset * s,
     };
   }
 }

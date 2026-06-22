@@ -112,8 +112,10 @@ export const hud = {
     el.style.transition = 'none';
     el.style.background = color;
     el.style.opacity = String(peak);
-    void el.offsetWidth; // force a reflow so the fade-out below actually animates
-    el.style.transition = `opacity ${ms}ms ease`;
-    el.style.opacity = '0';
+    // next frame: enable the transition and fade to 0 (a frame gap so it actually animates)
+    requestAnimationFrame(() => {
+      el.style.transition = `opacity ${ms}ms ease`;
+      el.style.opacity = '0';
+    });
   },
 };
