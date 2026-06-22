@@ -3,7 +3,7 @@
 // and inside the arena. Built on the pure helpers in core/math2d.js.
 // =====================================================================
 
-import { resolveCircleBox, circleVsBox, clamp, knockbackStep } from '../core/math2d.js';
+import { resolveCircleBox, circleVsBox, clamp, knockbackStep, normalize } from '../core/math2d.js';
 import { ARENA, FEEL } from '../config.js';
 
 /** Push a moving circle out of every wall/obstacle it overlaps. */
@@ -31,6 +31,26 @@ export function hitsAnyWall(x, z, r, walls) {
     if (circleVsBox(x, z, r, box)) return true;
   }
   return false;
+}
+
+/**
+ * Add a decaying shove of magnitude `impulse` (world u/sec) to `entity.knock`, pointed along the hit
+ * direction `dir` ({x,z}, need not be unit), clamped so stacked impulses can't exceed
+ * `FEEL.knockback.maxSpeed`. No-op when knockback is disabled, the impulse is ≤0, or `dir` has no
+ * direction. Shared by Enemy + Boss so the apply math lives in one place. B7 (research report (5)).
+ */
+export function applyKnockImpulse(entity, dir, impulse) {
+  const kb = FEEL.knockback;
+  if (!dir || !kb.enabled || impulse <= 0) return;
+  const u = normalize(dir.x, dir.z); // {0,0} when the hit had no direction → no shove
+  entity.knock.x += u.x * impulse;
+  entity.knock.z += u.z * impulse;
+  const sp = Math.hypot(entity.knock.x, entity.knock.z);
+  if (sp > kb.maxSpeed) {
+    const s = kb.maxSpeed / sp;
+    entity.knock.x *= s;
+    entity.knock.z *= s;
+  }
 }
 
 /**

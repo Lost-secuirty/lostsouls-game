@@ -18,7 +18,12 @@ import { buildBeastMesh } from './beastMesh.js';
 import { buildSkeletonMesh } from './skeletonMesh.js';
 import { makeCharacter } from './characterMesh.js';
 import { castShadows } from '../core/shadows.js';
-import { slideOutOfWalls, clampToArena, advanceKnockback } from '../systems/collision.js';
+import {
+  slideOutOfWalls,
+  clampToArena,
+  advanceKnockback,
+  applyKnockImpulse,
+} from '../systems/collision.js';
 import { normalize, dist, circleVsCircle } from '../core/math2d.js';
 import { ring } from './bosses/emitters.js';
 import * as audio from '../systems/audio.js';
@@ -210,28 +215,11 @@ export class Enemy {
   hurt(dmg, game, knockDir = null) {
     if (this.dead) return;
     this.hp -= dmg;
-    this._applyKnock(knockDir);
+    applyKnockImpulse(this, knockDir, FEEL.knockback.impulse[this.type] ?? 0); // B7 shove (per type)
     game.particles.burst(this.x, this.z, PARTICLES.perHit, PALETTE.blood);
     this.mesh.scale.setScalar(1.35); // pop
     audio.play('hit');
     if (this.hp <= 0) this.die(game);
-  }
-
-  /** add a decaying shove away from a hit (B7). `dir` is a {x,z} hit direction (need not be unit). */
-  _applyKnock(dir) {
-    const kb = FEEL.knockback;
-    if (!dir || !kb.enabled) return;
-    const imp = kb.impulse[this.type] ?? 0;
-    if (imp <= 0) return;
-    const u = normalize(dir.x, dir.z); // {0,0} if the hit had no direction → no shove
-    this.knock.x += u.x * imp;
-    this.knock.z += u.z * imp;
-    const sp = Math.hypot(this.knock.x, this.knock.z); // clamp stacked impulses
-    if (sp > kb.maxSpeed) {
-      const s = kb.maxSpeed / sp;
-      this.knock.x *= s;
-      this.knock.z *= s;
-    }
   }
 
   die(game) {
