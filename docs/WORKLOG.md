@@ -15,6 +15,24 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-22 — B1: Feel-math foundation (pure utils) (v0.8.5)
+
+Prereq for the gameplay-feel pass (research report (5), "game-feel math"). Pure, frame-rate-independent
+helpers added to `src/core/math2d.js` (ONE pure-math module — no duplicate clamp/lerp, no THREE import).
+**No gameplay change yet** — these are the primitives B2 (trauma shake), B3 (camera spring), and B7
+(knockback) build on.
+
+- **Added** (`src/core/math2d.js`): `lerp`; `cubicOut`/`quadInOut`/`backOut` (t clamped); `hashNoise1D`/
+  `smoothNoise1D` (deterministic coherent value noise — NO `Math.random`, so camera shake can be made
+  reproducible under seeded runs, ADR-0013); `springCritDamped`/`springCritDampedXZ` (Juckett
+  critically-damped — converges with no overshoot); `asymptoticFollowXZ` (cheap follow fallback);
+  `splitWeight` (raw co-op merge↔split ramp, feathered at the call site).
+- **Tests** (`tests/feelmath.test.js`): deterministic — eases pinned/monotonic, noise reproducible +
+  in-range + continuous + integer-exact, spring converges without overshoot, follow never overshoots,
+  splitWeight boundaries + degenerate guard.
+- **Verified:** lint clean, 155 tests pass (+12), coverage 44.31% lines (up from 41.16%, gate 40), build
+  clean, smoke:prod + smoke:browser exit 0.
+
 ## 2026-06-22 — A1: Codacy `.gitignore` defense (v0.8.4)
 
 Repo-hygiene quick win (process-tightening Track A, from research report (3) on low-drift solo+AI

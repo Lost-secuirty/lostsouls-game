@@ -124,3 +124,103 @@ export function resolveCircleBox(cx, cz, cr, box) {
   if (m === toNear) return { x: cx, z: box.minZ - cr - EPS };
   return { x: cx, z: box.maxZ + cr + EPS };
 }
+
+// =====================================================================
+// Feel math (ADR-0026 follow-up / research report (5) "game-feel math").
+// Pure, frame-rate-independent helpers consumed by the juice/camera/knockback
+// systems. Kept here (not a new file) so there's ONE pure-math module and no
+// duplicate clamp/lerp. None of these touch THREE — they stay unit-testable.
+// =====================================================================
+
+/** linear interpolate a→b by t (t clamped to [0,1] so callers can't overshoot) */
+export function lerp(a, b, t) {
+  return a + (b - a) * clamp(t, 0, 1);
+}
+
+/** ease-out cubic — fast start, gentle stop. Good for danger-zone / radius growth. */
+export function cubicOut(t) {
+  const x = 1 - clamp(t, 0, 1);
+  return 1 - x * x * x;
+}
+
+/** ease in-out quad — smooth accelerate then decelerate. Good for camera blends / feathering. */
+export function quadInOut(t) {
+  const x = clamp(t, 0, 1);
+  return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+}
+
+/** ease-out "back" — slight overshoot past 1 then settle. UI reward pops ONLY, never telegraphs. */
+export function backOut(t) {
+  const x = clamp(t, 0, 1) - 1;
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return 1 + c3 * x * x * x + c1 * x * x;
+}
+
+/**
+ * Deterministic hash noise in [-1, 1] for an integer-ish `x` + `seed`. PURE — no Math.random,
+ * so camera shake stays reproducible under seeded runs (ADR-0013).
+ */
+export function hashNoise1D(x, seed = 0) {
+  const n = Math.sin(x * 127.1 + seed * 311.7) * 43758.5453123;
+  return (n - Math.floor(n)) * 2 - 1;
+}
+
+/** Smoothstep-interpolated value noise in [-1, 1] — continuous + reproducible per seed. */
+export function smoothNoise1D(x, seed = 0) {
+  const i = Math.floor(x);
+  const f = x - i;
+  const u = f * f * (3 - 2 * f); // smoothstep
+  return lerp(hashNoise1D(i, seed), hashNoise1D(i + 1, seed), u);
+}
+
+/**
+ * Advance ONE axis of a critically-damped spring toward `target` (Juckett's exact solution —
+ * frame-rate independent, no oscillation/overshoot). `omega` = stiffness (bigger = snappier).
+ * @returns {{pos:number, vel:number}}
+ */
+export function springCritDamped(pos, vel, target, dt, omega) {
+  const e = Math.exp(-omega * dt);
+  const x = pos - target;
+  const tmp = vel + omega * x;
+  return { pos: target + (x + tmp * dt) * e, vel: (vel - tmp * omega * dt) * e };
+}
+
+/**
+ * Critically-damped spring on the XZ plane. Mutates `pos`/`vel` ({x,z}) in place and returns them
+ * so the camera can advance toward a moving centroid smoothly. PURE w.r.t. `target`.
+ * `omega` (stiffness) is a feel tunable — callers MUST pass it from config (e.g. CAMERA.followOmega);
+ * no default lives here so no feel-number is baked into this pure module.
+ */
+export function springCritDampedXZ(pos, vel, target, dt, { omega } = {}) {
+  const sx = springCritDamped(pos.x, vel.x, target.x, dt, omega);
+  const sz = springCritDamped(pos.z, vel.z, target.z, dt, omega);
+  pos.x = sx.pos;
+  vel.x = sx.vel;
+  pos.z = sz.pos;
+  vel.z = sz.vel;
+  return { pos, vel };
+}
+
+/**
+ * Cheap asymptotic follow (Eiserloh) as a spring fallback: pos += (target - pos) * a. `a` uses an
+ * EXPONENTIAL remap of the per-60Hz-frame weight so it's genuinely frame-rate independent (the
+ * weight compounds correctly across variable dt). Mutates + returns `pos` ({x,z}).
+ * `weightPer60HzFrame` (0..1) is a feel tunable — callers pass it from config (no default here).
+ */
+export function asymptoticFollowXZ(pos, target, dt, { weightPer60HzFrame } = {}) {
+  const a = clamp(1 - Math.pow(1 - weightPer60HzFrame, dt * 60), 0, 1);
+  pos.x += (target.x - pos.x) * a;
+  pos.z += (target.z - pos.z) * a;
+  return pos;
+}
+
+/**
+ * Co-op camera split weight: 0 (merged) at/below `inner`, 1 (fully split) at/above `outer`, a
+ * raw linear ramp between. Feather it with an ease (e.g. quadInOut) at the call site. PURE.
+ * `inner`/`outer` are feel tunables — callers pass them from config (no defaults baked here).
+ */
+export function splitWeight(distance, { inner, outer } = {}) {
+  if (outer <= inner) return distance >= outer ? 1 : 0;
+  return clamp((distance - inner) / (outer - inner), 0, 1);
+}
