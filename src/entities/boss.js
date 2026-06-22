@@ -14,6 +14,7 @@
 
 import { BOSS, PALETTE, PARTICLES, DUO } from '../config.js';
 import { BEHAVIORS } from './bosses/index.js';
+import { hud } from '../ui/hud.js';
 import { castShadows } from '../core/shadows.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { normalize, circleVsCircle } from '../core/math2d.js';
@@ -135,8 +136,10 @@ export class Boss {
   die(game) {
     this.dead = true;
     game.particles.burst(this.x, this.z, PARTICLES.perDeath * 3, PALETTE.blood);
-    game.juice.shake(1.2);
-    game.juice.hitStop(0.12);
+    game.juice.addTrauma(game.JUICE.traumaOnBossDeath);
+    game.juice.hitStop(game.JUICE.hitStopOnBossDeath);
+    const sf = game.FEEL.screenFlash.bossDeath;
+    hud.flashScreen(sf.peak, sf.color, sf.ms);
     this.anim?.dispose(); // free the GLB AnimationMixer (no leak across rooms)
     this.scene.remove(this.mesh);
   }

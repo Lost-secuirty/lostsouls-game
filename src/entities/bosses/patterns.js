@@ -20,7 +20,7 @@ export function fireAngles(boss, game, angles, speed, shake = 0) {
   for (const a of angles) {
     game.bullets.spawnEnemy(boss.x, boss.z, Math.sin(a), Math.cos(a), speed);
   }
-  if (shake) game.juice.shake(shake);
+  if (shake) game.juice.addTrauma(shake);
 }
 
 /**

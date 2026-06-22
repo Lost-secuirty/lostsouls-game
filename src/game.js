@@ -10,7 +10,7 @@
 // revives when the room is cleared; Game Over only on a full wipe.
 // =====================================================================
 
-import { PLAYER, CAMERA, JUICE, ARENA, CAPS, PALETTE } from './config.js';
+import { PLAYER, CAMERA, JUICE, FEEL, ARENA, CAPS, PALETTE } from './config.js';
 import { State } from './states.js';
 import { makeRng } from './core/rng.js';
 import { floorInfo, nextIsBoss, resolveDeath, weaponSlotsForBosses } from './core/progression.js';
@@ -42,6 +42,7 @@ export class Game {
     this.postfx = postfx; // post-processing pipeline (ADR-0025); may be undefined in tests
     this.input = input;
     this.JUICE = JUICE;
+    this.FEEL = FEEL;
 
     this.enemies = [];
     this.npcs = [];
@@ -463,12 +464,10 @@ export class Game {
 
   render() {
     this.overlays.sync(this); // boss telegraph rings + (opt-in) hitbox overlay
-    const m = this.juice.shakeMag;
-    this.camera.position.set(
-      this.baseCam.x + (Math.random() * 2 - 1) * m,
-      this.baseCam.y + (Math.random() * 2 - 1) * m,
-      this.baseCam.z + (Math.random() * 2 - 1) * m,
-    );
+    // trauma-driven shake from COHERENT noise (juice.js) — no Math.random, so a seeded
+    // run renders identical camera motion (ADR-0013). B3 will add spring-follow here.
+    const sh = this.juice.shakeOffsetXZ(performance.now() / 1000);
+    this.camera.position.set(this.baseCam.x + sh.x, this.baseCam.y + sh.y, this.baseCam.z + sh.z);
     this.camera.lookAt(0, CAMERA.lookAtY, 0);
     // post-FX pipeline if present (it self-falls-back to raw render); else raw render.
     if (this.postfx) this.postfx.render();

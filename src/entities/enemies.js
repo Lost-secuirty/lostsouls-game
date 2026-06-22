@@ -214,7 +214,7 @@ export class Enemy {
   die(game) {
     this.dead = true;
     game.particles.burst(this.x, this.z, PARTICLES.perDeath, PALETTE.blood);
-    game.juice.shake(game.JUICE.shakeOnKill);
+    game.juice.addTrauma(game.JUICE.traumaOnKill);
     game.juice.hitStop(game.JUICE.hitStopOnKill);
     audio.play('kill');
     if (this.onDeath) this.onDeath(this, game); // e.g. puffball -> poison pool

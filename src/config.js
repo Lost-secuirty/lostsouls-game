@@ -660,13 +660,39 @@ export const MUSIC = {
 };
 
 // ---- juice (the "feel good" knobs) ----
+// Trauma-based screen shake (research report (5) "game-feel math"). Hits ADD trauma (0..1);
+// the per-frame shake magnitude = trauma², so small hits barely shake and big ones punch.
+// Trauma decays linearly (decayPerSec). The camera offset is sampled from coherent value-noise
+// (core/math2d.smoothNoise1D) by wall-clock time — NO Math.random, so a seeded run renders the
+// SAME shake every time (ADR-0013 determinism). Defaults are deliberately SUBTLE (kid-safe, no
+// nausea for a young player) — crank them live in `npm run dev`.
 export const JUICE = {
-  shakeOnShoot: 0.05,
-  shakeOnHurt: 0.55,
-  shakeOnKill: 0.28,
-  shakeDecay: 6, // higher = shake fades faster
+  traumaOnShoot: 0.05, // tiny kick per shot
+  traumaChargeBonus: 0.2, // extra trauma scaled by the charge-cannon charge fraction
+  traumaOnHurt: 0.5, // you took a hit
+  traumaOnKill: 0.28, // an enemy died
+  traumaOnExplode: 0.3, // rocket / explosive-bullet AoE
+  traumaOnBossDeath: 0.45, // a boss died (trauma² keeps it punchy without nausea)
+  traumaOnCatSwipe: 0.12, // Whisker's cross-swipe volley
+  decayPerSec: 2.0, // trauma shed per second (higher = snappier, shorter shake)
+  shakeMaxOffset: 0.35, // world-unit camera X/Z offset at trauma = 1
+  shakeMaxY: 0.12, // smaller vertical kick (keeps the top-down read steady)
+  shakeFrequency: 24, // Hz the coherent noise is sampled at
+  reducedEffectsTraumaMul: 0.4, // scale ALL trauma when reducedEffects is on (0 = no shake)
   hitStopOnKill: 0.06, // seconds the world freezes on a kill
   hitStopOnHurt: 0.09,
+  hitStopOnBossDeath: 0.12, // a beat longer on a boss kill
+};
+
+// ---- screen flash (feel) — a brief full-screen alpha pulse for impact ----
+// Distinct from the red #splatter on hurt: a short, low-alpha tint that NEVER whites out the
+// dark world (peak stays well under 1). Skipped entirely when reducedEffects is on (ui/hud.js
+// gates it). `ms` is the fade-out duration. Tune in `npm run dev`.
+export const FEEL = {
+  screenFlash: {
+    hurt: { peak: 0.22, color: '#ff2a2a', ms: 90 }, // subtle red, on top of the blood splatter
+    bossDeath: { peak: 0.4, color: '#ffffff', ms: 140 }, // white pop when a boss falls
+  },
 };
 
 // ---- blood / particles ----

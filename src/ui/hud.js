@@ -5,6 +5,7 @@
 // =====================================================================
 
 import { PROGRESSION } from '../config.js';
+import { settings } from '../systems/settings.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -97,5 +98,22 @@ export const hud = {
     if (!el) return;
     el.style.opacity = '0.9';
     setTimeout(() => (el.style.opacity = '0'), 80);
+  },
+
+  /**
+   * Brief full-screen impact flash (config.FEEL). `peak` opacity in a `color`, fading to 0
+   * over `ms`. Skipped entirely when reducedEffects is on (accessibility / motion-sensitive).
+   * Distinct from flashSplatter (which is the red blood overlay on hurt).
+   */
+  flashScreen(peak, color, ms) {
+    if (settings.get('reducedEffects')) return;
+    const el = $('screenflash');
+    if (!el) return;
+    el.style.transition = 'none';
+    el.style.background = color;
+    el.style.opacity = String(peak);
+    void el.offsetWidth; // force a reflow so the fade-out below actually animates
+    el.style.transition = `opacity ${ms}ms ease`;
+    el.style.opacity = '0';
   },
 };
