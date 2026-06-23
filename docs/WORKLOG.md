@@ -15,6 +15,21 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-23 — Ops reference + tooling hygiene (no version change)
+
+A process/tooling PR (no gameplay change, no version bump): give the repo a single home for "what must
+pass and what's installed," and close a few small drift gaps found in an audit.
+
+- **New [`docs/OPERATIONS.md`](OPERATIONS.md)** — the canonical in-repo reference for the required CI
+  checks (+ the external SonarCloud/CodeRabbit gates), the exact local gauntlet to reproduce CI before
+  pushing, the installed toolchain/pinned-tool versions, and the deferred tooling backlog.
+- **Auto-format pre-commit hook** — `.githooks/pre-commit` now Prettier-formats staged files and
+  re-stages them before the existing secret/PII scan, so `format:check` stops failing CI on style
+  (kills a push/fix/re-push round-trip). The custom-script invocation path is unchanged.
+- **Node pin aligned** — `.node-version` 22 → 24 to match `.nvmrc` and CI (all on Node 24); added
+  `engines.node: ">=24"` so the requirement is declared in one authoritative place.
+- **Stale doc fix** — `STATUS.md` footer "25 ADRs (0001–0025)" → "28 ADRs (0001–0028)".
+
 ## 2026-06-22 — B9b: Offer screen go-live (room-clear pick-1-of-3) (v0.8.14)
 
 The second half of the B9 redesign — the B9a offer engine is now **wired live**. Normal room clears open

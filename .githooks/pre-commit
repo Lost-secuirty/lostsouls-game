@@ -17,6 +17,18 @@ if [ "$#" -gt 0 ]; then
   script=$1
   shift
 else
+  # Normal commit path. Auto-format staged files with Prettier and re-stage them,
+  # so CI's `format:check` never fails on style (saves a push/fix/re-push round-trip).
+  # Caveat: re-staging restages the whole file, so avoid partial (`git add -p`) staging
+  # of a file you don't want fully committed. Skips silently if npx/Prettier is absent.
+  if command -v npx >/dev/null 2>&1; then
+    fmt_files=$(git diff --cached --name-only --diff-filter=ACM -- \
+      '*.js' '*.mjs' '*.html' '*.css' '*.json' '*.md')
+    if [ -n "$fmt_files" ]; then
+      printf '%s\n' "$fmt_files" | xargs npx prettier --write && \
+        printf '%s\n' "$fmt_files" | xargs git add
+    fi
+  fi
   script=tools/scan_staged.py
   set -- --staged
 fi
