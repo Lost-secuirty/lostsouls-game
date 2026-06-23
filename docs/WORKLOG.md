@@ -15,6 +15,40 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-23 — FPS-1: perf A/B tooling + safe dial-backs (v0.8.16)
+
+First plan filed under the new [`docs/plans/`](plans/) archive
+([0001](plans/0001-fps-instrumentation.md)). The game sat at ~33fps on the RTX 5060 laptop with **no way
+to measure why**. Instead of guess-fixing: make the bottleneck measurable, then ship the two
+lowest-risk dial-backs.
+
+- **Measure:** extended the debug **Performance** folder with **Frame ms** + **Triangles** (it already
+  showed FPS + draw calls). New **Graphics (A/B perf)** folder flips each fill-rate suspect live and
+  _independently_ — pixel-ratio cap, MSAA samples, shadows + map-size, post-FX, bloom, AO quality,
+  vignette, and camera-follow (standalone) — so the real cost is read off the readout, not guessed.
+- **Live finding (owner, mid-build):** toggling the whole post-FX composer + shadows off jumped
+  **30 → 165fps** (refresh-capped, RTX 5060). Camera-follow is welded to that same "reduced effects"
+  switch via `config.calmCamera`, but a ±5-unit pan can't cost frames — so the bottleneck is the
+  **post-FX pipeline + shadows, not draw calls**. Top suspect: 4× MSAA on the HDR buffer + N8AO. The A/B
+  folder isolates the exact sub-pass; the targeted cut is the data-gated follow-up PR.
+- **Dial-backs (defaults, reversible):** `GRAPHICS.shadows.mapSize` 2048 → **1024**;
+  `GRAPHICS.pixelRatioCap` 2 → **1.5** (only bites on hi-DPI panels, DPR > 1.5). Both A/B-able live.
+- **Plumbing:** new pure [`core/graphics.js`](../src/core/graphics.js) (`effectivePixelRatio` + option
+  arrays, unit-tested); runtime setters in `scene.js` (`setPixelRatioCap`, `setShadowMapSize` — disposes
+  the old shadow map to avoid a GPU leak) wired via `game.gfx`; `postfx.rebuild()` so AO/vignette changes
+  re-apply live.
+- **Deviation from plan:** dropped the planned standalone `ui/perfHud.js` overlay — the debug menu
+  already had a live FPS/draw-call readout, so a separate HUD would have duplicated it. Extended that
+  folder instead (less code, no duplication).
+- **A/B measurement results (Nitro RTX 5060, mobs on screen, all inputs active):**
+  - Shadow map 2048 → 55fps; 1024 or 512 → ~60fps (≈+5fps, already fixed above)
+  - AO Performance → ~60fps; Low → ~55fps; Medium → ~53fps; High/Ultra → ~50fps (≈+5fps per step up)
+  - MSAA: no measurable impact at any setting — not the bottleneck (prime-suspect prediction was wrong)
+  - Everything else (bloom, vignette, pixelRatioCap, camera-follow): negligible, stable ~60fps
+- **Follow-up fix (added to this PR):** `ao.quality` 'Low' → **'Performance'** (+5fps, negligible visual
+  diff at halfRes; the config already had a note: _"Dial-back if it ever costs frames: keep halfRes →
+  quality 'Performance'"_).
+
 ## 2026-06-23 — Fix SonarCloud exclusions: add `.sonarcloud.properties` (no version change)
 
 Root-cause fix for a long-latent config bug, found while unblocking the B10 PR's quality gate.

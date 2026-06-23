@@ -26,16 +26,19 @@ and the accessibility/feel layer in [ADR-0023](adr/0023-settings-and-overlays.md
   bullets, the door. Glow = "pay attention to this." This is the look bloom will amplify.
 - **Performance is a feature.** Pooled objects, flat-shaded geometry, capped pixel ratio. New effects
   ship with a budget and a **toggle** (accessibility + low-end fallback, extends ADR-0023). The game
-  must never drop below a smooth frame on the target machine.
+  must never drop below a smooth frame on the target machine. The debug menu's **Performance**
+  (FPS / frame-ms / draw-calls / triangles) and **Graphics (A/B perf)** folders measure every fill-rate
+  cost live (FPS-1) so tuning is data-driven, not guessed.
 - **Never break the render.** Like the audio's synth fallback, any new render path degrades
   gracefully — if post-processing or WebGL2 is unavailable, fall back to the raw renderer. Never a
   black screen, headless/CI included.
 
 ## How it works (the render pipeline)
 
-- **Renderer** (`src/core/scene.js`): `WebGLRenderer({ antialias: true })`, pixel ratio capped at 2,
+- **Renderer** (`src/core/scene.js`): `WebGLRenderer({ antialias: true })`, pixel ratio capped at 1.5
+  (FPS-1 dial-back, was 2; only bites on hi-DPI panels),
   **real-time shadows on** (ADR-0026 Phase B): `PCFShadowMap`, the warm **key** light is the sole
-  caster with a tight orthographic frustum fit to the `ARENA` (~2048 map); entities + walls cast,
+  caster with a tight orthographic frustum fit to the `ARENA` (~1024 map; FPS-1 dial-back, was 2048); entities + walls cast,
   ground + walls receive, the glowing `MeshBasic` bullets/eyes/door never cast. Tuned in
   `config.GRAPHICS.shadows`; the **reduced-effects** toggle turns shadows off with the rest. Each frame
   goes through the **post-FX composer** (`src/core/postfx.js`, below); tone mapping is owned there (the

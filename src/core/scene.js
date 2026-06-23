@@ -8,10 +8,11 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { ARENA, CAMERA, PALETTE, LIGHTING, GRAPHICS } from '../config.js';
 import { createPostFX } from './postfx.js';
 import { getTexture } from './textures.js';
+import { effectivePixelRatio } from './graphics.js';
 
 export function createScene(container) {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, GRAPHICS.pixelRatioCap));
+  renderer.setPixelRatio(effectivePixelRatio(window.devicePixelRatio, GRAPHICS.pixelRatioCap));
   renderer.setSize(window.innerWidth, window.innerHeight);
   // Real-time shadows (ADR-0026 Phase B). Type is set ONCE here (before first render)
   // to avoid a mid-run shader recompile; PCFShadowMap is the current soft type.
@@ -180,5 +181,40 @@ export function createScene(container) {
     });
   }
 
-  return { renderer, scene, camera, baseCam, resize, postfx, setShadowsEnabled };
+  /**
+   * Set the pixel-ratio cap at runtime (FPS-1: live A/B debugging).
+   * Updates GRAPHICS, applies to renderer, and resizes the canvas.
+   * @param {number} cap - the pixel-ratio cap to apply
+   */
+  function setPixelRatioCap(cap) {
+    GRAPHICS.pixelRatioCap = cap;
+    renderer.setPixelRatio(effectivePixelRatio(window.devicePixelRatio, cap));
+    resize(); // re-apply size to renderer + composer + camera aspect
+  }
+
+  /**
+   * Set the shadow-map size at runtime (FPS-1: live A/B debugging).
+   * Disposes the old shadow map and recreates it to avoid GPU memory leaks.
+   * @param {number} size - the shadow-map width/height (e.g., 512, 1024, 2048)
+   */
+  function setShadowMapSize(size) {
+    GRAPHICS.shadows.mapSize = size;
+    const sm = key.shadow;
+    sm.map?.dispose();
+    sm.map = null;
+    sm.mapSize.set(size, size);
+    sm.needsUpdate = true;
+  }
+
+  return {
+    renderer,
+    scene,
+    camera,
+    baseCam,
+    resize,
+    postfx,
+    setShadowsEnabled,
+    setPixelRatioCap,
+    setShadowMapSize,
+  };
 }

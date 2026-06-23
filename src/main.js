@@ -24,15 +24,26 @@ import { saves } from './core/saves.js';
     await loadTextures([GRAPHICS.floor.map, GRAPHICS.floor.normalMap, GRAPHICS.floor.roughnessMap]);
   }
 
-  const { renderer, scene, camera, baseCam, resize, postfx, setShadowsEnabled } = createScene(
-    document.getElementById('app'),
-  );
+  const {
+    renderer,
+    scene,
+    camera,
+    baseCam,
+    resize,
+    postfx,
+    setShadowsEnabled,
+    setPixelRatioCap,
+    setShadowMapSize,
+  } = createScene(document.getElementById('app'));
 
   // try to load any configured models (no-op while config.MODELS are all null)
   await loadModels(MODELS);
 
   const input = new Input(renderer.domElement);
   const game = new Game({ renderer, scene, camera, baseCam, input, postfx });
+  // FPS-1: scene-level graphics A/B setters for the debug "Graphics" folder (attached
+  // here rather than threaded through the constructor — they live in the scene closure).
+  game.gfx = { setShadowsEnabled, setPixelRatioCap, setShadowMapSize };
   game.init();
 
   // debug handle (poke the game from the dev console, e.g. window.__game.loadRoom(5))

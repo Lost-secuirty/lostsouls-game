@@ -550,10 +550,11 @@ export const SETTINGS = {
 // and the pipeline auto-falls-back to raw render if post-FX can't initialize (never breaks).
 export const GRAPHICS = {
   enabled: true, // master switch — false = raw renderer.render()
-  pixelRatioCap: 2, // max devicePixelRatio (perf/quality knob; higher = crisper but heavier)
+  pixelRatioCap: 1.5, // max devicePixelRatio (FPS-1 dial-back: was 2). Only bites on hi-DPI panels (DPR > 1.5); A/B live in the debug "Graphics" folder.
   toneMapping: 'aces', // filmic curve: 'aces' | 'agx' | 'neutral' | 'none'
   aaSamples: 4, // WebGL2 MSAA samples for the post-FX path (0 = off)
   bloom: {
+    enabled: true, // FPS-1: A/B the bloom pass live in the debug "Graphics" folder
     intensity: 0.8, // glow strength
     threshold: 0.55, // only pixels brighter than this bloom (keeps the dark world dark)
     smoothing: 0.3, // soft knee around the threshold
@@ -577,7 +578,7 @@ export const GRAPHICS = {
   // radius down → frustumMargin tighter → enabled:false. Swap-and-see in `npm run dev`.
   shadows: {
     enabled: true, // master switch (also gated off by the reducedEffects setting)
-    mapSize: 2048, // shadow-map resolution per side (1024 = softer + cheaper)
+    mapSize: 1024, // shadow-map resolution per side (FPS-1 dial-back: was 2048; 1024 = softer + cheaper). A/B live in the debug "Graphics" folder.
     frustumMargin: 4, // world-unit slack around the arena for the ortho shadow frustum
     near: 1, // shadow camera near plane
     far: 80, // shadow camera far plane (must exceed the key light → floor distance)
@@ -612,7 +613,7 @@ export const GRAPHICS = {
   // Dial-back if it ever costs frames: keep halfRes → quality 'Performance' → smaller radius.
   ao: {
     enabled: true, // master switch (off here = composer renders without the AO pass)
-    quality: 'Low', // N8AO preset: 'Performance' | 'Low' | 'Medium' | 'High' | 'Ultra'
+    quality: 'Performance', // N8AO preset: 'Performance' | 'Low' | 'Medium' | 'High' | 'Ultra'
     halfRes: true, // sample AO at half resolution (the big perf win; fine for soft AO)
     radius: 2.0, // world-space sample radius (n8ao default 5 is too big for our scale)
     distanceFalloff: 1.0, // how quickly AO fades with distance
@@ -621,6 +622,14 @@ export const GRAPHICS = {
     gammaCorrection: 'auto', // 'auto' (mid-pipeline → off) | true | false override
   },
 };
+
+// ---- Graphics A/B debug option lists (FPS-1) ----
+// Dropdown choices for the debug "Graphics (A/B perf)" folder.
+// Kept here so all graphics tunables live in one place.
+export const PIXEL_RATIO_CAPS = [1, 1.25, 1.5, 2.0];
+export const SHADOW_MAP_SIZES = [512, 1024, 2048];
+export const MSAA_SAMPLES = [0, 2, 4];
+export const AO_QUALITIES = ['off', 'Performance', 'Low', 'Medium', 'High', 'Ultra'];
 
 // ---- readability overlay rings (ADR-0023 — systems/overlays.js) ----
 // Flat ground rings drawn over the action: an always-on boss TELEGRAPH ring (pulses
