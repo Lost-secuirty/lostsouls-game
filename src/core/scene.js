@@ -181,15 +181,22 @@ export function createScene(container) {
     });
   }
 
-  // FPS-1: live A/B of the two safe dial-backs from the debug "Graphics" folder.
-  // Both mutate GRAPHICS so the config value stays the single source of truth.
+  /**
+   * Set the pixel-ratio cap at runtime (FPS-1: live A/B debugging).
+   * Updates GRAPHICS, applies to renderer, and resizes the canvas.
+   * @param {number} cap - the pixel-ratio cap to apply
+   */
   function setPixelRatioCap(cap) {
     GRAPHICS.pixelRatioCap = cap;
     renderer.setPixelRatio(effectivePixelRatio(window.devicePixelRatio, cap));
     resize(); // re-apply size to renderer + composer + camera aspect
   }
-  // Resizing a shadow map needs the old GPU texture disposed and the map recreated,
-  // or it leaks and the new size is silently ignored.
+
+  /**
+   * Set the shadow-map size at runtime (FPS-1: live A/B debugging).
+   * Disposes the old shadow map and recreates it to avoid GPU memory leaks.
+   * @param {number} size - the shadow-map width/height (e.g., 512, 1024, 2048)
+   */
   function setShadowMapSize(size) {
     GRAPHICS.shadows.mapSize = size;
     const sm = key.shadow;
