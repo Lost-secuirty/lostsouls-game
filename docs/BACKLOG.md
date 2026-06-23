@@ -9,6 +9,129 @@ decisions in [`docs/adr/`](adr/).
 > **Light by design (ADR-0005).** This is a fun-first co-designed game; keep the backlog short and
 > honest. Don't pad it with process for its own sake.
 
+## Gameplay notes (2026-06-23, Scott — raw observations, not prioritized)
+
+> Dated raw notes from Scott. Overlaps with existing items are noted inline. Promote to ROADMAP when
+> scoped. Figures and percentages below are Scott's starting intuitions — treat as tunable, not final.
+
+### Balance / weapon feel
+
+- [ ] **Pierce + bounce combo is too strong.** Bounce should **cancel pierce** by default.
+      Later: an upgrade path milestone (e.g., 7 upgrades deep) unlocks a "Combo" tier where they
+      work together — scaled and/or capped. Design the unlock trigger when the upgrade path exists.
+- [ ] **Homing stops tracking on kill.** When a homing round's target dies, the missile should
+      **stop locking and fly straight** until it hits a wall or expires. The next fired homing round
+      picks a new target fresh. Current behavior (auto-switch to next target on kill) is too strong.
+- [ ] **Homing / rockets / AOE should NOT bounce** — they should explode on contact.
+      Railgun should never bounce either. Bounce is for physical projectiles, not explosive/guided.
+- [ ] **OP weapons tuned WAY down and made unlockable.** Rocket launcher, homing, heavy AOE
+      weapons: low/zero chance to spawn in early runs — locked behind progress/achievements by default.
+      Caden loves OP, but he should earn it. _(See existing "Unlockable weapons" item below.)_
+- [ ] **Echoes should be WAY lower from boss clears.** First full playthrough should yield ~100
+      Echoes total, which is already a LOT — normal bosses should only have a small chance to drop
+      them (score-based system to be designed). Design the math when the full economy is scoped.
+- [ ] **Perm upgrades (Resonance) are STEEP by intent.** Confirm this is intentional before tuning —
+      Scott's design intent is that they're very hard to get. Math to scale TBD once more of the
+      economy is built.
+
+### Rarity system rework (upgrade clear screen)
+
+- [ ] **Rarity tiers + correct stat ranges per tier.** Current clear-screen values too high (e.g.,
+      15% fire rate on a Common). Scott's proposed ladder (starting point, not final):
+
+  | Tier        | Example bonus | Spawn weight                                     |
+  | ----------- | ------------- | ------------------------------------------------ |
+  | Common      | ~0.5%         | High                                             |
+  | Uncommon    | ~2%           | Medium                                           |
+  | Rare        | ~5%           | Low                                              |
+  | Ultra Rare  | ~7%           | Very low                                         |
+  | Secret Rare | ~20%          | ~0.04% — **never mentioned anywhere in game UI** |
+
+  Secret Rare should be **hinted at indirectly via "luck" flavor** — the player thinks Ultra Rare
+  is the ceiling, doesn't know Secret Rare exists until they find one. Do not surface it in tooltips,
+  docs, or any UI.
+
+- [ ] **Heal rarity fix.** "Heal two hearts" should NOT be a Common. Full heal → Ultra tier;
+      max-HP-restore → Secret Rare tier. Health = the skill/dodge pillar; easy heals undermine it.
+
+- [ ] **DR and HP items gated hard by rarity.** 50% damage reduction = Secret Rare.
+      1-hit-invincibility = Ultra Rare. Rarity % should be code-driven by impact score, not static
+      assignment. Design the impact scoring system when rarity is scoped.
+
+- [ ] **Half hearts + max 3 hearts.** Add half-heart granularity. Lower max hearts to 3. Ties to
+      the "dodge is the skill" design intent. _(Overlaps existing "Lives → %/HP-bar rework" item.)_
+
+### Upgrade system
+
+- [ ] **Per-run weapon material upgrades.** Weapons can be upgraded mid-run with materials (drops,
+      rewards). Upgrades do NOT carry over on death — only Echoes and permanent Resonance nodes
+      persist. Design the material drop system when weapon upgrade paths are scoped.
+- [ ] **Upgrade persistence clarification.** Decide: do in-run upgrades (stat pickups from clear
+      screen) reset on death? Document the answer as a design rule.
+- [ ] **Stats/upgrade summary in pause menu.** Players should be able to see their current %
+      bonuses and stacks mid-run. Add a stats tab to the pause menu.
+
+### Weapons
+
+- [ ] **AI (ally) weapon: limit or remove rerolling.** The AI buddy should not be able to reroll
+      its weapon unlimited times at every clear. Options: keep it on pistol permanently with its own
+      special abilities (feels distinct from the player), or gate rerolls. Decide when the AI system
+      is touched next.
+- [ ] **Co-op DPS scaling.** With two players the combined DPS (especially with fire-rate upgrades)
+      outscales enemy HP. Tune difficulty to scale with co-op or gate certain weapon bonuses in co-op.
+- [ ] **Weapon tiers concept.** Rocket and homing are roughly the same power tier — both exotic/rift-
+      tech weapons. Design an explicit tier ladder (Common gun → Rare gun → Exotic/Rift tech) so
+      spawn tables and unlock gates make sense.
+
+### World / floor layout
+
+- [ ] **Full floor layout (future big change).** Current: 9 rooms + 1 boss room (linear). Future
+      vision: one whole interconnected floor you can move between, with **secrets, hidden areas, and
+      shortcuts**. Not scoped yet — deferred until the run structure is revisited. _(Major scope.)_
+- [ ] **Projectile variety per enemy type.** Bullets should have different colors, speeds, and
+      attack patterns per enemy. Multi-mob enemy types should mirror (not mimic) boss patterns.
+      3D model choices for enemy projectiles deferred to Track C asset work.
+
+### NPC system
+
+- [ ] **NPC rework — random spawn, more meaningful.** Current random NPCs feel under-used.
+      Vision: each room has a random roll — spawn a Human survivor, a Monster (non-combat, odd),
+      OR a Chest. Each has a distinct mini-interaction. _(See existing "Survivor-spawned enemies"
+      playtest items above.)_
+- [ ] **Future stable NPC characters.** As named characters found inside runs (not floor fixtures):
+  - **Shopkeeper** — sells items/upgrades for Echoes mid-run.
+  - **Echo Black Market Dealer** — offers a massive temp power spike (e.g., 100% damage boost for
+    one floor) at a steep Echo cost (e.g., 100 Echoes). Temp only, expires at floor exit.
+    The cost intentionally eats a significant chunk of your permanent-upgrade budget.
+
+### UI / input
+
+- [ ] **Pause menu with options.** Options shouldn't float on the HUD. Pause (P key; ESC to quit)
+      opens a proper pause menu. Controller: Start button. _(Overlaps existing "Pause menu for
+      options" playtest item — same fix.)_
+- [ ] **Controller mapping UI.** In the options/pause menu: controller preset selection, remappable
+      controls, keyboard + Xbox listed side-by-side. Current Xbox support is functional but not
+      surfaced to the player.
+
+### Game modes
+
+- [ ] **Endless / Horde mode vision.** Floor-after-floor with no pre-set end. Each floor:
+      random bosses + mobs, increasing chance of elite/boss-class enemies as floors climb.
+      Max 3 bosses on any single floor. Scott's milestone vision:
+  - **Floor 1000:** TRUE boss fight (caps the "Endless" climb).
+  - **Floor 5000:** Secret ending (hidden goal — don't tell the player).
+  - **Floor 10 000:** TRUE TEST — the hardest thing in the game. Unlocked only after 5000.
+  - Endless scales stat caps to **999** instead of normal run caps.
+  - Name: "Horde Mode" or keep "Endless" — TBD.
+- [ ] **Memory-safe floor generation for Endless.** Only load/generate the current floor into
+      memory; collapse completed floors. If memory allows, pre-load the next floor. Guard against
+      overflow/leak from unbounded loops. _(Tie to the existing deferred "heavy engine perf" section
+      when Endless is scoped.)_
+- [ ] **Score-based end screen.** After any run: kills per player (P1, P2, AI), deaths, hits taken,
+      floor reached, time. Later: speedrun leaderboard / category support.
+
+---
+
 ## Playtest follow-ups (2026-06-22, from Scott — fix later)
 
 - [ ] **Survivor-spawned enemies don't move** until they touch the player. The "bad read" survivor
@@ -32,6 +155,26 @@ decisions in [`docs/adr/`](adr/).
       render-coupled (it builds Enemy/Boss/Npc against the scene), so `tests/determinism.test.js`
       covers the pure RNG _logic_ seams only, not a full stepped game. Reproducibility of the random
       logic is guaranteed; a fuller headless harness is deferred. (Documented in LEARNINGS 2026-06-10.)
+
+## Player-experience principles — parked ideas (2026-06-23)
+
+> Source: a ChatGPT-generated research report (report 10). **Figures and statistics from that source
+> were not verified and should not be cited** — the source did not cite its data. These principles
+> are retained because they're independently sound game-design ideas, not because the report proved
+> them with numbers.
+
+- [ ] **Accessibility from the start, not bolted on.** Remappable controls (keyboard + gamepad),
+      colorblind-safe palette check, text/subtitle scaling, multiple difficulty options. Design
+      these as first-class concerns, not afterthoughts. _(Overlaps existing "Accessibility" section.)_
+- [ ] **Save / cross-device UX.** If the game ever runs on iPad/Switch browser: seamless save
+      continuity across devices, quick-resume from exactly where you left off. The `saves.js`
+      localStorage schema is the right foundation — design cloud/export sync if/when ports happen.
+- [ ] **Co-op polish.** Simultaneous not sequential offers, shared screen feel, clear shared HUD.
+      _(Overlaps existing "Co-op simultaneous offers" item.)_
+- [ ] **Authentic, human-made art.** Players respond to hand-crafted, unique art over polished
+      generic assets. Lean into the Track C monster-design direction (Blender/Rodin, Scott + Caden
+      designed) — the personal art beats the generic CC0 placeholder. _(Backs the GRAPHICS/ROADMAP
+      Track C direction already in the plan.)_
 
 ## Upgrade / meta systems — deferred from B9b (Scott's vision, too big for the offer PR)
 
