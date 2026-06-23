@@ -63,20 +63,20 @@ function render(content) {
   }
 }
 
+function _show(panel) {
+  render(document.getElementById('meta-content'));
+  if (panel.showModal) panel.showModal();
+  else panel.setAttribute('open', '');
+}
+
 export function initMetaPanel() {
   const panel = document.getElementById('meta');
   const openBtn = document.getElementById('btn-meta');
   const closeBtn = document.getElementById('meta-close');
   if (!panel) return;
 
-  const open = () => {
-    render(document.getElementById('meta-content'));
-    if (panel.showModal) panel.showModal();
-    else panel.setAttribute('open', '');
-  };
   const close = () => (panel.close ? panel.close() : panel.removeAttribute('open'));
-
-  openBtn?.addEventListener('click', open);
+  openBtn?.addEventListener('click', () => _show(panel));
   closeBtn?.addEventListener('click', close);
   panel.addEventListener('click', (e) => {
     if (e.target === panel) close();
@@ -85,8 +85,5 @@ export function initMetaPanel() {
 
 export function openMetaPanel() {
   const panel = document.getElementById('meta');
-  if (!panel) return;
-  render(document.getElementById('meta-content'));
-  if (panel.showModal) panel.showModal();
-  else panel.setAttribute('open', '');
+  if (panel) _show(panel);
 }
