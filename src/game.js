@@ -10,7 +10,7 @@
 // revives when the room is cleared; Game Over only on a full wipe.
 // =====================================================================
 
-import { PLAYER, CAMERA, JUICE, FEEL, ARENA, CAPS, PALETTE, PICKUPS } from './config.js';
+import { CAMERA, JUICE, FEEL, ARENA, CAPS, PALETTE, PICKUPS, MENU_CURSOR } from './config.js';
 import { State } from './states.js';
 import { makeRng } from './core/rng.js';
 import { floorInfo, nextIsBoss, resolveDeath, weaponSlotsForBosses } from './core/progression.js';
@@ -21,7 +21,8 @@ import { Bullets } from './entities/bullets.js';
 import { Hazards } from './systems/hazards.js';
 import { Overlays } from './systems/overlays.js';
 import { Pickup } from './entities/pickups.js';
-import { rollDrop, rarityBand, pityMinTier } from './core/drops.js';
+import { rollDrop } from './core/drops.js';
+import { generateOffer } from './core/offers.js';
 import { Particles } from './systems/particles.js';
 import { Juice } from './systems/juice.js';
 import { buildRoom } from './systems/rooms.js';
@@ -34,6 +35,7 @@ import { settings } from './systems/settings.js';
 import { hud } from './ui/hud.js';
 import { prompts } from './ui/prompts.js';
 import { showHumanChoice, moveChoiceFocus, confirmChoice } from './ui/humanchoice.js';
+import { showOffer, moveOfferFocus, confirmOffer } from './ui/offer.js';
 import * as audio from './systems/audio.js';
 
 export class Game {
@@ -61,8 +63,12 @@ export class Game {
     this.roomIndex = 0;
     this.lives = CAPS.lives.start;
     this.checkpointRoom = 0;
-    this.commonStreak = 0; // consecutive common normal-room drops → drives hard pity (B8)
     this.bossesBeaten = 0; // drives weapon-slot unlocks
+    // B9b room-clear offer flow (a paused pick-1-of-3 modal, one per living player)
+    this._offerActive = false; // an offer sequence is in progress (guards _finishRoomClear)
+    this._offerQueue = []; // players still to pick this room
+    this._offerPlayer = null; // the player currently choosing (drives the gamepad arm)
+    this._offerLatch = false; // gamepad focus-move debounce (mirrors _choiceLatch)
     this.godMode = false; // debug menu toggle
 
     this.coop = false;
@@ -90,7 +96,6 @@ export class Game {
     this.rng = makeRng(seed);
     this.lives = CAPS.lives.start;
     this.checkpointRoom = 0;
-    this.commonStreak = 0; // fresh pity counter each run
     this.bossesBeaten = 0;
     // reset the camera pan so a new run starts centered (no carry-over from a prior run)
     this.camPan.x = this.camPan.z = 0;
@@ -213,8 +218,8 @@ export class Game {
 
   refreshHud() {
     const info = floorInfo(this.roomIndex);
-    hud.setHearts(this.player.hearts, PLAYER.maxHearts);
-    if (this.coop && this.player2) hud.setHearts2(this.player2.hearts, PLAYER.maxHearts);
+    hud.setHearts(this.player.hearts, this.player.maxHearts);
+    if (this.coop && this.player2) hud.setHearts2(this.player2.hearts, this.player2.maxHearts);
     hud.setLives(this.lives);
     hud.setRoom(info, this._weaponLabel(this.player));
   }
@@ -282,16 +287,32 @@ export class Game {
       // fight is paused while the overlay is up; just drive the gamepad cursor
       // (mouse + keyboard are handled inside ui/humanchoice.js)
       const mv = this.input.move('pad');
-      if (mv.x > 0.5 && !this._choiceLatch) {
+      if (mv.x > MENU_CURSOR.move && !this._choiceLatch) {
         moveChoiceFocus(1);
         this._choiceLatch = true;
-      } else if (mv.x < -0.5 && !this._choiceLatch) {
+      } else if (mv.x < -MENU_CURSOR.move && !this._choiceLatch) {
         moveChoiceFocus(-1);
         this._choiceLatch = true;
-      } else if (Math.abs(mv.x) < 0.3) {
+      } else if (Math.abs(mv.x) < MENU_CURSOR.settle) {
         this._choiceLatch = false;
       }
       if (this.input.consumeHelp('pad')) confirmChoice();
+    } else if (this.state === State.OFFER) {
+      // paused while the card modal is up; drive the picking player's gamepad (mouse + keyboard live
+      // in ui/offer.js). Only a pad-using picker (solo 'both', co-op P2 'pad') is driven here.
+      if (this._offerPlayer && this._offerPlayer.device !== 'kb') {
+        const mv = this.input.move('pad');
+        if (mv.x > MENU_CURSOR.move && !this._offerLatch) {
+          moveOfferFocus(1);
+          this._offerLatch = true;
+        } else if (mv.x < -MENU_CURSOR.move && !this._offerLatch) {
+          moveOfferFocus(-1);
+          this._offerLatch = true;
+        } else if (Math.abs(mv.x) < MENU_CURSOR.settle) {
+          this._offerLatch = false;
+        }
+        if (this.input.consumeHelp('pad')) confirmOffer();
+      }
     }
 
     this.particles.update(dt);
@@ -324,7 +345,7 @@ export class Game {
       for (const pl of this.players) {
         if (!pl.alive) continue;
         // a full-health player can't pick up a heart (leave it for a hurt teammate)
-        if (item.type === 'HEAL' && pl.hearts >= PLAYER.maxHearts) continue;
+        if (item.type === 'HEAL' && pl.hearts >= pl.maxHearts) continue;
         if (circleVsCircle(pl.x, pl.z, pl.radius, item.x, item.z, item.radius)) {
           item.collect(this, pl);
           break;
@@ -388,13 +409,14 @@ export class Game {
 
     this.bullets.clearEnemyBullets();
     this.hazards.clearAll();
-    this.room.openDoor();
-    audio.play('doorOpen');
-    this.state = State.ROOM_CLEAR;
     prompts.hide();
     const info = floorInfo(this.roomIndex);
 
     if (info.isBossRoom) {
+      // boss room: open the door now + drop the ground reward (HEAL + weapon chest) — unchanged (B8)
+      this.room.openDoor();
+      audio.play('doorOpen');
+      this.state = State.ROOM_CLEAR;
       hud.hideBossBars();
       audio.play('bossDie');
       this.input.rumble(0.8, 0.6, 300); // boss-down rumble
@@ -404,10 +426,10 @@ export class Game {
       hud.banner(info.isLastRoom ? 'BOSS DOWN — FINAL EXIT!' : 'BOSS DOWN — CHECKPOINT SAVED!');
       this._dropBossReward();
     } else {
-      // normal room: roll a rarity-tiered reward (floor-scaled + hard pity), warn if the boss is next
+      // normal room: open the pick-1-of-3 OFFER screen (B9b) INSTEAD of a ground stat-drop. The door
+      // stays CLOSED + the room stays paused until every living player has picked (_finishRoomClear).
       audio.play('roomClear');
-      this._dropRoomReward(info);
-      hud.banner(nextIsBoss(this.roomIndex) ? '⚠  BOSS AHEAD  ⚠' : 'ROOM CLEAR — RUN!');
+      this._beginOffers();
     }
   }
 
@@ -418,13 +440,56 @@ export class Game {
     this.spawnPickup(drop.type, 2, 0);
   }
 
-  /** normal-room reward: a rarity-tiered drop, floor-scaled + hard pity (B8). */
-  _dropRoomReward(info) {
-    const weights = PICKUPS.rarity.regularChestWeights[rarityBand(info.floorIndex)];
-    const drop = rollDrop(this.rng, weights, { minTier: pityMinTier(this.commonStreak) });
-    // a common extends the dry streak; anything rarer (or a pity-forced drop) resets it
-    this.commonStreak = drop.tier === PICKUPS.rarity.tiers[0] ? this.commonStreak + 1 : 0;
-    this.spawnPickup(drop.type, 0, 0);
+  // ---- B9b: room-clear OFFER flow (replaces the old ground stat-drop) ----
+
+  /** open the offer queue: one pick-1-of-3 per living player (solo = [p1]; co-op = [p1, p2]). */
+  _beginOffers() {
+    this._offerActive = true;
+    this._offerQueue = this.players.filter((p) => p.alive);
+    this.state = State.OFFER;
+    this.input.consumeRestart(); // drop any stray R (the offer reuses R for the ally reroll)
+    this._presentNextOffer();
+  }
+
+  /** show the next queued player's offer, or finish the room clear when the queue is empty. */
+  _presentNextOffer() {
+    const pl = this._offerQueue.shift();
+    if (!pl) {
+      this._finishRoomClear();
+      return;
+    }
+    this._offerPlayer = pl;
+    const cards = generateOffer(this.rng, pl.offerContext()); // seeded (ADR-0013) → reproducible
+    pl.noteOffered(cards.map((c) => c.id));
+    let playerTag = null;
+    if (this.coop) playerTag = pl === this.player ? 'P1' : 'P2';
+    showOffer(cards, {
+      onPick: (i) => this._onOfferPick(pl, cards, i),
+      solo: !this.coop,
+      playerTag,
+      allyWeaponName: !this.coop && this.ally ? this.ally.weaponName : null,
+      onReroll: !this.coop && this.ally ? () => this.ally.rerollWeapon(this.rng) : null,
+    });
+  }
+
+  /** apply a player's pick, then move on to the next player (or finish the room). */
+  _onOfferPick(pl, cards, index) {
+    pl.applyOfferCard(cards[index] ?? cards[0], this);
+    this.refreshHud();
+    this._presentNextOffer();
+  }
+
+  /** all picks done: open the door + drop into ROOM_CLEAR (the normal-room equivalent of the boss path). */
+  _finishRoomClear() {
+    if (!this._offerActive) return; // idempotent guard (the headless auto-resolve recurses)
+    this._offerActive = false;
+    this._offerPlayer = null;
+    this.room.openDoor();
+    audio.play('doorOpen');
+    this.state = State.ROOM_CLEAR;
+    this.input.consumeRestart(); // drain any reroll-R before ROOM_CLEAR / DEAD can read it
+    prompts.hide();
+    hud.banner(nextIsBoss(this.roomIndex) ? '⚠  BOSS AHEAD  ⚠' : 'ROOM CLEAR — RUN!');
   }
 
   /** the player picked an approach at the human decision-boss (A/B/C/D) */

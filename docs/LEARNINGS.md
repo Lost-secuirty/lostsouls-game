@@ -705,3 +705,36 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
   render module added (scene/postfx/textures, all 0% under unit tests) drags the ratio down; budget a
   small unit test for any _pure_ seam you add (e.g. `castShadows`, `configureTexture`) to stay over the
   40% floor instead of weakening the gate.
+
+## 2026-06-22 — B9b: offer screen go-live (v0.8.14, ADR-0028)
+
+- **Keep the door CLOSED during the offer.** `_onRoomClear` used to open the door + set `ROOM_CLEAR`
+  up front; doing that before the modal lets `_checkDoor` (which runs in the `ROOM_CLEAR` update arm)
+  load the next room _mid-offer_. Fix: normal rooms enter a paused `OFFER` state and only
+  `room.openDoor()` + `ROOM_CLEAR` in `_finishRoomClear`, after every living player has picked. The boss
+  path keeps its original open-door-now flow.
+- **The headless offer resolves synchronously and recurses.** With no `#offer` element `showOffer` calls
+  `onPick(0)` immediately, so `_presentNextOffer → _onOfferPick → _presentNextOffer …` runs in one stack
+  to completion. Guard `_finishRoomClear` with an idempotent `_offerActive` flag so the room transition
+  can't double-fire — it's also why the browser smoke + the verification drive keep advancing.
+- **Damage reduction + whole-heart HP needs a carry accumulator, not rounding.** `hud.setHearts` does
+  `'❤️'.repeat(n)` — `n` MUST stay a non-negative integer (a negative fraction throws RangeError; a
+  positive one silently floors). A flat "% off" a 1-damage hit can't come off cleanly, so
+  `core/defense.js` banks the reduced amount and subtracts a whole heart only when it crosses 1 — a true
+  deterministic % with no RNG (matches the "never chance" ethic) and integer hearts.
+- **A blocked/reduced hit must still spend the i-frame window.** `hurt()` sets `invuln` even when a
+  guard charge eats the hit (it _was_ a hit) — else the same volley would chew through every guard
+  charge in one frame. The block just swaps the cue (gold spark + a new procedural `shield` SFX; no
+  blood / music duck).
+- **`offerContext().owned` must be UPPERCASE.** Player slots store lowercase weapon keys (`'shotgun'`)
+  but `core/items.js` ids + `core/offers.js`'s owned-weapon down-weight are UPPERCASE (`'SHOTGUN'`) —
+  pass `slots.map((s) => s.toUpperCase())` or the anti-repeat silently never fires for carried guns.
+- **The blast weapon-mod must set BOTH `explosive:true` and `explodeRadius`.** `bullets.js` only runs
+  the AoE when `b.explosive` is truthy; granting just a radius does nothing.
+- **`maxHearts` is now per-player + persists across rooms.** It lives on the `Player` (grows via
+  `MAX_HP_UP`, capped `CAPS.maxHearts`); `loadRoom` doesn't `reset()`, so it (and all upgrades) persist
+  within a run and reset only on a new run. Every `PLAYER.maxHearts` read for a live player moved to
+  `pl.maxHearts` (hud, full-health pickup skip, heal cap, debug full-heal).
+- **`vitest run` cold-transforms THREE under coverage and can trip the 10s `beforeEach` hook** on
+  `tests/input.proof.test.js` (it dynamic-imports `systems/input.js → three`). Environmental (warm cache
+  → ~1s); a fresh `--coverage` run on a cold machine may need `--hookTimeout` headroom to report.

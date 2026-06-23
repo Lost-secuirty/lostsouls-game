@@ -9,12 +9,58 @@ decisions in [`docs/adr/`](adr/).
 > **Light by design (ADR-0005).** This is a fun-first co-designed game; keep the backlog short and
 > honest. Don't pad it with process for its own sake.
 
+## Playtest follow-ups (2026-06-22, from Scott — fix later)
+
+- [ ] **Survivor-spawned enemies don't move** until they touch the player. The "bad read" survivor
+      outcome (`game._resolveSurvivor` → `SPAWN_ENEMIES` → `new Enemy(scene, 'chaser', …)`) spawns
+      chasers that read as inert until contact. Check target acquisition / `Enemy.update` for enemies
+      added mid-room (vs. the spawner's room-load path).
+- [ ] **Survivor-spawned enemies spawn on top of you.** They're placed at `npc.x ± 2, npc.z ± 2`
+      (right where you're interacting with the survivor). Spawn them at a distance from the nearest
+      player instead (a min-distance ring / a different location).
+- [ ] **No movement OR firing while a "screen" is up.** Scott can still move + shoot while a clear
+      screen shows. The B9b `OFFER` modal already fully pauses input; this is about the `ROOM_CLEAR`
+      walk-to-door phase (currently movement-enabled by design so you can reach the door) and/or a
+      general rule — decide the intended behavior and gate move + fire for every non-`PLAYING` "screen"
+      state (may mean replacing walk-to-door with a prompt/auto-advance).
+- [ ] **Pause menu for options.** Move the always-on-screen settings (`#settings` panel, bottom-right)
+      into a proper **pause menu** (Esc / Start) — options live in the pause menu, not floating on the HUD.
+
 ## Known gaps / deferred
 
 - [ ] **Full `Game` step is not in the headless determinism test** — `populateRoom` is
       render-coupled (it builds Enemy/Boss/Npc against the scene), so `tests/determinism.test.js`
       covers the pure RNG _logic_ seams only, not a full stepped game. Reproducibility of the random
       logic is guaranteed; a fuller headless harness is deferred. (Documented in LEARNINGS 2026-06-10.)
+
+## Upgrade / meta systems — deferred from B9b (Scott's vision, too big for the offer PR)
+
+The B9b offer screen is intentionally a **small** per-pick nudge; the depth/excitement is meant to come
+from a stack of bigger systems layered on later. Parked here so the offer PR stays focused — each
+becomes an ADR when picked up.
+
+- [ ] **Luck factor / stat** — biases offer tiers + drop rarity (an in-run and/or meta stat).
+- [ ] **Other upgrade sources** beyond the room-clear offer (shops, shrines, events, …).
+- [ ] **Permanent / meta upgrades** — persistent between-run progression (this is **B10**, ADR-0029).
+- [ ] **Unlockable weapons** — guns gated behind progress/achievements (vs. all available from the start).
+- [ ] **Unlockable characters** — alternate playables unlocked via **achievements**.
+- [ ] **Achievements** — the unlock + tracking layer the above hang off.
+- [ ] **Challenge / endless / random (modifier) modes** — alternate run rulesets. Endless is why the
+      offer curve is "scales almost forever" (small steps that never hard-cap).
+
+### B9b-specific small follow-ups
+
+- [ ] **Co-op simultaneous offers** — B9b presents the two offers **sequentially** (P1 then P2); a
+      side-by-side, device-routed version is a polish pass.
+- [ ] **Gamepad ally-weapon reroll** — the solo reroll is keyboard/click (`R`) only for now.
+- [ ] **Bespoke boss reward screens** — boss rooms still drop a ground HEAL + weapon chest (B8); a
+      boss-specific reward/offer screen is later.
+- [ ] **Lives → %/HP-bar rework** — the guard + carry damage-reduction work with whole hearts today; a
+      finer HP model (half-hearts / a bar) is a bigger change (kept here so the carry-DR opacity is a
+      conscious trade, not a gap).
+- [ ] **Range upgrade** (bullets use lifetime, not range — not a mechanic yet) and **reload / finite
+      ammo** (guns are infinite-ammo for now).
+- [ ] **Level-up / XP cadence** as an alternative to the every-room offer.
 
 ## Future ideas (parking lot)
 

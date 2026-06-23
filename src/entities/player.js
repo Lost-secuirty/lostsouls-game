@@ -6,8 +6,19 @@
 // =====================================================================
 
 import * as THREE from 'three';
-import { PLAYER, WEAPONS, PALETTE, CAPS, UPGRADES } from '../config.js';
+import {
+  PLAYER,
+  WEAPONS,
+  PALETTE,
+  CAPS,
+  UPGRADES,
+  DAMAGE_REDUCTION,
+  OFFERS,
+  GUARD,
+} from '../config.js';
 import { statBonus } from '../core/scaling.js';
+import { itemById } from '../core/items.js';
+import { resolveIncoming } from '../core/defense.js';
 import { makeCharacter } from './characterMesh.js';
 import { slideOutOfWalls, clampToArena } from '../systems/collision.js';
 import { spreadDirs, circleVsCircle, normalize } from '../core/math2d.js';
@@ -40,16 +51,22 @@ export class Player {
   reset(x, z) {
     this.x = x;
     this.z = z;
-    this.hearts = PLAYER.maxHearts;
+    this.maxHearts = PLAYER.maxHearts; // grows via the offered MAX_HP_UP (capped at CAPS.maxHearts)
+    this.hearts = this.maxHearts;
     this.alive = true;
     this.fireTimer = 0;
     this.invuln = 0;
     this._beatTimer = 0;
-    // upgrade STACKS — each pickup adds one; the derived stats below come from the
-    // diminishing-returns curve (config.UPGRADES + core/scaling.js), so power ramps
-    // over the whole run instead of capping in ~3 pickups.
-    this._up = { damage: 0, fireRate: 0, speed: 0 };
-    this._recomputeUpgrades(); // sets speed / damageMul / fireRateMul from 0 stacks
+    // upgrade STACKS — each OFFER pick (B9b) adds one; the derived stats below come from the
+    // diminishing-returns curve (config.UPGRADES + core/scaling.js), so power ramps over the whole
+    // run instead of capping early. `damageReduction` feeds core/defense.js in hurt().
+    this._up = { damage: 0, fireRate: 0, speed: 0, damageReduction: 0 };
+    this.guardCharges = 0; // block-N-hits charges from GUARD offers (consumed first in hurt())
+    this._drCarry = 0; // banked fractional damage-reduction (core/defense.js carry accumulator)
+    this._mods = { pierce: 0, bounces: 0, bulletSpeed: 0, explodeRadius: 0 }; // weapon-mod offers
+    this.offerRecent = []; // recently-offered item ids → anti-repeat (OFFERS.recentMemory)
+    this.offerCommonStreak = 0; // consecutive commons TAKEN → drives offer pity (per player)
+    this._recomputeUpgrades(); // sets speed / damageMul / fireRateMul / damageReductionFrac
     this.slots = ['pistol']; // weapons you carry; slotsUnlocked is the capacity
     this.slotIndex = 0;
     this._refreshWeapon();
@@ -60,7 +77,8 @@ export class Player {
   revive(x, z) {
     this.x = x;
     this.z = z;
-    this.hearts = PLAYER.maxHearts;
+    this.hearts = this.maxHearts; // upgrades (incl. max-life) persist through a life-loss
+    this._drCarry = 0; // a full restore wipes banked reduced-damage (don't carry it past a revive)
     this.alive = true;
     this.invuln = 1.4;
     this.mesh.position.set(x, 0, z);
@@ -176,18 +194,18 @@ export class Player {
 
   _fireWeapon(game, aim) {
     const w = this.weaponDef;
-    const dmg = w.damage * this.damageMul; // base unchanged; multiplier is capped
+    const m = this._mods; // weapon-mod offers (B9b): stack onto the gun's base behavior flags
     const dirs = spreadDirs(aim.x, aim.z, w.pellets, w.spreadDeg);
     for (const d of dirs) {
       game.bullets.spawnPlayer(this.x, this.z, d.x, d.z, {
-        damage: dmg,
-        speed: w.bulletSpeed,
-        explosive: w.explosive,
-        explodeRadius: w.explodeRadius,
-        pierce: w.pierce,
+        damage: w.damage * this.damageMul, // base unchanged; multiplier is capped
+        speed: w.bulletSpeed * (1 + m.bulletSpeed), // + bullet-speed mod
+        explosive: w.explosive || m.explodeRadius > 0, // the blast mod makes any gun explode
+        explodeRadius: (w.explodeRadius ?? 0) + m.explodeRadius,
+        pierce: (w.pierce ?? 0) + m.pierce,
         homing: w.homing,
         turnRate: w.turnRate,
-        bounces: w.bounces,
+        bounces: (w.bounces ?? 0) + m.bounces,
         life: w.life,
         scale: w.scale,
         color: w.color,
@@ -273,10 +291,14 @@ export class Player {
     this._charge = 0;
     if (aim.x === 0 && aim.z === 0) return;
     const lerp = (a, b) => a + (b - a) * f;
+    const m = this._mods; // weapon-mod offers stack onto the charged shot too
     game.bullets.spawnPlayer(this.x, this.z, aim.x, aim.z, {
       damage: lerp(c.minDamage, c.maxDamage) * this.damageMul,
-      speed: lerp(c.minSpeed, c.maxSpeed),
-      pierce: Math.round(lerp(0, c.pierce)),
+      speed: lerp(c.minSpeed, c.maxSpeed) * (1 + m.bulletSpeed),
+      pierce: Math.round(lerp(0, c.pierce)) + m.pierce,
+      bounces: m.bounces,
+      explosive: m.explodeRadius > 0,
+      explodeRadius: m.explodeRadius,
       scale: lerp(1, c.maxScale),
       color: c.color,
     });
@@ -288,8 +310,28 @@ export class Player {
 
   hurt(dmg, game) {
     if (game.godMode || this.invuln > 0 || !this.alive) return;
-    this.hearts -= dmg;
-    this.invuln = PLAYER.invuln;
+    // guard charges + damage-reduction resolve BEFORE any heart comes off (core/defense.js, B9b)
+    const res = resolveIncoming(dmg, {
+      guardCharges: this.guardCharges,
+      reduction: this.damageReductionFrac,
+      carry: this._drCarry,
+    });
+    this.guardCharges = res.guardCharges;
+    this._drCarry = res.carry;
+    this.invuln = PLAYER.invuln; // a blocked hit still spends the i-frame window (it WAS a hit)
+
+    if (res.blocked) {
+      // a guard charge ate the hit: distinct, lighter cue (config.GUARD.block) — no blood / duck / loss
+      const fx = GUARD.block;
+      game.juice.addTrauma(game.JUICE.traumaOnShoot);
+      game.particles.burst(this.x, this.z, fx.sparkCount, fx.sparkColor); // gold spark = shielded
+      audio.play('shield');
+      if (this.device !== 'kb') game.input.rumble(fx.rumble.strong, fx.rumble.weak, fx.rumble.ms);
+      game.refreshHud();
+      return;
+    }
+
+    this.hearts -= res.heartsLost; // whole hearts only (damage reduction banks the remainder)
     game.juice.addTrauma(game.JUICE.traumaOnHurt);
     game.juice.hitStop(game.JUICE.hitStopOnHurt);
     game.particles.burst(this.x, this.z, 10, this._baseColor.getHex());
@@ -326,6 +368,12 @@ export class Player {
       PLAYER.speed * CAPS.speedMul,
       PLAYER.speed * (1 + statBonus(u.speed, UPGRADES.speed.maxBonus, UPGRADES.speed.half)),
     );
+    // damage-reduction fraction (B9b) — consumed in hurt() via core/defense.js (carry model)
+    this.damageReductionFrac = statBonus(
+      u.damageReduction,
+      DAMAGE_REDUCTION.maxBonus,
+      DAMAGE_REDUCTION.half,
+    );
   }
 
   /** apply a survivor outcome or pickup buff/debuff. The UPs add one stack each
@@ -333,7 +381,7 @@ export class Player {
   applyEffect(effect, magnitude, game) {
     switch (effect) {
       case 'HEAL':
-        this.hearts = Math.min(PLAYER.maxHearts, this.hearts + magnitude);
+        this.hearts = Math.min(this.maxHearts, this.hearts + magnitude);
         break;
       case 'FIRE_RATE_UP':
         this._up.fireRate++;
@@ -354,5 +402,73 @@ export class Player {
       // SPAWN_ENEMIES is handled by the game (it owns spawning)
     }
     game.refreshHud();
+  }
+
+  // ---- B9b: room-clear OFFER integration (the engine is pure core/offers.js + core/items.js) ----
+
+  /**
+   * Context for core/offers.js generateOffer(). `owned` weapon ids are UPPERCASED to match the
+   * registry ids (slots store lowercase keys) so the owned-weapon down-weight actually fires; `stacks`
+   * drives the marginal "+X%" blurb; `commonStreak` drives this player's offer pity.
+   */
+  offerContext() {
+    return {
+      owned: this.slots.map((s) => s.toUpperCase()),
+      recent: this.offerRecent,
+      stacks: {
+        DAMAGE_UP: this._up.damage,
+        FIRE_RATE_UP: this._up.fireRate,
+        SPEED_UP: this._up.speed,
+        DMG_REDUCT: this._up.damageReduction,
+      },
+      commonStreak: this.offerCommonStreak,
+    };
+  }
+
+  /** remember the ids just offered (anti-repeat ring buffer, capped at OFFERS.recentMemory). */
+  noteOffered(ids) {
+    this.offerRecent.push(...ids);
+    if (this.offerRecent.length > OFFERS.recentMemory) {
+      this.offerRecent.splice(0, this.offerRecent.length - OFFERS.recentMemory);
+    }
+  }
+
+  /**
+   * Apply a chosen offer card. The card carries only id/name/tier/category/blurb, so we look the full
+   * item up in the registry and run its `effect`. Updates this player's offer pity streak.
+   */
+  applyOfferCard(card, game) {
+    const item = itemById(card.id);
+    if (!item) return;
+    const e = item.effect;
+    switch (e.kind) {
+      case 'stat': // damage / fireRate / speed
+        this._up[e.stat] = (this._up[e.stat] ?? 0) + 1;
+        this._recomputeUpgrades();
+        break;
+      case 'damageReduction':
+        this._up.damageReduction++;
+        this._recomputeUpgrades();
+        break;
+      case 'heal':
+        this.hearts = Math.min(this.maxHearts, this.hearts + e.amount);
+        break;
+      case 'maxLife':
+        this.maxHearts = Math.min(CAPS.maxHearts, this.maxHearts + e.amount);
+        this.hearts = Math.min(this.maxHearts, this.hearts + e.amount); // a new heart container fills
+        break;
+      case 'guard':
+        this.guardCharges += e.charges;
+        break;
+      case 'mod':
+        this._mods[e.flag] += e.amount;
+        break;
+      case 'weapon':
+        this.addWeapon(e.weapon);
+        break;
+    }
+    // offer pity: a common TAKEN extends the dry streak; anything rarer resets it
+    this.offerCommonStreak = card.tier === 'common' ? this.offerCommonStreak + 1 : 0;
+    game?.refreshHud();
   }
 }

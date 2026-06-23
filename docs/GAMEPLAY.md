@@ -48,15 +48,15 @@ gambling-style tricks that hook rather than delight. Concretely:
 
 ## The pillars
 
-| Pillar               | What it is                                                                                          | Config block(s)                        | Key ADRs                           |
-| -------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------- | ---------------------------------- |
-| **Progression**      | 5 floors × (9 rooms + boss); each floor has a boss + a palette its minions share                    | `PROGRESSION`, `ROOMS`, `CAPS`         | 0007, 0015, 0020                   |
-| **Combat / weapons** | 10 guns with distinct behaviors (pierce/homing/bounce/charge/rocket/orbital); shared pooled bullets | `WEAPONS`, `BULLET`, `PLAYER`          | 0012, 0015, 0021                   |
-| **Enemies**          | chaser (melee) + shooter (ring volleys); HP-gated minions sized off `ENEMY.chaser`                  | `ENEMY`, `ROOMS`                       | 0014, 0020                         |
-| **Bosses**           | data-driven behavior modules; per-pattern numbers (P# = attack pattern, not HP phase)               | `BOSS`, `DUO`, `HUMAN_BOSS`, `HAZARD`  | 0009, 0014, 0016, 0018, 0019, 0021 |
-| **Economy/upgrades** | earned pickups on a diminishing-returns curve; **rarity tiers** + floor-scaled odds + hard pity     | `PICKUPS`, `UPGRADES`, `CAPS`          | 0012, 0022                         |
-| **Difficulty**       | one curve scales the safe knobs per floor (`diff = base × (1+growth)^floor`)                        | `DIFFICULTY`                           | 0022                               |
-| **Feel / a11y**      | trauma shake + hit-stop + screen-flash + hit knockback; persisted settings (volume/mute/overlay)    | `JUICE`, `FEEL`, `SETTINGS`, `OVERLAY` | 0023                               |
+| Pillar               | What it is                                                                                                       | Config block(s)                                                      | Key ADRs                           |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------------------- |
+| **Progression**      | 5 floors × (9 rooms + boss); each floor has a boss + a palette its minions share                                 | `PROGRESSION`, `ROOMS`, `CAPS`                                       | 0007, 0015, 0020                   |
+| **Combat / weapons** | 10 guns with distinct behaviors (pierce/homing/bounce/charge/rocket/orbital); shared pooled bullets              | `WEAPONS`, `BULLET`, `PLAYER`                                        | 0012, 0015, 0021                   |
+| **Enemies**          | chaser (melee) + shooter (ring volleys); HP-gated minions sized off `ENEMY.chaser`                               | `ENEMY`, `ROOMS`                                                     | 0014, 0020                         |
+| **Bosses**           | data-driven behavior modules; per-pattern numbers (P# = attack pattern, not HP phase)                            | `BOSS`, `DUO`, `HUMAN_BOSS`, `HAZARD`                                | 0009, 0014, 0016, 0018, 0019, 0021 |
+| **Economy/upgrades** | room-clear **pick-1-of-3 offer** (central registry, rarity + pity, small-per-pick curve); boss chests still drop | `OFFERS`, `UPGRADES`, `CAPS`, `GUARD`, `DAMAGE_REDUCTION`, `PICKUPS` | 0012, 0022, 0028                   |
+| **Difficulty**       | one curve scales the safe knobs per floor (`diff = base × (1+growth)^floor`)                                     | `DIFFICULTY`                                                         | 0022                               |
+| **Feel / a11y**      | trauma shake + hit-stop + screen-flash + hit knockback; persisted settings (volume/mute/overlay)                 | `JUICE`, `FEEL`, `SETTINGS`, `OVERLAY`                               | 0023                               |
 
 ### Bosses & the trust mechanic
 
@@ -78,6 +78,22 @@ straight onto the story's edge → core journey (see `STORY.md`):
 Bullet patterns come from a pure **emitter library** (`ring`/`gapRing`/`jitterRing`/`star`/`nWay`/
 `arc`, ADR-0021) — a new attack is "pick a generator + config numbers."
 
+### Upgrades & offers (ADR-0028)
+
+Clearing a **normal** room opens a **pick-1-of-3 offer** instead of dropping a power-up on the ground
+(boss rooms still drop a HEAL + weapon chest). Cards are drawn from a central registry
+(`core/items.js`) across three pooled categories — **player upgrades** (damage / fire-rate / move-speed
+/ heal / max-life / damage-reduction / **guard**), **weapon mods** (pierce / bounce / bullet-speed /
+blast — reusing the existing bullet flags), and the **weapons** themselves. A card shows the **honest
+marginal effect** of _this_ pick ("+4% damage"), which shrinks as the diminishing-returns curve climbs.
+Each pick is deliberately **small** — the variety comes from the rarity roll (`common/rare/epic/ultra`,
+with soft + hard **pity** so a run never goes dry) and, later, the bigger meta systems parked in
+[`BACKLOG.md`](BACKLOG.md). **Defense:** a **guard** blocks the next N hits (rare = 1, ultra = 3);
+**damage reduction** is a deterministic % (a carry accumulator keeps whole-heart HP honest — no chance).
+**Co-op:** each player picks their own offer; **solo:** the AI ally passively gets 20% of your bonuses
+and carries a gun you can reroll. All seeded (ADR-0013) and unit/drive-tested; engine in
+`core/offers.js`, applied in `entities/player.js`.
+
 ## Tuning the game (plug-and-play)
 
 Everything that affects _feel_ is a number in [`src/config.js`](../src/config.js) — change it, save,
@@ -86,10 +102,12 @@ and watch it live in `npm run dev`. Common knobs:
 - **Too hard / too easy?** `DIFFICULTY.growth` (whole-run ramp) and per-floor `diffMul`.
 - **A gun feels off?** `WEAPONS.<name>` (cooldown, damage, pellets, spread, behavior flags).
 - **Upgrades too fast/slow?** `UPGRADES` (the diminishing-returns curve), `CAPS` (hard backstops).
-- **Drops feel off?** `PICKUPS.rarity` — `itemRarity` (which tier each item is), `regularChestWeights`
-  (per-floor-band tier odds), `bossChestWeights`, and `hardPity.commonStreakMax` (how many commons in
-  a row before a rare+ is guaranteed). Pity is anti-frustration, _not_ a craving loop — see the design
-  principle "skill and progress are the reward, never chance."
+- **Offers feel off?** `OFFERS` (cards per room, tier weights incl. `ultra`, anti-repeat decay, soft/
+  hard pity), `UPGRADES`/`DAMAGE_REDUCTION` (the small-per-pick curves — raise `half` for smaller steps),
+  `GUARD` (charges per tier), `WEAPON_MODS` (mod amounts), `ALLY.upgradeShare` (the ally's cut).
+- **Boss-chest drops feel off?** `PICKUPS.rarity` — `itemRarity`, `bossChestWeights`, `hardPity`
+  (the B8 ground/boss-chest engine; normal rooms use the offer now). Pity is anti-frustration, _not_ a
+  craving loop — see the design principle "skill and progress are the reward, never chance."
 - **More/less juice?** `JUICE` (trauma shake + hit-stop), `FEEL` (screen-flash + knockback), `PARTICLES`
   (blood). Knockback is pure gameplay (not gated by `reducedEffects`); bosses ignore it by default so
   their telegraphs stay on-beat — flip `FEEL.knockback.enabled` off for the old no-shove combat.

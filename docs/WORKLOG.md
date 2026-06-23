@@ -15,6 +15,43 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-22 — B9b: Offer screen go-live (room-clear pick-1-of-3) (v0.8.14)
+
+The second half of the B9 redesign — the B9a offer engine is now **wired live**. Normal room clears open
+a paused **pick-1-of-3 upgrade OFFER** (replacing ground stat-drops); boss rooms still drop a HEAL +
+weapon chest. (ADR-0028.)
+
+- **New `src/ui/offer.js`** — the modal card screen (modeled on `ui/humanchoice.js`): tier-colored
+  cards, keyboard 1-3 / arrows+Enter / click / gamepad (`moveOfferFocus`/`confirmOffer`), a solo `[R]`
+  ally-weapon reroll, headless auto-resolve, never-throws. `index.html` gains the `#offer` overlay + the
+  tier-colored card CSS.
+- **New `src/core/defense.js`** (pure) — `resolveIncoming(dmg, {guardCharges, reduction, carry})`: guard
+  charges block whole hits first; damage reduction is a deterministic % via a **carry accumulator** so
+  whole-heart HP feels a true fraction with no RNG and never goes fractional.
+- **`src/states.js` + `src/game.js`** — a paused `OFFER` state; normal room clear → `_beginOffers` (one
+  pick per living player, co-op **sequential**) → `_finishRoomClear` opens the door + `ROOM_CLEAR` (the
+  door stays CLOSED during the offer). Removed `_dropRoomReward` + the B8 ground-drop `commonStreak`.
+- **`src/entities/player.js`** — per-player `maxHearts`; `applyOfferCard` (stat / damage-reduction /
+  heal / max-life / guard / weapon-mod / weapon); `hurt()` resolves guard + damage-reduction
+  (core/defense.js) before any heart comes off, with a distinct "shield" cue on a block; weapon mods
+  merged into `_fireWeapon`/`_releaseCharge`; per-player offer ctx (owned/recent/stacks/pity).
+- **`src/entities/ally.js`** — the ally passively gets **20%** of the player's bonuses (`allyShare`),
+  carries a real gun, and the solo player can **reroll** it (`rerollWeapon`).
+- **Config retune (small per pick — Scott):** kept the power ceilings + `CAPS`, only stretched the ramp
+  (`UPGRADES.*.half` 5/6→12, `DAMAGE_REDUCTION.half` 4→8) so each every-room pick is a small nudge;
+  added `CAPS.maxHearts` (12). Documented the two separate tier ladders (offer `ultra` vs B8
+  `PICKUPS.rarity`).
+- **Tests:** `tests/defense.test.js` (guard + carry-DR invariants — integer / ≤dmg / long-run %), a
+  weapons-only **no-drift** test in `tests/items.test.js` (items.js ↔ `PICKUPS.rarity.itemRarity`). 231
+  tests pass; coverage 54.7% (gate 40%).
+- **Deviations from plan:** None. (Per Scott's answers this session: damage-reduction = deterministic
+  carry, ally reroll included, retune = stretch-the-ramp / keep-ceilings. The bigger meta systems he
+  listed — luck, permanent upgrades, unlockable weapons/characters, achievements, challenge/endless/
+  random modes — are parked in `BACKLOG.md`.)
+- **Verified:** lint clean, format:check clean, 231 tests pass, build clean, prod-health + browser smoke
+  exit 0, and a Playwright `window.__game` drive (offer modal appears → pick applies the effect → door
+  opens → co-op shows two sequential P1/P2 offers → 0 page errors).
+
 ## 2026-06-22 — B9a: Offer-engine foundation (item registry + offers + scaling) (v0.8.13)
 
 First half of the B9 redesign (room-clear "pick 1 of 3" upgrade offers replacing ground stat-drops).

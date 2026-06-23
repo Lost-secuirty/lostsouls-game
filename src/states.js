@@ -5,6 +5,7 @@
 export const State = {
   BOOT: 'BOOT', // before the first frame
   PLAYING: 'PLAYING', // fighting monsters
+  OFFER: 'OFFER', // room cleared → pick 1 of 3 upgrade cards (fight paused, B9b)
   ROOM_CLEAR: 'ROOM_CLEAR', // room cleared, walk to the glowing door
   HUMAN_CHOICE: 'HUMAN_CHOICE', // the human decision-boss: picking A/B/C/D (fight paused)
   DEAD: 'DEAD', // you died — press R

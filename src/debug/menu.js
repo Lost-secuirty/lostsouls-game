@@ -7,7 +7,7 @@
 // =====================================================================
 
 import GUI from 'lil-gui';
-import { PLAYER, WEAPONS, PROGRESSION, CAPS } from '../config.js';
+import { WEAPONS, PROGRESSION, CAPS } from '../config.js';
 import { roomsPerFloor, floorCount, floorInfo } from '../core/progression.js';
 import { WEAPON_TYPES } from '../entities/pickups.js';
 
@@ -68,6 +68,16 @@ export function initDebugMenu(game) {
   world
     .add(
       {
+        offer() {
+          if (game.room && game.players.length) game._beginOffers();
+        },
+      },
+      'offer',
+    )
+    .name('🎁 Open offer (ends room)');
+  world
+    .add(
+      {
         restart() {
           game.startRun(game.coop);
         },
@@ -86,7 +96,7 @@ export function initDebugMenu(game) {
   pl.add(
     {
       heal() {
-        game.player.hearts = PLAYER.maxHearts;
+        game.player.hearts = game.player.maxHearts;
         game.refreshHud();
       },
     },
