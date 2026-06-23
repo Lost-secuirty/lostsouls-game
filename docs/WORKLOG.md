@@ -40,8 +40,14 @@ lowest-risk dial-backs.
 - **Deviation from plan:** dropped the planned standalone `ui/perfHud.js` overlay — the debug menu
   already had a live FPS/draw-call readout, so a separate HUD would have duplicated it. Extended that
   folder instead (less code, no duplication).
-- **Next (data-gated):** Scott reads the readout on the Nitro; high draw calls in a packed boss room →
-  an instancing PR follows; FPS swinging with shadows/post-FX → fill-rate is the win.
+- **A/B measurement results (Nitro RTX 5060, mobs on screen, all inputs active):**
+  - Shadow map 2048 → 55fps; 1024 or 512 → ~60fps (≈+5fps, already fixed above)
+  - AO Performance → ~60fps; Low → ~55fps; Medium → ~53fps; High/Ultra → ~50fps (≈+5fps per step up)
+  - MSAA: no measurable impact at any setting — not the bottleneck (prime-suspect prediction was wrong)
+  - Everything else (bloom, vignette, pixelRatioCap, camera-follow): negligible, stable ~60fps
+- **Follow-up fix (added to this PR):** `ao.quality` 'Low' → **'Performance'** (+5fps, negligible visual
+  diff at halfRes; the config already had a note: _"Dial-back if it ever costs frames: keep halfRes →
+  quality 'Performance'"_).
 
 ## 2026-06-23 — Fix SonarCloud exclusions: add `.sonarcloud.properties` (no version change)
 

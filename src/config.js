@@ -613,7 +613,7 @@ export const GRAPHICS = {
   // Dial-back if it ever costs frames: keep halfRes → quality 'Performance' → smaller radius.
   ao: {
     enabled: true, // master switch (off here = composer renders without the AO pass)
-    quality: 'Low', // N8AO preset: 'Performance' | 'Low' | 'Medium' | 'High' | 'Ultra'
+    quality: 'Performance', // N8AO preset: 'Performance' | 'Low' | 'Medium' | 'High' | 'Ultra'
     halfRes: true, // sample AO at half resolution (the big perf win; fine for soft AO)
     radius: 2.0, // world-space sample radius (n8ao default 5 is too big for our scale)
     distanceFalloff: 1.0, // how quickly AO fades with distance
