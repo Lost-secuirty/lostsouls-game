@@ -15,6 +15,38 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-22 — B9a: Offer-engine foundation (item registry + offers + scaling) (v0.8.13)
+
+First half of the B9 redesign (room-clear "pick 1 of 3" upgrade offers replacing ground stat-drops).
+**Pure foundation only — NO gameplay change yet; nothing is wired live (B9b flips it on).**
+
+- **New `src/core/items.js`** — the canonical offerable-item registry (one source of truth). 20 items
+  across 3 categories: **player upgrades** (damage/fire-rate/move-speed/heal/max-life/damage-reduction/
+  guard), **weapon mods** (pierce/bounce/bullet-speed/blast — reuse existing BULLET flags), **weapons**
+  (the 8 guns). Each `{id, name, category, tier, tags, effect}`; tiers `common/rare/epic/ultra` (adds
+  `ultra` for the guard). `blurbFor(item, {stacks})` renders the card's exact line — the **marginal %**
+  of the next pick for stacking stats (honest "+12%" early → "+2%" deep), fixed text otherwise.
+- **New `src/core/offers.js`** — pure `generateOffer(rng, ctx)` → 3 distinct cards: roll a tier per
+  card (weighted, with a soft/hard **pity** floor on the first card), pick an item of that tier,
+  **anti-repeat** (down-weight recently-offered items + owned weapons) and a **category-variety** guard
+  (never 3-of-a-kind — the variety card spans all tiers to always reach another category). Seeded →
+  reproducible. `pityFloorTier(streak)` exposed + tested.
+- **`src/core/scaling.js`** — `marginalBonus(n, maxBonus, half)` (per-pick delta, telescopes to
+  `statBonus`) + `allyShare(bonus, share)` (the AI ally's 20% cut).
+- **Config (additive, not read by live code):** `OFFERS` (card count, tier weights incl. ultra,
+  anti-repeat decay, soft/hard pity), `GUARD` (1-hit rare / 3-hit ultra), `DAMAGE_REDUCTION` (curve),
+  `WEAPON_MODS` (mod amounts), `ALLY.upgradeShare = 0.2`.
+- **Tests:** `tests/items.test.js` (registry integrity + blurbs), `tests/offers.proof.test.js` (distinct
+  cards, variety guard, chi-square tier distribution, pity floors, anti-repeat), extended
+  `tests/scaling.test.js` (marginal + allyShare). 221 tests pass (+38); coverage 55% (offers.js 98%).
+- **Deviations from plan:** (1) the `UPGRADES`/`CAPS` **retune** and the `PICKUPS.rarity` **ultra-tier**
+  change are deferred to **B9b**, so B9a stays genuinely non-behavioral (a live retune would change the
+  still-active ground drops). (2) `offers.js` is **self-contained** (its own tier ladder) rather than
+  reusing `core/drops.js` — this avoids coupling to B8's `PICKUPS.rarity.tiers` and keeps all B8 tests
+  untouched. B9b will reconcile the registry as the single source when ground drops are removed.
+- **Verified:** lint clean, format clean, 221 tests pass, build clean, prod-health + browser smoke
+  (fresh build) exit 0.
+
 ## 2026-06-22 — B8: Drop rarity tiers + hard pity (v0.8.12)
 
 Research report (4) progression: the flat 12-entry drop table becomes **rarity-tiered** with

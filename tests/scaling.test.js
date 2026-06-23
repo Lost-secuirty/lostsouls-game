@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { statBonus, floorScale, hardnessFacet } from '../src/core/scaling.js';
+import {
+  statBonus,
+  floorScale,
+  hardnessFacet,
+  marginalBonus,
+  allyShare,
+} from '../src/core/scaling.js';
 import { UPGRADES, DIFFICULTY } from '../src/config.js';
 
 // Exp7 Stage 2 / ADR-0022 — the balance curves. Pure functions, golden-value tests
@@ -105,5 +111,42 @@ describe('UPGRADES config shape', () => {
       expect(UPGRADES[k].maxBonus).toBeGreaterThan(0);
       expect(UPGRADES[k].half).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('marginalBonus (B9 — the per-pick delta shown on offer cards)', () => {
+  it('is the difference between consecutive stacks (telescopes to statBonus)', () => {
+    let sum = 0;
+    for (let n = 1; n <= 30; n++) sum += marginalBonus(n, 1.0, 5);
+    expect(sum).toBeCloseTo(statBonus(30, 1.0, 5)); // Σ marginals 1..N == total at N
+  });
+
+  it('shrinks monotonically as the curve approaches its cap', () => {
+    let prev = Infinity;
+    for (let n = 1; n <= 50; n++) {
+      const m = marginalBonus(n, 1.0, 5);
+      expect(m).toBeGreaterThan(0); // every pick still adds something
+      expect(m).toBeLessThan(prev); // but less than the pick before it
+      prev = m;
+    }
+  });
+
+  it('the first pick is the biggest, and is 0 for non-positive stacks', () => {
+    expect(marginalBonus(1, 1.0, 5)).toBeCloseTo(1 / 6); // statBonus(1) - statBonus(0)
+    expect(marginalBonus(0, 1.0, 5)).toBe(0);
+    expect(marginalBonus(-3, 1.0, 5)).toBe(0);
+  });
+});
+
+describe('allyShare (B9 — the AI ally gets a fraction of the player bonus)', () => {
+  it('returns the configured fraction of a bonus', () => {
+    expect(allyShare(1.0, 0.2)).toBeCloseTo(0.2); // player +100% → ally +20%
+    expect(allyShare(0.5, 0.2)).toBeCloseTo(0.1);
+    expect(allyShare(2.0, 0)).toBe(0);
+  });
+
+  it('clamps the share to 0..1 (never a debuff, never an amplifier)', () => {
+    expect(allyShare(1.0, -1)).toBe(0);
+    expect(allyShare(1.0, 5)).toBe(1.0);
   });
 });

@@ -10,6 +10,7 @@
 // =====================================================================
 
 import { PICKUPS } from '../config.js';
+import { weightedChoice } from './weighted.js';
 
 const RARITY = PICKUPS.rarity;
 
@@ -62,21 +63,12 @@ export function rollDrop(rng, weights, { minTier = null } = {}) {
   const minIdx = minTier ? Math.max(0, tiers.indexOf(minTier)) : 0;
   const eligible = tiers.filter((t, i) => i >= minIdx && (typesByTier[t]?.length ?? 0) > 0);
 
-  const total = eligible.reduce((s, t) => s + (weights[t] ?? 0), 0);
-  let chosen;
-  if (total > 0) {
-    let roll = rng.next() * total;
-    chosen = eligible.at(-1); // last-bucket fallback for float drift
-    for (const t of eligible) {
-      roll -= weights[t] ?? 0;
-      if (roll <= 0) {
-        chosen = t;
-        break;
-      }
-    }
-  } else {
-    chosen = eligible[rng.int(eligible.length)]; // no weights configured → uniform among eligible
-  }
+  // pick a tier by weight (uniform fallback when every eligible weight is 0 — see weighted.js)
+  const chosen =
+    weightedChoice(
+      rng,
+      eligible.map((t) => ({ value: t, weight: weights[t] ?? 0 })),
+    ) ?? eligible[0];
 
   const pool = typesByTier[chosen];
   return { type: pool[rng.int(pool.length)], tier: chosen };
