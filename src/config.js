@@ -113,6 +113,9 @@ export const ALLY = {
   followDist: 4.5, // tries to stay this close to you
   fireCooldown: 0.45,
   range: 22, // will shoot enemies within this distance (bumped for the bigger arena)
+  // B9: the AI ally makes no upgrade choices; it passively receives this fraction of the player's
+  // accrued bonuses so it stays useful without being overpowered (player +10% dmg → ally +2%).
+  upgradeShare: 0.2,
 };
 
 // ---- bullets (shared pool for player + enemies) ----
@@ -901,6 +904,44 @@ export const PICKUPS = {
   // DAMAGE_UP / FIRE_RATE_UP / SPEED_UP each add ONE stack; the stat is recomputed from the
   // diminishing-returns curve (UPGRADES + core/scaling.js), so there are no per-pickup step sizes.
   healAmount: 2, // hearts restored by a HEAL pickup
+};
+
+// ---- B9: room-clear upgrade OFFER screen (pick 1 of 3) ----
+// Every room clear shows `cardCount` cards drawn from the core/items.js registry: roll a TIER per card
+// (weighted, with soft + hard pity), then an item of that tier. NOT wired live yet — B9b flips it on.
+// Self-contained tier list (incl. `ultra`) so it never disturbs the B8 ground-drop rarity
+// (PICKUPS.rarity); the offer engine (core/offers.js) reads these knobs.
+export const OFFERS = {
+  cardCount: 3, // cards shown per offer
+  tiers: ['common', 'rare', 'epic', 'ultra'], // low → high (offer-only; adds `ultra` for the guard)
+  tierWeights: { common: 58, rare: 28, epic: 12, ultra: 2 }, // base draw weights per card
+  // anti-repeat: scale an item's pick weight when it was offered recently or is an owned weapon
+  recentDecay: 0.35, // pick weight × this if the item was in the last few offers
+  ownedWeaponDecay: 0.15, // pick weight × this for a weapon you already carry (low re-value)
+  recentMemory: 6, // how many past offers count as "recent"
+  categoryVariety: true, // avoid showing 3 cards of the same category when a 3rd category is available
+  // soft pity ramps the guaranteed floor tier of the BEST card as rooms pass without taking a rare+;
+  // hard pity forces a rare+ at the cap (mirrors B8's drop pity, applied to the offer).
+  softPity: { rareAfter: 2, epicAfter: 5 }, // common-streak rooms → forced floor tier for one card
+  hardPity: { commonStreakMax: 4, minTier: 'rare' },
+};
+
+// ---- B9: defensive upgrades (offered, not dropped) ----
+export const GUARD = {
+  rareCharges: 1, // "Guard" (rare) = block the next hit
+  ultraCharges: 3, // "Greater Guard" (ultra, very rare) = block the next 3 hits
+};
+// damage reduction stacks on the same diminishing-returns curve as UPGRADES (core/scaling.js statBonus)
+export const DAMAGE_REDUCTION = {
+  maxBonus: 0.4, // asymptotic ceiling — never exceeds −40% incoming damage
+  half: 4, // stacks to reach half of maxBonus
+};
+// B9: weapon-mod amounts (applied to the player's guns via the existing BULLET behavior flags)
+export const WEAPON_MODS = {
+  pierce: 1, // +enemies a shot passes through, per pick
+  bounces: 1, // +wall bounces, per pick
+  bulletSpeed: 0.15, // +15% bullet speed, per pick
+  explodeRadius: 2.5, // blast radius granted by the explosive mod
 };
 
 // ---- models: map a key -> a file under /models/ (.glb). ----

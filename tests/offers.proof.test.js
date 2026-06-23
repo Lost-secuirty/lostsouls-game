@@ -1,0 +1,103 @@
+import { describe, it, expect } from 'vitest';
+import { makeRng } from '../src/core/rng.js';
+import { generateOffer, pityFloorTier } from '../src/core/offers.js';
+import { chiSquare } from '../src/core/probability.js';
+import { OFFERS } from '../src/config.js';
+
+// B9a — the room-clear offer generator. Pure + seeded, so every property below is reproducible.
+
+const tierIdx = (t) => OFFERS.tiers.indexOf(t);
+
+describe('generateOffer shape', () => {
+  it('returns exactly cardCount DISTINCT cards, each fully formed', () => {
+    const rng = makeRng(11);
+    for (let i = 0; i < 200; i++) {
+      const cards = generateOffer(rng, {});
+      expect(cards.length).toBe(OFFERS.cardCount);
+      expect(new Set(cards.map((c) => c.id)).size).toBe(cards.length); // no duplicate items
+      for (const c of cards) {
+        expect(typeof c.id).toBe('string');
+        expect(typeof c.name).toBe('string');
+        expect(OFFERS.tiers).toContain(c.tier);
+        expect(c.blurb.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('is deterministic for a given seed', () => {
+    const run = (seed) => generateOffer(makeRng(seed), { commonStreak: 1 });
+    expect(run(42)).toEqual(run(42));
+  });
+
+  it('never shows three cards of the same category (variety guard)', () => {
+    const rng = makeRng(2024);
+    for (let i = 0; i < 500; i++) {
+      const cards = generateOffer(rng, {});
+      const counts = {};
+      for (const c of cards) counts[c.category] = (counts[c.category] ?? 0) + 1;
+      expect(Math.max(...Object.values(counts))).toBeLessThan(OFFERS.cardCount);
+    }
+  });
+});
+
+describe('tier roll matches the configured weights (chi-square, seeded)', () => {
+  it('the first card (no pity) fits OFFERS.tierWeights', () => {
+    const rng = makeRng(7);
+    const N = 24000;
+    const counts = {};
+    for (const t of OFFERS.tiers) counts[t] = 0;
+    for (let i = 0; i < N; i++) counts[generateOffer(rng, { commonStreak: 0 })[0].tier]++;
+
+    const total = OFFERS.tiers.reduce((s, t) => s + OFFERS.tierWeights[t], 0);
+    const observed = OFFERS.tiers.map((t) => counts[t]);
+    const expected = OFFERS.tiers.map((t) => (OFFERS.tierWeights[t] / total) * N);
+    // df=3, p=0.01 critical = 11.34 — generous + deterministic for the fixed seed
+    expect(chiSquare(observed, expected)).toBeLessThan(11.34);
+  });
+});
+
+describe('pity floors the offer as a dry streak grows', () => {
+  it('pityFloorTier ramps null → rare → epic', () => {
+    expect(pityFloorTier(0)).toBeNull();
+    expect(pityFloorTier(OFFERS.softPity.rareAfter)).toBe('rare');
+    expect(pityFloorTier(OFFERS.hardPity.commonStreakMax)).toBe('rare'); // hard pity guarantees rare+
+    expect(pityFloorTier(OFFERS.softPity.epicAfter)).toBe('epic');
+  });
+
+  it('a long dry streak guarantees the first card clears the floor (never common)', () => {
+    for (let seed = 0; seed < 60; seed++) {
+      const cards = generateOffer(makeRng(seed), { commonStreak: OFFERS.hardPity.commonStreakMax });
+      expect(tierIdx(cards[0].tier)).toBeGreaterThanOrEqual(tierIdx(OFFERS.hardPity.minTier));
+    }
+  });
+
+  it('past the epic-pity streak the first card is epic or better', () => {
+    for (let seed = 0; seed < 60; seed++) {
+      const cards = generateOffer(makeRng(seed), { commonStreak: OFFERS.softPity.epicAfter });
+      expect(tierIdx(cards[0].tier)).toBeGreaterThanOrEqual(tierIdx('epic'));
+    }
+  });
+});
+
+describe('anti-repeat down-weights recent items and owned weapons', () => {
+  const countAppearances = (id, ctx, seed, N = 5000) => {
+    const rng = makeRng(seed);
+    let n = 0;
+    for (let i = 0; i < N; i++) {
+      if (generateOffer(rng, ctx).some((c) => c.id === id)) n++;
+    }
+    return n;
+  };
+
+  it('a recently-offered item shows up less often than when it is not recent', () => {
+    const fresh = countAppearances('SPEED_UP', {}, 100);
+    const recent = countAppearances('SPEED_UP', { recent: ['SPEED_UP'] }, 100);
+    expect(recent).toBeLessThan(fresh);
+  });
+
+  it('an owned weapon shows up less often than when it is not owned', () => {
+    const fresh = countAppearances('SHOTGUN', {}, 200);
+    const owned = countAppearances('SHOTGUN', { owned: ['SHOTGUN'] }, 200);
+    expect(owned).toBeLessThan(fresh);
+  });
+});

@@ -67,3 +67,35 @@ export function hardnessFacet(hardnessMul, weight) {
   const w = Math.min(1, Math.max(0, weight)); // clamp to the documented 0..1 share
   return 1 + (Math.max(1, hardnessMul) - 1) * w;
 }
+
+/**
+ * The MARGINAL gain of the n-th stack of a diminishing-returns upgrade (PURE):
+ *
+ *     marginalBonus(n) = statBonus(n) - statBonus(n-1)
+ *
+ * The offer cards show this — "+12% damage" early, "+1.5%" deep into a run — so the player sees the
+ * honest delta of THIS pick, not the running total. Shrinks toward 0 as the curve approaches its cap
+ * (B9). n<=0 -> 0.
+ *
+ * @param {number} stacks the stack number being ADDED (1 = the first pick)
+ * @param {number} maxBonus the curve ceiling (same as statBonus)
+ * @param {number} half stacks to reach half of maxBonus (same as statBonus)
+ * @returns {number} the bonus the n-th stack adds on top of the (n-1)-th
+ */
+export function marginalBonus(stacks, maxBonus, half) {
+  if (stacks <= 0) return 0;
+  return statBonus(stacks, maxBonus, half) - statBonus(stacks - 1, maxBonus, half);
+}
+
+/**
+ * The AI ally's share of a player bonus (PURE). The ally makes no upgrade choices; it passively
+ * receives a fraction of whatever the player has accrued so it stays useful without being overpowered
+ * (B9: default share 0.2 → ally gets 20% of the player's bonus). `share` clamps to 0..1.
+ *
+ * @param {number} bonus the player's accrued bonus (e.g. statBonus damage fraction)
+ * @param {number} share 0..1 fraction the ally receives (config.ALLY.upgradeShare)
+ * @returns {number} the ally's bonus
+ */
+export function allyShare(bonus, share) {
+  return bonus * Math.min(1, Math.max(0, share));
+}
