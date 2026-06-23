@@ -550,10 +550,11 @@ export const SETTINGS = {
 // and the pipeline auto-falls-back to raw render if post-FX can't initialize (never breaks).
 export const GRAPHICS = {
   enabled: true, // master switch — false = raw renderer.render()
-  pixelRatioCap: 2, // max devicePixelRatio (perf/quality knob; higher = crisper but heavier)
+  pixelRatioCap: 1.5, // max devicePixelRatio (FPS-1 dial-back: was 2). Only bites on hi-DPI panels (DPR > 1.5); A/B live in the debug "Graphics" folder.
   toneMapping: 'aces', // filmic curve: 'aces' | 'agx' | 'neutral' | 'none'
   aaSamples: 4, // WebGL2 MSAA samples for the post-FX path (0 = off)
   bloom: {
+    enabled: true, // FPS-1: A/B the bloom pass live in the debug "Graphics" folder
     intensity: 0.8, // glow strength
     threshold: 0.55, // only pixels brighter than this bloom (keeps the dark world dark)
     smoothing: 0.3, // soft knee around the threshold
@@ -577,7 +578,7 @@ export const GRAPHICS = {
   // radius down → frustumMargin tighter → enabled:false. Swap-and-see in `npm run dev`.
   shadows: {
     enabled: true, // master switch (also gated off by the reducedEffects setting)
-    mapSize: 2048, // shadow-map resolution per side (1024 = softer + cheaper)
+    mapSize: 1024, // shadow-map resolution per side (FPS-1 dial-back: was 2048; 1024 = softer + cheaper). A/B live in the debug "Graphics" folder.
     frustumMargin: 4, // world-unit slack around the arena for the ortho shadow frustum
     near: 1, // shadow camera near plane
     far: 80, // shadow camera far plane (must exceed the key light → floor distance)

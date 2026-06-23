@@ -7,10 +7,11 @@
 // =====================================================================
 
 import GUI from 'lil-gui';
-import { WEAPONS, PROGRESSION, CAPS } from '../config.js';
+import { WEAPONS, PROGRESSION, CAPS, GRAPHICS, CAMERA } from '../config.js';
 import { roomsPerFloor, floorCount, floorInfo } from '../core/progression.js';
 import { WEAPON_TYPES } from '../entities/pickups.js';
 import { saves } from '../core/saves.js';
+import { PIXEL_RATIO_CAPS, SHADOW_MAP_SIZES } from '../core/graphics.js';
 
 const PICKUP_TYPES = ['HEAL', 'DAMAGE_UP', 'FIRE_RATE_UP', 'SPEED_UP', ...WEAPON_TYPES];
 
@@ -26,7 +27,9 @@ export function initDebugMenu(game) {
     weapon: game.player?.weapon ?? 'pistol',
     pickup: 'HEAL',
     fps: 0,
+    frameMs: 0,
     drawCalls: 0,
+    triangles: 0,
     bullets: 0,
     enemies: 0,
   };
@@ -134,7 +137,9 @@ export function initDebugMenu(game) {
   // ---- Performance (FPS + the counts that matter for tuning difficulty/perf) ----
   const perf = gui.addFolder('Performance');
   const fpsCtrl = perf.add(state, 'fps').name('FPS').disable().listen();
+  const msCtrl = perf.add(state, 'frameMs').name('Frame ms').disable().listen();
   const dcCtrl = perf.add(state, 'drawCalls').name('Draw calls').disable().listen();
+  const triCtrl = perf.add(state, 'triangles').name('Triangles').disable().listen();
   const blCtrl = perf.add(state, 'bullets').name('Bullets (live)').disable().listen();
   const enCtrl = perf.add(state, 'enemies').name('Enemies (live)').disable().listen();
   let last = performance.now();
@@ -146,11 +151,15 @@ export function initDebugMenu(game) {
     last = now;
     if (acc >= 500) {
       state.fps = Math.round((frames * 1000) / acc);
+      state.frameMs = Math.round((acc / frames) * 10) / 10;
       state.drawCalls = game.renderer?.info?.render?.calls ?? 0;
+      state.triangles = game.renderer?.info?.render?.triangles ?? 0;
       state.bullets = game.bullets ? game.bullets.items.filter((b) => b.active).length : 0;
       state.enemies = game.enemies.filter((e) => !e.dead).length;
       fpsCtrl.updateDisplay();
+      msCtrl.updateDisplay();
       dcCtrl.updateDisplay();
+      triCtrl.updateDisplay();
       blCtrl.updateDisplay();
       enCtrl.updateDisplay();
       frames = 0;
@@ -159,6 +168,74 @@ export function initDebugMenu(game) {
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
+
+  // ---- Graphics (A/B perf) — flip ONE lever, watch the Performance numbers above ----
+  // Unlike the "reduced effects" setting (which couples post-FX + shadows + camera-follow
+  // via config.calmCamera), each toggle here is independent — so the real fill-rate cost
+  // can be isolated, not guessed. Camera-follow is separate so it can be ruled out alone.
+  const gfx = gui.addFolder('Graphics (A/B perf)');
+  const gfxState = {
+    pixelRatioCap: GRAPHICS.pixelRatioCap,
+    msaa: GRAPHICS.aaSamples,
+    shadows: GRAPHICS.shadows.enabled,
+    shadowMapSize: GRAPHICS.shadows.mapSize,
+    postFX: GRAPHICS.enabled,
+    bloom: GRAPHICS.bloom.enabled !== false,
+    aoQuality: GRAPHICS.ao.enabled ? GRAPHICS.ao.quality : 'off',
+    vignette: GRAPHICS.vignette.enabled,
+    cameraFollow: CAMERA.followEnabled,
+  };
+  gfx
+    .add(gfxState, 'pixelRatioCap', PIXEL_RATIO_CAPS)
+    .name('Pixel ratio cap')
+    .onChange((v) => game.gfx?.setPixelRatioCap(v));
+  gfx
+    .add(gfxState, 'msaa', [0, 2, 4])
+    .name('MSAA samples')
+    .onChange((v) => {
+      GRAPHICS.aaSamples = v;
+      game.postfx?.rebuild();
+    });
+  gfx
+    .add(gfxState, 'shadows')
+    .name('Shadows')
+    .onChange((v) => game.gfx?.setShadowsEnabled(v));
+  gfx
+    .add(gfxState, 'shadowMapSize', SHADOW_MAP_SIZES)
+    .name('Shadow map')
+    .onChange((v) => game.gfx?.setShadowMapSize(v));
+  gfx
+    .add(gfxState, 'postFX')
+    .name('Post-FX (whole composer)')
+    .onChange((v) => game.postfx?.setEnabled(v));
+  gfx
+    .add(gfxState, 'bloom')
+    .name('Bloom')
+    .onChange((v) => {
+      GRAPHICS.bloom.enabled = v;
+      game.postfx?.rebuild();
+    });
+  gfx
+    .add(gfxState, 'aoQuality', ['off', 'Performance', 'Low', 'Medium', 'High', 'Ultra'])
+    .name('AO quality')
+    .onChange((v) => {
+      GRAPHICS.ao.enabled = v !== 'off';
+      if (v !== 'off') GRAPHICS.ao.quality = v;
+      game.postfx?.rebuild();
+    });
+  gfx
+    .add(gfxState, 'vignette')
+    .name('Vignette')
+    .onChange((v) => {
+      GRAPHICS.vignette.enabled = v;
+      game.postfx?.rebuild();
+    });
+  gfx
+    .add(gfxState, 'cameraFollow')
+    .name('Camera follow')
+    .onChange((v) => {
+      CAMERA.followEnabled = v;
+    });
 
   // ---- Meta (Echoes / Resonance) — lets Scott test the post-beat loop ----
   const meta = gui.addFolder('Meta');

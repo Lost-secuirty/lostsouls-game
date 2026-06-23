@@ -71,15 +71,18 @@ export function createPostFX({ renderer, scene, camera }) {
         }
       }
 
-      const effects = [
-        new BloomEffect({
-          intensity: g.bloom.intensity,
-          luminanceThreshold: g.bloom.threshold,
-          luminanceSmoothing: g.bloom.smoothing,
-          radius: g.bloom.radius,
-          mipmapBlur: true, // smooth, wide glow without a big perf hit
-        }),
-      ];
+      const effects = [];
+      if (g.bloom?.enabled !== false) {
+        effects.push(
+          new BloomEffect({
+            intensity: g.bloom.intensity,
+            luminanceThreshold: g.bloom.threshold,
+            luminanceSmoothing: g.bloom.smoothing,
+            radius: g.bloom.radius,
+            mipmapBlur: true, // smooth, wide glow without a big perf hit
+          }),
+        );
+      }
       if (g.vignette?.enabled) {
         effects.push(
           new VignetteEffect({ offset: g.vignette.offset, darkness: g.vignette.darkness }),
@@ -88,7 +91,9 @@ export function createPostFX({ renderer, scene, camera }) {
       const mode = TONE_MODES[g.toneMapping];
       if (mode !== undefined) effects.push(new ToneMappingEffect({ mode }));
 
-      composer.addPass(new EffectPass(camera, ...effects));
+      // Guard the empty case (bloom off + vignette off + tone 'none'): an EffectPass with no
+      // effects is pointless — let the RenderPass (+ AO) carry the frame to screen.
+      if (effects.length) composer.addPass(new EffectPass(camera, ...effects));
       composer.setSize(window.innerWidth, window.innerHeight);
       ok = true;
     } catch (err) {
@@ -126,6 +131,20 @@ export function createPostFX({ renderer, scene, camera }) {
     setEnabled(on) {
       enabled = !!on;
       if (enabled && !composer) build();
+      if (typeof window !== 'undefined') window.__postfx = status();
+    },
+    /**
+     * FPS-1: rebuild the composer from the CURRENT config.GRAPHICS so the debug
+     * "Graphics" folder can A/B AO quality / vignette live (those are read at build
+     * time). Disposes the old pipeline first to avoid leaking GPU buffers.
+     */
+    rebuild() {
+      if (composer) {
+        composer.dispose();
+        composer = null;
+        ok = false;
+      }
+      if (enabled) build();
       if (typeof window !== 'undefined') window.__postfx = status();
     },
     get active() {
