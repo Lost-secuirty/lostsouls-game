@@ -125,71 +125,25 @@ export const ITEMS = [
     effect: { kind: 'mod', flag: 'explodeRadius', amount: WEAPON_MODS.explodeRadius },
   },
 
-  // --- weapons (tiers mirror B8 PICKUPS.rarity.itemRarity) ---
-  {
-    id: 'SHOTGUN',
-    name: 'Shotgun',
+  // --- weapons — generated from a compact [id, name, tier, tags] table (tiers mirror B8
+  //     PICKUPS.rarity.itemRarity); the weapon key is the lower-cased id, matching config.WEAPONS ---
+  ...[
+    ['SHOTGUN', 'Shotgun', 'rare', ['burst', 'close']],
+    ['MACHINEGUN', 'Machine Gun', 'rare', ['rapid']],
+    ['BOUNCER', 'Bouncer', 'rare', ['bounce', 'crowd']],
+    ['ROCKET', 'Rocket Launcher', 'epic', ['aoe', 'burst']],
+    ['HOMING', 'Homing Missiles', 'epic', ['homing', 'aoe']],
+    ['RAILGUN', 'Railgun', 'epic', ['pierce', 'precise']],
+    ['CHARGE', 'Charge Cannon', 'epic', ['burst', 'precise']],
+    ['ORBITAL', 'Orbital Blade', 'epic', ['crowd', 'defensive']],
+  ].map(([id, name, tier, tags]) => ({
+    id,
+    name,
     category: 'weapon',
-    tier: 'rare',
-    tags: ['burst', 'close'],
-    effect: { kind: 'weapon', weapon: 'shotgun' },
-  },
-  {
-    id: 'MACHINEGUN',
-    name: 'Machine Gun',
-    category: 'weapon',
-    tier: 'rare',
-    tags: ['rapid'],
-    effect: { kind: 'weapon', weapon: 'machinegun' },
-  },
-  {
-    id: 'BOUNCER',
-    name: 'Bouncer',
-    category: 'weapon',
-    tier: 'rare',
-    tags: ['bounce', 'crowd'],
-    effect: { kind: 'weapon', weapon: 'bouncer' },
-  },
-  {
-    id: 'ROCKET',
-    name: 'Rocket Launcher',
-    category: 'weapon',
-    tier: 'epic',
-    tags: ['aoe', 'burst'],
-    effect: { kind: 'weapon', weapon: 'rocket' },
-  },
-  {
-    id: 'HOMING',
-    name: 'Homing Missiles',
-    category: 'weapon',
-    tier: 'epic',
-    tags: ['homing', 'aoe'],
-    effect: { kind: 'weapon', weapon: 'homing' },
-  },
-  {
-    id: 'RAILGUN',
-    name: 'Railgun',
-    category: 'weapon',
-    tier: 'epic',
-    tags: ['pierce', 'precise'],
-    effect: { kind: 'weapon', weapon: 'railgun' },
-  },
-  {
-    id: 'CHARGE',
-    name: 'Charge Cannon',
-    category: 'weapon',
-    tier: 'epic',
-    tags: ['burst', 'precise'],
-    effect: { kind: 'weapon', weapon: 'charge' },
-  },
-  {
-    id: 'ORBITAL',
-    name: 'Orbital Blade',
-    category: 'weapon',
-    tier: 'epic',
-    tags: ['crowd', 'defensive'],
-    effect: { kind: 'weapon', weapon: 'orbital' },
-  },
+    tier,
+    tags,
+    effect: { kind: 'weapon', weapon: id.toLowerCase() },
+  })),
 ];
 
 const BY_ID = new Map(ITEMS.map((it) => [it.id, it]));
