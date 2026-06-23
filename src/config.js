@@ -966,6 +966,80 @@ export const WEAPON_MODS = {
 // it re-arms once the stick returns inside `settle`. ----
 export const MENU_CURSOR = { move: 0.5, settle: 0.3 };
 
+// ---- B10: meta-progression save (ADR-0029) ----
+// Versioned localStorage save for the Echoes economy + permanent upgrades.
+// Echoes are residual boss life-force; they only START dropping after the first full win
+// (see core/saves.js). `echoesPerBoss` + `echoesFloorBonus` × floorIndex = per-boss payout
+// (post-beat only). `winBonus` is a one-time shot of Echoes granted on the win that sets
+// `gameBeaten` — a gentle starter budget for the unlock screen.
+export const SAVES = {
+  key: 'lostsouls.save',
+  echoesPerBoss: 30, // base Echoes for killing a boss (post-beat runs only)
+  echoesFloorBonus: 10, // extra Echoes per floor depth (floorIndex × this)
+  winBonus: 50, // Echoes granted on the win that sets gameBeaten (first win only)
+};
+
+// META_UPGRADES — the Resonance upgrade tree. Each node feeds an existing capped curve
+// so per-pick power stays small (Scott's intent: breadth, not power creep).
+// `cost` is an array with one entry per level (length === maxLevel).
+// `effect` maps to a stat key used by core/saves.js baselineStacks().
+export const META_UPGRADES = [
+  {
+    id: 'vitality',
+    name: 'Vitality',
+    desc: '+1 max heart',
+    icon: '❤️',
+    maxLevel: 2,
+    cost: [60, 120],
+    effect: { stat: 'hearts', perLevel: 1 },
+  },
+  {
+    id: 'sharpness',
+    name: 'Sharpness',
+    desc: '+1 damage stack',
+    icon: '⚔️',
+    maxLevel: 3,
+    cost: [50, 100, 160],
+    effect: { stat: 'damage', perLevel: 1 },
+  },
+  {
+    id: 'swiftness',
+    name: 'Swiftness',
+    desc: '+1 speed stack',
+    icon: '💨',
+    maxLevel: 3,
+    cost: [50, 100, 160],
+    effect: { stat: 'speed', perLevel: 1 },
+  },
+  {
+    id: 'rapid',
+    name: 'Rapid',
+    desc: '+1 fire-rate stack',
+    icon: '🔥',
+    maxLevel: 3,
+    cost: [50, 100, 160],
+    effect: { stat: 'fireRate', perLevel: 1 },
+  },
+  {
+    id: 'toughHide',
+    name: 'Tough Hide',
+    desc: '+1 damage-reduction stack',
+    icon: '🛡️',
+    maxLevel: 2,
+    cost: [70, 140],
+    effect: { stat: 'damageReduction', perLevel: 1 },
+  },
+  {
+    id: 'aegis',
+    name: 'Aegis',
+    desc: 'Start each run with +1 guard charge',
+    icon: '✨',
+    maxLevel: 2,
+    cost: [80, 160],
+    effect: { stat: 'guard', perLevel: 1 },
+  },
+];
+
 // ---- models: map a key -> a file under /models/ (.glb). ----
 // null  => use a built-in primitive shape (always works).
 // To use a real model: drop the .glb in public/models/ and set its path,

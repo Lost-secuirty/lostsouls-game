@@ -14,6 +14,8 @@ import { showStartMenu } from './ui/startmenu.js';
 import { settings } from './systems/settings.js';
 import { initSettingsPanel } from './ui/settingsPanel.js';
 import { initCredits } from './ui/credits.js';
+import { initMetaPanel } from './ui/metaProgress.js';
+import { saves } from './core/saves.js';
 
 (async () => {
   // preload the floor PBR maps BEFORE the scene (the ground is built in createScene);
@@ -36,6 +38,7 @@ import { initCredits } from './ui/credits.js';
   // debug handle (poke the game from the dev console, e.g. window.__game.loadRoom(5))
   window.__game = game;
   window.__audio = audio; // music/sfx facade (used by the verification drive)
+  window.__saves = saves; // meta-progression save (used by the verification drive)
 
   // dev menu — lazy-loaded on `?debug=1` or the backtick key (never in normal play)
   let debugGui = null;
@@ -67,6 +70,7 @@ import { initCredits } from './ui/credits.js';
   });
   initSettingsPanel();
   initCredits();
+  initMetaPanel();
 
   addEventListener('keydown', (e) => {
     // ignore OS key-repeat (holding a key shouldn't strobe a toggle) and keys typed

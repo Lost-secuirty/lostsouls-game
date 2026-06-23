@@ -34,7 +34,10 @@ const SHOOT_SFX = {
 };
 
 export class Player {
-  constructor(scene, { color = PALETTE.player, modelKey = 'player', device = 'both' } = {}) {
+  constructor(
+    scene,
+    { color = PALETTE.player, modelKey = 'player', device = 'both', baseline = null } = {},
+  ) {
     this.device = device; // 'kb' | 'pad' | 'both'
     this.mesh = makeCharacter(modelKey, {
       radius: PLAYER.radius,
@@ -45,23 +48,38 @@ export class Player {
     this.radius = PLAYER.radius;
     this._baseColor = new THREE.Color(color);
     this.slotsUnlocked = 1; // grows as bosses are beaten (set by game)
+    // permanent baseline stacks from the Echoes meta-layer (B10 / ADR-0029); all-zero pre-beat
+    this._baseline = baseline ?? {
+      damage: 0,
+      fireRate: 0,
+      speed: 0,
+      damageReduction: 0,
+      hearts: 0,
+      guard: 0,
+    };
     this.reset(0, 0);
   }
 
   reset(x, z) {
     this.x = x;
     this.z = z;
-    this.maxHearts = PLAYER.maxHearts; // grows via the offered MAX_HP_UP (capped at CAPS.maxHearts)
+    const bl = this._baseline;
+    this.maxHearts = Math.min(CAPS.maxHearts, PLAYER.maxHearts + bl.hearts); // grows via offered MAX_HP_UP
     this.hearts = this.maxHearts;
     this.alive = true;
     this.fireTimer = 0;
     this.invuln = 0;
     this._beatTimer = 0;
-    // upgrade STACKS — each OFFER pick (B9b) adds one; the derived stats below come from the
-    // diminishing-returns curve (config.UPGRADES + core/scaling.js), so power ramps over the whole
-    // run instead of capping early. `damageReduction` feeds core/defense.js in hurt().
-    this._up = { damage: 0, fireRate: 0, speed: 0, damageReduction: 0 };
-    this.guardCharges = 0; // block-N-hits charges from GUARD offers (consumed first in hurt())
+    // upgrade STACKS — seeded from the permanent baseline (all-zero pre-beat), then each OFFER pick
+    // (B9b) adds one; the derived stats come from the diminishing-returns curve (config.UPGRADES +
+    // core/scaling.js) so power ramps over the run instead of capping early.
+    this._up = {
+      damage: bl.damage,
+      fireRate: bl.fireRate,
+      speed: bl.speed,
+      damageReduction: bl.damageReduction,
+    };
+    this.guardCharges = bl.guard; // permanent guard charges from the meta-layer (added to offer charges)
     this._drCarry = 0; // banked fractional damage-reduction (core/defense.js carry accumulator)
     this._mods = { pierce: 0, bounces: 0, bulletSpeed: 0, explodeRadius: 0 }; // weapon-mod offers
     this.offerRecent = []; // recently-offered item ids → anti-repeat (OFFERS.recentMemory)
