@@ -10,7 +10,17 @@
 // revives when the room is cleared; Game Over only on a full wipe.
 // =====================================================================
 
-import { CAMERA, JUICE, FEEL, ARENA, CAPS, PALETTE, PICKUPS, MENU_CURSOR } from './config.js';
+import {
+  CAMERA,
+  JUICE,
+  FEEL,
+  ARENA,
+  CAPS,
+  PALETTE,
+  PICKUPS,
+  MENU_CURSOR,
+  SAVES,
+} from './config.js';
 import { State } from './states.js';
 import { makeRng } from './core/rng.js';
 import { floorInfo, nextIsBoss, resolveDeath, weaponSlotsForBosses } from './core/progression.js';
@@ -37,6 +47,8 @@ import { prompts } from './ui/prompts.js';
 import { showHumanChoice, moveChoiceFocus, confirmChoice } from './ui/humanchoice.js';
 import { showOffer, moveOfferFocus, confirmOffer } from './ui/offer.js';
 import * as audio from './systems/audio.js';
+import { saves, baselineStacks } from './core/saves.js';
+import { openMetaPanel } from './ui/metaProgress.js';
 
 export class Game {
   constructor({ renderer, scene, camera, baseCam, input, postfx }) {
@@ -102,16 +114,19 @@ export class Game {
     this.camVel.x = this.camVel.z = 0;
 
     this._teardownActors();
+    const baseline = baselineStacks(saves.get());
     this.player = new Player(this.scene, {
       color: PALETTE.player,
       modelKey: 'player',
       device: coop ? 'kb' : 'both',
+      baseline,
     });
     if (coop) {
       this.player2 = new Player(this.scene, {
         color: PALETTE.ally,
         modelKey: 'ally',
         device: 'pad',
+        baseline,
       });
       this.players = [this.player, this.player2];
     } else {
@@ -245,6 +260,10 @@ export class Game {
     // restart from a finished run
     if ((this.state === State.DEAD || this.state === State.WIN) && this.input.consumeRestart()) {
       this.startRun(this.coop);
+      return;
+    }
+    if ((this.state === State.DEAD || this.state === State.WIN) && this.input.consumeForge()) {
+      openMetaPanel();
       return;
     }
 
@@ -543,7 +562,9 @@ export class Game {
       this._respawnAtCheckpoint(result.room);
     } else {
       this.state = State.DEAD;
-      hud.banner('GAME OVER  —  press R');
+      const floorIdx = floorInfo(this.roomIndex).floorIndex;
+      saves.recordRun({ floor: floorIdx });
+      hud.banner('GAME OVER  —  press R  ·  [F] Resonance');
       prompts.hide();
     }
     this.refreshHud();
@@ -554,7 +575,7 @@ export class Game {
     this.loadRoom(room);
   }
 
-  /** a boss fell — bump the count and unlock a weapon slot at the right milestones */
+  /** a boss fell — bump the count, unlock a weapon slot at the right milestones, award Echoes post-beat */
   _countBossBeaten() {
     this.bossesBeaten += 1;
     const slots = weaponSlotsForBosses(this.bossesBeaten);
@@ -562,12 +583,19 @@ export class Game {
       for (const pl of this.players) pl.setSlotsUnlocked(slots);
       hud.toast(`WEAPON SLOT UNLOCKED! (${slots})`, true);
     }
+    const floorIdx = floorInfo(this.roomIndex).floorIndex;
+    saves.recordBossKill(floorIdx);
+    if (saves.get().gameBeaten) {
+      const earned = SAVES.echoesPerBoss + SAVES.echoesFloorBonus * floorIdx;
+      hud.toast(`+${earned} Echoes`, false);
+    }
   }
 
   _onWin() {
     this.state = State.WIN;
+    saves.recordWin();
     audio.stingerWin();
-    hud.banner('YOU ESCAPED THE CITY!  —  press R');
+    hud.banner('YOU ESCAPED THE CITY!  —  press R  ·  [F] Resonance');
     prompts.hide();
   }
 

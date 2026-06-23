@@ -10,6 +10,7 @@ import GUI from 'lil-gui';
 import { WEAPONS, PROGRESSION, CAPS } from '../config.js';
 import { roomsPerFloor, floorCount, floorInfo } from '../core/progression.js';
 import { WEAPON_TYPES } from '../entities/pickups.js';
+import { saves } from '../core/saves.js';
 
 const PICKUP_TYPES = ['HEAL', 'DAMAGE_UP', 'FIRE_RATE_UP', 'SPEED_UP', ...WEAPON_TYPES];
 
@@ -158,6 +159,58 @@ export function initDebugMenu(game) {
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
+
+  // ---- Meta (Echoes / Resonance) — lets Scott test the post-beat loop ----
+  const meta = gui.addFolder('Meta');
+  const metaState = {
+    echoes: 0,
+    gameBeaten: false,
+  };
+  const echoesCtrl = meta.add(metaState, 'echoes').name('Echoes').disable().listen();
+  const beatenCtrl = meta.add(metaState, 'gameBeaten').name('Game beaten').disable().listen();
+
+  function refreshMeta() {
+    const s = saves.get();
+    metaState.echoes = s.echoes;
+    metaState.gameBeaten = s.gameBeaten;
+    echoesCtrl.updateDisplay();
+    beatenCtrl.updateDisplay();
+  }
+  refreshMeta();
+
+  meta
+    .add(
+      {
+        markBeaten: () => {
+          saves.recordWin();
+          refreshMeta();
+        },
+      },
+      'markBeaten',
+    )
+    .name('🏆 Mark game beaten');
+  meta
+    .add(
+      {
+        addEchoes: () => {
+          saves.addEchoes(100);
+          refreshMeta();
+        },
+      },
+      'addEchoes',
+    )
+    .name('+100 Echoes');
+  meta
+    .add(
+      {
+        resetSave: () => {
+          saves.reset();
+          refreshMeta();
+        },
+      },
+      'resetSave',
+    )
+    .name('↺ Reset save');
 
   return gui;
 }

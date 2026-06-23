@@ -41,7 +41,7 @@ becomes an ADR when picked up.
 
 - [ ] **Luck factor / stat** — biases offer tiers + drop rarity (an in-run and/or meta stat).
 - [ ] **Other upgrade sources** beyond the room-clear offer (shops, shrines, events, …).
-- [ ] **Permanent / meta upgrades** — persistent between-run progression (this is **B10**, ADR-0029).
+- [x] **Permanent / meta upgrades** — **DONE (B10, v0.8.15, ADR-0029)**. Echoes + Resonance screen, gated behind first full win. The bigger systems below build on this save schema.
 - [ ] **Unlockable weapons** — guns gated behind progress/achievements (vs. all available from the start).
 - [ ] **Unlockable characters** — alternate playables unlocked via **achievements**.
 - [ ] **Achievements** — the unlock + tracking layer the above hang off.

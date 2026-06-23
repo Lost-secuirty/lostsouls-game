@@ -762,3 +762,11 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
 - **To verify Sonar isn't just lagging**, check the analyzed commit:
   `curl ".../api/project_pull_requests/list?project=..."` → each PR's `commit.sha` + `analysisDate`.
   Confirm it equals your HEAD before concluding a fix "failed."
+
+## 2026-06-23 — B10 meta-progression (Echoes + save schema)
+
+- **Never-throw at the storage boundary requires TWO layers.** `load()` wraps `JSON.parse` + `localStorage.getItem` in try/catch (ReferenceError in Node, QuotaExceededError in storage-full browsers). `normalizeSave()` handles corrupt/partial blobs separately — a well-parsed JSON object can still have non-finite echoes, unknown upgrade ids, or negative stats. Both defenses are needed.
+- **Triple-enforce the beat-the-game gate.** `addEchoes` (earn path), `canBuy` (spend path), and `baselineStacks` (apply path) all check `gameBeaten` independently. A caller that forgets to check cannot accidentally breach the gate — it's always enforced at the data layer.
+- **Pass baseline into the Player constructor, not read localStorage inside Player.** Player decoupled from storage = Player is unit-testable without mocking localStorage, and the baseline is computed once per run (not once per frame). Co-op players both get the same account baseline automatically.
+- **`normalizeSave` must be idempotent.** If `normalize(normalize(x))` differs from `normalize(x)`, something downstream double-normalizes and drifts. Test this explicitly — it caught a fractional echoes edge case where `Math.floor(Math.floor(12.9))` = 12 was fine but an `echoes: 12.1` → `12` → `12` was accidentally failing a string-coerce path.
+- **`migrate` returns the SAME object for v === 1 (reference equality).** `normalizeSave(migrate(parsed))` always runs, so `migrate` is a cheap guard that only kicks in on version mismatch — it shouldn't copy the object unnecessarily.

@@ -36,9 +36,11 @@ export class Input {
     this._kbHelp = false;
     this._kbLeave = false;
     this._kbRestart = false;
+    this._kbForge = false;
     this._padHelp = false;
     this._padLeave = false;
     this._padRestart = false;
+    this._padForge = false;
 
     // weapon switching: keyboard picks a slot (0-2); pad cycles
     this._kbSlot = null;
@@ -65,6 +67,7 @@ export class Input {
         if (k === 'e') this._kbHelp = true;
         if (k === 'q') this._kbLeave = true;
         if (k === 'r') this._kbRestart = true;
+        if (k === 'f') this._kbForge = true;
         if (k === '1') this._kbSlot = 0;
         if (k === '2') this._kbSlot = 1;
         if (k === '3') this._kbSlot = 2;
@@ -126,6 +129,7 @@ export class Input {
       this._edge('b', btn(1), () => (this._padLeave = true));
       this._edge('y', btn(3), () => (this._padCycle = true)); // Y cycles weapons
       this._edge('start', btn(9), () => (this._padRestart = true));
+      this._edge('select', btn(8), () => (this._padForge = true)); // Select/Back = open Resonance
     } else {
       this.pad.active = false;
       this.pad.aiming = false;
@@ -227,6 +231,13 @@ export class Input {
     const v = this._kbRestart || this._padRestart;
     this._kbRestart = false;
     this._padRestart = false;
+    return v;
+  }
+
+  consumeForge() {
+    const v = this._kbForge || this._padForge;
+    this._kbForge = false;
+    this._padForge = false;
     return v;
   }
 

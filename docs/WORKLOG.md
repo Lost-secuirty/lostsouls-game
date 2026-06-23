@@ -46,6 +46,38 @@ pass and what's installed," and close a few small drift gaps found in an audit.
   `engines.node: ">=24"` so the requirement is declared in one authoritative place.
 - **Stale doc fix** — `STATUS.md` footer "25 ADRs (0001–0025)" → "28 ADRs (0001–0028)".
 
+---
+
+## 2026-06-23 — B10: Meta-progression (Echoes + Resonance screen) (v0.8.15)
+
+Permanent progression layer gated behind the first full win. (ADR-0029.)
+
+- **New `src/core/saves.js`** — versioned localStorage save (mirrors `settings.js`): schema `v:1`,
+  `normalizeSave` + `migrate` (never-throw, safe-reset on corrupt/unknown version), `Save` singleton
+  with `get/addEchoes/recordWin/recordRun/recordBossKill/canBuy/buy/reset`. Pure exported helpers
+  (`normalizeSave`, `migrate`, `nodeById`, `costOf`, `canAfford`, `purchase`, `baselineStacks`) are
+  unit-tested (43 tests in `tests/saves.test.js`).
+- **`src/config.js`** — `SAVES` (earn rates) + `META_UPGRADES` (6 nodes: vitality/sharpness/swiftness/
+  rapid/toughHide/aegis).
+- **New `src/ui/metaProgress.js`** — native `<dialog>` Resonance panel (mirrors `ui/credits.js`): locked
+  banner pre-beat, node grid + Buy buttons post-beat, re-renders on each purchase.
+- **`index.html`** — `#meta` dialog + `.meta-*` CSS + `🌀 Resonance` start-menu button.
+- **`src/game.js`** — `recordBossKill` on boss death (bumps stat + awards Echoes post-beat), `recordWin`
+  on win, `recordRun` on GAMEOVER, `consumeForge()` → `openMetaPanel()` from DEAD/WIN state,
+  `baselineStacks` computed once in `startRun` and passed as `baseline` to each Player.
+- **`src/entities/player.js`** — `baseline` option in constructor; `reset()` seeds `_up`,
+  `maxHearts`, `guardCharges` from it (all-zero pre-beat → identical to today).
+- **`src/systems/input.js`** — `consumeForge()` (F key + Select/btn 8 on gamepad).
+- **`src/debug/menu.js`** — "Meta" folder: live echoes/gameBeaten readout + 🏆 Mark game beaten +
+  +100 Echoes + ↺ Reset save.
+- **`src/main.js`** — `initMetaPanel()` on boot, `window.__saves = saves` for the drive.
+- **`docs/adr/0029-meta-progression-and-save.md`** (new), **`docs/GAMEPLAY.md`** (economy row),
+  **`docs/BACKLOG.md`** (B10 ticked).
+
+**Deviations:** none — shipped as planned.
+
+---
+
 ## 2026-06-22 — B9b: Offer screen go-live (room-clear pick-1-of-3) (v0.8.14)
 
 The second half of the B9 redesign — the B9a offer engine is now **wired live**. Normal room clears open
