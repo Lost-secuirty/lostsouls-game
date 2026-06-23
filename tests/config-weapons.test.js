@@ -55,6 +55,7 @@ describe('WEAPONS config invariants', () => {
   it('orbital blade has positive orbit radius, spin, damage, and hitCooldown', () => {
     const orb = WEAPONS.orbital;
     expect(orb.orbital).toBe(true);
+    expect(orb.count).toBeGreaterThan(0);
     expect(orb.radius).toBeGreaterThan(0);
     expect(orb.spin).toBeGreaterThan(0);
     expect(orb.damage).toBeGreaterThan(0);
