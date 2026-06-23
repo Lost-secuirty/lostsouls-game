@@ -113,6 +113,7 @@ export const ALLY = {
   followDist: 4.5, // tries to stay this close to you
   fireCooldown: 0.45,
   range: 22, // will shoot enemies within this distance (bumped for the bigger arena)
+  defaultWeapon: 'pistol', // the ally's starting/fallback gun (solo player can reroll it — B9b)
   // B9: the AI ally makes no upgrade choices; it passively receives this fraction of the player's
   // accrued bonuses so it stays useful without being overpowered (player +10% dmg → ally +2%).
   upgradeShare: 0.2,
@@ -938,6 +939,12 @@ export const OFFERS = {
 export const GUARD = {
   rareCharges: 1, // "Guard" (rare) = block the next hit
   ultraCharges: 3, // "Greater Guard" (ultra, very rare) = block the next 3 hits
+  // feedback when a charge BLOCKS a hit — a distinct, lighter cue (no blood / music duck / heart loss)
+  block: {
+    sparkCount: 8,
+    sparkColor: 0xffe24a, // gold = shielded
+    rumble: { strong: 0.25, weak: 0.15, ms: 90 },
+  },
 };
 // damage reduction stacks on the same diminishing-returns curve as UPGRADES (core/scaling.js statBonus).
 // Applied as a deterministic % with a CARRY accumulator (core/defense.js) so whole-heart HP still feels
@@ -953,6 +960,11 @@ export const WEAPON_MODS = {
   bulletSpeed: 0.15, // +15% bullet speed, per pick
   explodeRadius: 2.5, // blast radius granted by the explosive mod
 };
+
+// ---- gamepad cursor sensitivity for the paused-menu selections (shared by the room-clear OFFER
+// cards and the human-choice A/B/C/D buttons): push the left stick past `move` to nudge the selection;
+// it re-arms once the stick returns inside `settle`. ----
+export const MENU_CURSOR = { move: 0.5, settle: 0.3 };
 
 // ---- models: map a key -> a file under /models/ (.glb). ----
 // null  => use a built-in primitive shape (always works).

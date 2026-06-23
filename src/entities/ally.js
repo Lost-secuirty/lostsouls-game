@@ -24,7 +24,7 @@ export class Ally {
     scene.add(this.mesh);
     this.radius = ALLY.radius;
     this.fireTimer = 0;
-    this.setWeapon('pistol'); // a real gun (set in the ctor so a reroll persists across rooms)
+    this.setWeapon(ALLY.defaultWeapon); // a real gun (set in the ctor so a reroll persists across rooms)
     this.reset(0, 0);
   }
 
@@ -37,17 +37,20 @@ export class Ally {
     this.mesh.position.set(x, 0, z);
   }
 
-  /** equip a weapon by config key (falls back to the pistol for an unknown key). */
+  /** equip a weapon by config key (falls back to ALLY.defaultWeapon for an unknown key). */
   setWeapon(key) {
-    this.weapon = WEAPONS[key] ? key : 'pistol';
+    const fallback = WEAPONS[ALLY.defaultWeapon] ? ALLY.defaultWeapon : Object.keys(WEAPONS)[0];
+    this.weapon = WEAPONS[key] ? key : fallback;
     this.weaponDef = WEAPONS[this.weapon];
     this.weaponName = this.weaponDef.name;
   }
 
-  /** solo only: reroll to a random "simple" gun (excludes the player-side charge/orbital). Returns the name. */
+  /** solo only: reroll to a DIFFERENT random "simple" gun (excludes charge/orbital + the current one). */
   rerollWeapon(rng) {
-    const pool = Object.keys(WEAPONS).filter((k) => !WEAPONS[k].charge && !WEAPONS[k].orbital);
-    this.setWeapon(pool[rng.int(pool.length)]);
+    const simple = Object.keys(WEAPONS).filter((k) => !WEAPONS[k].charge && !WEAPONS[k].orbital);
+    const pool = simple.filter((k) => k !== this.weapon); // avoid a no-op reroll
+    const choices = pool.length ? pool : simple;
+    this.setWeapon(choices[rng.int(choices.length)]);
     return this.weaponName;
   }
 

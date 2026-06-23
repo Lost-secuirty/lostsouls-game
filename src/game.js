@@ -10,7 +10,7 @@
 // revives when the room is cleared; Game Over only on a full wipe.
 // =====================================================================
 
-import { CAMERA, JUICE, FEEL, ARENA, CAPS, PALETTE, PICKUPS } from './config.js';
+import { CAMERA, JUICE, FEEL, ARENA, CAPS, PALETTE, PICKUPS, MENU_CURSOR } from './config.js';
 import { State } from './states.js';
 import { makeRng } from './core/rng.js';
 import { floorInfo, nextIsBoss, resolveDeath, weaponSlotsForBosses } from './core/progression.js';
@@ -287,13 +287,13 @@ export class Game {
       // fight is paused while the overlay is up; just drive the gamepad cursor
       // (mouse + keyboard are handled inside ui/humanchoice.js)
       const mv = this.input.move('pad');
-      if (mv.x > 0.5 && !this._choiceLatch) {
+      if (mv.x > MENU_CURSOR.move && !this._choiceLatch) {
         moveChoiceFocus(1);
         this._choiceLatch = true;
-      } else if (mv.x < -0.5 && !this._choiceLatch) {
+      } else if (mv.x < -MENU_CURSOR.move && !this._choiceLatch) {
         moveChoiceFocus(-1);
         this._choiceLatch = true;
-      } else if (Math.abs(mv.x) < 0.3) {
+      } else if (Math.abs(mv.x) < MENU_CURSOR.settle) {
         this._choiceLatch = false;
       }
       if (this.input.consumeHelp('pad')) confirmChoice();
@@ -302,13 +302,13 @@ export class Game {
       // in ui/offer.js). Only a pad-using picker (solo 'both', co-op P2 'pad') is driven here.
       if (this._offerPlayer && this._offerPlayer.device !== 'kb') {
         const mv = this.input.move('pad');
-        if (mv.x > 0.5 && !this._offerLatch) {
+        if (mv.x > MENU_CURSOR.move && !this._offerLatch) {
           moveOfferFocus(1);
           this._offerLatch = true;
-        } else if (mv.x < -0.5 && !this._offerLatch) {
+        } else if (mv.x < -MENU_CURSOR.move && !this._offerLatch) {
           moveOfferFocus(-1);
           this._offerLatch = true;
-        } else if (Math.abs(mv.x) < 0.3) {
+        } else if (Math.abs(mv.x) < MENU_CURSOR.settle) {
           this._offerLatch = false;
         }
         if (this.input.consumeHelp('pad')) confirmOffer();

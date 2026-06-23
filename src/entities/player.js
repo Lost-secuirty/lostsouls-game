@@ -6,7 +6,16 @@
 // =====================================================================
 
 import * as THREE from 'three';
-import { PLAYER, WEAPONS, PALETTE, CAPS, UPGRADES, DAMAGE_REDUCTION, OFFERS } from '../config.js';
+import {
+  PLAYER,
+  WEAPONS,
+  PALETTE,
+  CAPS,
+  UPGRADES,
+  DAMAGE_REDUCTION,
+  OFFERS,
+  GUARD,
+} from '../config.js';
 import { statBonus } from '../core/scaling.js';
 import { itemById } from '../core/items.js';
 import { resolveIncoming } from '../core/defense.js';
@@ -69,6 +78,7 @@ export class Player {
     this.x = x;
     this.z = z;
     this.hearts = this.maxHearts; // upgrades (incl. max-life) persist through a life-loss
+    this._drCarry = 0; // a full restore wipes banked reduced-damage (don't carry it past a revive)
     this.alive = true;
     this.invuln = 1.4;
     this.mesh.position.set(x, 0, z);
@@ -311,11 +321,12 @@ export class Player {
     this.invuln = PLAYER.invuln; // a blocked hit still spends the i-frame window (it WAS a hit)
 
     if (res.blocked) {
-      // a guard charge ate the hit: distinct, lighter cue — no blood / music duck / heart loss
+      // a guard charge ate the hit: distinct, lighter cue (config.GUARD.block) — no blood / duck / loss
+      const fx = GUARD.block;
       game.juice.addTrauma(game.JUICE.traumaOnShoot);
-      game.particles.burst(this.x, this.z, 8, 0xffe24a); // gold spark = shielded
+      game.particles.burst(this.x, this.z, fx.sparkCount, fx.sparkColor); // gold spark = shielded
       audio.play('shield');
-      if (this.device !== 'kb') game.input.rumble(0.25, 0.15, 90);
+      if (this.device !== 'kb') game.input.rumble(fx.rumble.strong, fx.rumble.weak, fx.rumble.ms);
       game.refreshHud();
       return;
     }

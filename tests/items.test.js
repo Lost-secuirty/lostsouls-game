@@ -88,6 +88,7 @@ describe('no-drift: weapon items stay in lockstep with the B8 drop engine', () =
 
   it('each weapon tier equals PICKUPS.rarity.itemRarity[id] (no drift)', () => {
     for (const it of itemsByCategory.weapon) {
+      expect(PICKUPS.rarity.itemRarity[it.id]).toBeDefined(); // a missing entry must fail, not false-pass
       expect(it.tier).toBe(PICKUPS.rarity.itemRarity[it.id]);
     }
   });
