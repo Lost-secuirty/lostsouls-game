@@ -199,21 +199,19 @@ export function itemById(id) {
   return BY_ID.get(id);
 }
 
-/** tier -> [items], derived once from the registry. */
-export const itemsByTier = (() => {
+/** group items into a {key: [items]} map, pre-seeding every key in `keys` (so lookups never miss). */
+function groupByKey(items, keyOf, keys) {
   const m = {};
-  for (const t of TIERS) m[t] = [];
-  for (const it of ITEMS) (m[it.tier] ??= []).push(it);
+  for (const k of keys) m[k] = [];
+  for (const it of items) m[keyOf(it)].push(it);
   return m;
-})();
+}
+
+/** tier -> [items], derived once from the registry. */
+export const itemsByTier = groupByKey(ITEMS, (it) => it.tier, TIERS);
 
 /** category -> [items], derived once. */
-export const itemsByCategory = (() => {
-  const m = {};
-  for (const c of CATEGORIES) m[c] = [];
-  for (const it of ITEMS) (m[it.category] ??= []).push(it);
-  return m;
-})();
+export const itemsByCategory = groupByKey(ITEMS, (it) => it.category, CATEGORIES);
 
 /**
  * The card's exact effect line (PURE). For stacking stats it shows the MARGINAL gain of the NEXT pick

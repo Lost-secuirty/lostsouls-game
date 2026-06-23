@@ -13,7 +13,7 @@ describe('generateOffer shape', () => {
     const rng = makeRng(11);
     for (let i = 0; i < 200; i++) {
       const cards = generateOffer(rng, {});
-      expect(cards.length).toBe(OFFERS.cardCount);
+      expect(cards).toHaveLength(OFFERS.cardCount);
       expect(new Set(cards.map((c) => c.id)).size).toBe(cards.length); // no duplicate items
       for (const c of cards) {
         expect(typeof c.id).toBe('string');

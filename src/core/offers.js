@@ -11,6 +11,7 @@
 
 import { OFFERS } from '../config.js';
 import { TIERS, itemsByTier, blurbFor } from './items.js';
+import { weightedChoice } from './weighted.js';
 
 function tierIndex(t) {
   return TIERS.indexOf(t);
@@ -32,53 +33,67 @@ export function pityFloorTier(commonStreak) {
   return floor;
 }
 
-/** weighted choice from [{value, weight}]; uniform fallback if every weight is 0. PURE (seeded rng). */
-function weightedPick(rng, entries) {
-  if (!entries.length) return null;
-  const total = entries.reduce((s, e) => s + e.weight, 0);
-  if (total <= 0) return entries[rng.int(entries.length)].value;
-  let roll = rng.next() * total;
-  for (const e of entries) {
-    roll -= e.weight;
-    if (roll <= 0) return e.value;
-  }
-  return entries[entries.length - 1].value;
-}
-
 /** roll a tier by weight, never below `minTier`, skipping empty tiers. */
 function rollTier(rng, minTier) {
   const minIdx = minTier ? Math.max(0, tierIndex(minTier)) : 0;
   const entries = TIERS.filter((t, i) => i >= minIdx && (itemsByTier[t]?.length ?? 0) > 0).map(
     (t) => ({ value: t, weight: OFFERS.tierWeights[t] ?? 0 }),
   );
-  return weightedPick(rng, entries);
+  return weightedChoice(rng, entries);
+}
+
+/** anti-repeat pick weight for one item: down-weight recently-offered items + already-owned weapons. */
+function itemWeight(it, baseWeight, recent, owned) {
+  let w = baseWeight;
+  if (recent.has(it.id)) w *= OFFERS.recentDecay;
+  if (it.category === 'weapon' && owned.has(it.id)) w *= OFFERS.ownedWeaponDecay;
+  return w;
+}
+
+/** build [{value, weight}] candidates across the given tier pools, optionally excluding a category. */
+function candidateEntries({ pools, spanning, chosen, recent, owned, avoidCat }) {
+  const entries = [];
+  for (const t of pools) {
+    const tierW = spanning ? Math.max(OFFERS.tierWeights[t] ?? 0, 0.0001) : 1; // span → weight by rarity
+    for (const it of itemsByTier[t] ?? []) {
+      if (chosen.has(it.id)) continue;
+      if (avoidCat && it.category === avoidCat) continue;
+      entries.push({ value: it, weight: itemWeight(it, tierW, recent, owned) });
+    }
+  }
+  return entries;
 }
 
 /**
- * Pick a distinct item, anti-repeat-weighted. With `tier` set, picks within that tier (equal item
- * weights). Without `tier`, spans ALL tiers weighted by tier rarity — used for the variety card so it
- * can always reach another category. `avoidCat` is relaxed only if it would otherwise empty the pool.
+ * Pick a distinct item, anti-repeat-weighted. With `tier` set, picks within it; without, spans ALL
+ * tiers (the variety card, so it can always reach another category). `avoidCat` is relaxed only if it
+ * would otherwise empty the pool.
  */
 function pickItem(rng, { tier = null, chosen, recent, owned, avoidCat = null }) {
   const pools = tier ? [tier] : TIERS;
-  const build = (useAvoid) => {
-    const entries = [];
-    for (const t of pools) {
-      for (const it of itemsByTier[t] ?? []) {
-        if (chosen.has(it.id)) continue;
-        if (useAvoid && it.category === avoidCat) continue;
-        let w = tier ? 1 : (OFFERS.tierWeights[t] ?? 0); // spanning tiers → weight by tier rarity
-        if (!tier && w <= 0) w = 0.0001; // keep a zero-weight tier barely reachable when spanning
-        if (recent.has(it.id)) w *= OFFERS.recentDecay;
-        if (it.category === 'weapon' && owned.has(it.id)) w *= OFFERS.ownedWeaponDecay;
-        entries.push({ value: it, weight: w });
-      }
-    }
-    return entries;
-  };
-  let entries = avoidCat ? build(true) : build(false);
-  if (!entries.length) entries = build(false); // relax category-variety rather than return nothing
-  return weightedPick(rng, entries);
+  const opts = { pools, spanning: !tier, chosen, recent, owned };
+  let entries = candidateEntries({ ...opts, avoidCat });
+  if (!entries.length) entries = candidateEntries({ ...opts, avoidCat: null });
+  return weightedChoice(rng, entries);
+}
+
+/** the category that has filled cardCount-1 slots (so the next card should avoid it), else null. */
+function overflowCategory(catCount) {
+  if (!OFFERS.categoryVariety) return null;
+  return Object.keys(catCount).find((c) => catCount[c] >= OFFERS.cardCount - 1) ?? null;
+}
+
+/** draw one card's item: variety-aware, with the pity floor applied to the first card. */
+function drawCard(rng, { index, floor, chosen, catCount, recent, owned }) {
+  const avoidCat = overflowCategory(catCount);
+  let item;
+  if (avoidCat) {
+    item = pickItem(rng, { chosen, recent, owned, avoidCat }); // span tiers to reach another category
+  } else {
+    const tier = rollTier(rng, index === 0 ? floor : null) ?? rollTier(rng, null);
+    item = tier ? pickItem(rng, { tier, chosen, recent, owned }) : null;
+  }
+  return item ?? pickItem(rng, { chosen, recent, owned }); // last-ditch: any not-chosen item
 }
 
 /**
@@ -99,22 +114,9 @@ export function generateOffer(rng, ctx = {}) {
   const chosen = new Set();
   const catCount = {};
   const cards = [];
-
   for (let i = 0; i < OFFERS.cardCount; i++) {
-    const overCat = OFFERS.categoryVariety
-      ? Object.keys(catCount).find((c) => catCount[c] >= OFFERS.cardCount - 1)
-      : null;
-    let item;
-    if (overCat) {
-      // variety guard: span every tier so we can always reach a different category
-      item = pickItem(rng, { chosen, recent, owned, avoidCat: overCat });
-    } else {
-      const tier = rollTier(rng, i === 0 ? floor : null) ?? rollTier(rng, null);
-      item = tier ? pickItem(rng, { tier, chosen, recent, owned }) : null;
-    }
-    if (!item) item = pickItem(rng, { chosen, recent, owned }); // last-ditch: any not-chosen item
+    const item = drawCard(rng, { index: i, floor, chosen, catCount, recent, owned });
     if (!item) break; // registry exhausted (won't happen at the current size)
-
     chosen.add(item.id);
     catCount[item.category] = (catCount[item.category] ?? 0) + 1;
     cards.push({
