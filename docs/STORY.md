@@ -123,6 +123,56 @@ Keep new content inside these so the theme doesn't get lost:
 - **The experiment** — who ran it, why? (A faction from the **civil war**? Whoever held the city?)
 - **The dad & son** — names? a reason they're still together in the worst place on earth?
 
+## Under discussion — Scott's lore expansion (2026-06-23, not canon yet)
+
+> These ideas are **not locked** — they're Scott's notes from a brainstorm session. Nothing below
+> overrides the canon above until it's decided and written in. Conflicts with current canon are noted.
+
+### The energy source — "Echo" origin story
+
+Scott's concept: the energy that powers the rift comes from **nuclear experiments**, seeded by
+**Russia's first nuclear test (1949)**. Key beats:
+
+- Scientists learned to **harvest the energy released by the explosion** — it behaves like a new
+  kind of fuel/force, not just radiation.
+- Early applications: heat, power generation, industrial output. Tech advances faster than in our
+  timeline because of this new power source.
+- Governments (US, Soviet, others) began secret experiments — many real-world sites used as cover:
+  **TVA dams** and the **Hoover Dam** officially run on hydroelectric power, but are secretly also
+  channeling/containing this energy.
+- The **teleportation experiment** — someone tried to use the energy as a transit mechanism.
+  It went wrong. **Portals opened.** The monsters came through.
+- **The name "Echoes"** does NOT exist in the game world at the start. It's what survivors
+  eventually call the energy after the player **beats the final boss and claims or discovers something
+  about its source**. The word comes last — earned.
+
+**Open conflict with current canon:** current STORY.md says "no WW2 — a civil war wrecked the
+city." Scott is considering a **post-WW2 alt-history** instead (WW2 happened → Russia tests nuke in
+1949 → the portal energy is nuclear in origin). **These cannot both be true** — needs a decision.
+Options: (a) keep civil-war-only, nuclear energy is still the experiment trigger; (b) switch to
+post-WW2 alt-history; (c) WW2 happened elsewhere but the _city_ was the civil-war's battleground.
+
+**Era:** Scott is also considering **shifting to 1950s** (vs current 1940s anchor) — makes the Cold
+War paranoia and nuclear anxiety feel more natural. Not decided.
+
+### Folklore / atmosphere notes (background research, not lore decisions)
+
+Scott uploaded reference research on 1940s–50s American folklore. Relevant atmosphere sources for
+art direction, room themes, and enemy flavor:
+
+- **Dark Watchers (Big Sur)** — shadowy tall figures in coastal mountains. Good enemy silhouette
+  inspiration.
+- **Foo Fighters / early UFO sightings** — glowing orbs trailing aircraft. Could be a projectile
+  or enemy visual motif.
+- **Phantom Hitchhiker** — ghost that appears human, then isn't. Maps well onto the Human boss /
+  "trust is a gamble" pillar.
+- **Kilroy Was Here** — veteran graffiti that spread everywhere. Good in-world detail for ruins/walls.
+- **The Philadelphia Experiment** — ship turned invisible via military tech. Fits the "government
+  experiments gone wrong" theme.
+
+These are **atmosphere/flavor sources**, not canon decisions. Use them to inspire room names, wall
+detail, enemy design — don't force them into plot.
+
 ---
 
 _Add to this file whenever a story beat gets locked. If a new monster, weapon, or area would
