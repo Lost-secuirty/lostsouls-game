@@ -461,10 +461,12 @@ export class Game {
     this._offerPlayer = pl;
     const cards = generateOffer(this.rng, pl.offerContext()); // seeded (ADR-0013) → reproducible
     pl.noteOffered(cards.map((c) => c.id));
+    let playerTag = null;
+    if (this.coop) playerTag = pl === this.player ? 'P1' : 'P2';
     showOffer(cards, {
       onPick: (i) => this._onOfferPick(pl, cards, i),
       solo: !this.coop,
-      playerTag: this.coop ? (pl === this.player ? 'P1' : 'P2') : null,
+      playerTag,
       allyWeaponName: !this.coop && this.ally ? this.ally.weaponName : null,
       onReroll: !this.coop && this.ally ? () => this.ally.rerollWeapon(this.rng) : null,
     });

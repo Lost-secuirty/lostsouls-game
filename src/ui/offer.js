@@ -110,7 +110,7 @@ export function showOffer(
   };
 
   buttons.forEach((btn, i) => (btn.onclick = () => pick(i)));
-  window.addEventListener('keydown', onKey, true);
+  addEventListener('keydown', onKey, true);
 
   active = {
     moveFocus: (dir) => setFocus(focus + (dir > 0 ? 1 : -1)),
@@ -119,7 +119,7 @@ export function showOffer(
 
   function cleanup() {
     overlay.classList.remove('show');
-    window.removeEventListener('keydown', onKey, true);
+    removeEventListener('keydown', onKey, true);
     buttons.forEach((b) => (b.onclick = null));
     if (rerollEl) rerollEl.onclick = null;
     active = null;

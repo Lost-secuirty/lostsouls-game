@@ -272,7 +272,7 @@ export const CAPS = {
 //   maxBonus = the eventual ceiling, half = how many stacks reach HALF of it
 //   (higher half = slower, smaller-per-pick, longer ramp).
 export const UPGRADES = {
-  damage: { maxBonus: 1.0, half: 12 }, // damageMul = 1 + bonus  → asymptote ×2 damage (small per pick)
+  damage: { maxBonus: 1, half: 12 }, // damageMul = 1 + bonus  → asymptote ×2 damage (small per pick)
   fireRate: { maxBonus: 0.6, half: 12 }, // fireRateMul = 1 - bonus → asymptote cooldown ×0.4
   speed: { maxBonus: 0.6, half: 12 }, // speed = base × (1 + bonus) → asymptote +60%
 };
