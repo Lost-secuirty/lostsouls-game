@@ -200,12 +200,9 @@ class Save {
 
   /** True iff the node can be purchased right now (gameBeaten + affordable + not maxed). */
   canBuy(id) {
-    if (!this._v.gameBeaten) return false;
-    const node = nodeById(id);
-    if (!node) return false;
-    const level = this._v.upgrades[id] ?? 0;
-    if (level >= node.maxLevel) return false;
-    return this._v.echoes >= costOf(id, level);
+    // Gate first, then defer the affordable/not-maxed/exists checks to the pure helper
+    // (keeps the rule in one place — no duplicated guard between here and canAfford).
+    return this._v.gameBeaten && canAfford(this._v, id);
   }
 
   /** Attempt a purchase. Returns true on success, false if canBuy would have returned false. */
