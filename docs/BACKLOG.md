@@ -9,6 +9,23 @@ decisions in [`docs/adr/`](adr/).
 > **Light by design (ADR-0005).** This is a fun-first co-designed game; keep the backlog short and
 > honest. Don't pad it with process for its own sake.
 
+## Playtest follow-ups (2026-06-22, from Scott — fix later)
+
+- [ ] **Survivor-spawned enemies don't move** until they touch the player. The "bad read" survivor
+      outcome (`game._resolveSurvivor` → `SPAWN_ENEMIES` → `new Enemy(scene, 'chaser', …)`) spawns
+      chasers that read as inert until contact. Check target acquisition / `Enemy.update` for enemies
+      added mid-room (vs. the spawner's room-load path).
+- [ ] **Survivor-spawned enemies spawn on top of you.** They're placed at `npc.x ± 2, npc.z ± 2`
+      (right where you're interacting with the survivor). Spawn them at a distance from the nearest
+      player instead (a min-distance ring / a different location).
+- [ ] **No movement OR firing while a "screen" is up.** Scott can still move + shoot while a clear
+      screen shows. The B9b `OFFER` modal already fully pauses input; this is about the `ROOM_CLEAR`
+      walk-to-door phase (currently movement-enabled by design so you can reach the door) and/or a
+      general rule — decide the intended behavior and gate move + fire for every non-`PLAYING` "screen"
+      state (may mean replacing walk-to-door with a prompt/auto-advance).
+- [ ] **Pause menu for options.** Move the always-on-screen settings (`#settings` panel, bottom-right)
+      into a proper **pause menu** (Esc / Start) — options live in the pause menu, not floating on the HUD.
+
 ## Known gaps / deferred
 
 - [ ] **Full `Game` step is not in the headless determinism test** — `populateRoom` is
