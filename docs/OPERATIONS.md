@@ -28,11 +28,15 @@ Plus `scorecard.yml`, `artifacts.yml`, `release.yml`.
 
 - **SonarCloud** — Automatic Analysis (GitHub App). The quality gate fails the PR on: **duplicated lines
   on new code > 3%**, low new-code coverage, new bugs/vulnerabilities/code-smells above the gate, or
-  unreviewed security hotspots on new code. [`sonar-project.properties`](../sonar-project.properties)
-  only _scopes_ the scan (CPD excluded for `src/entities/bosses/**`, `src/config.js`, `tests/**`;
-  coverage excluded for `tests/**`, `scripts/**`, `src/config.js`, `**/*.config.*`).
-  **There is no local command that reproduces the new-code duplication metric** — it is PR-only, and
-  Automatic Analysis can _lag_ a push (the published gate comment shows the revision it analyzed).
+  unreviewed security hotspots on new code. **Scope is configured in
+  [`.sonarcloud.properties`](../.sonarcloud.properties), NOT `sonar-project.properties`** — Automatic
+  Analysis ignores the latter and reads the former **only from the default branch** (so an exclusion
+  change must be merged to `main` before it affects a PR). Current CPD exclusions:
+  `src/entities/bosses/**`, `src/config.js`, `tests/**`; coverage excluded for `tests/**`, `scripts/**`,
+  `src/config.js`, `**/*.config.*`. **No local command reproduces the new-code duplication metric** — it
+  is PR-only. To see exactly which file/lines it flags, query the API:
+  `curl "https://sonarcloud.io/api/measures/component_tree?component=Lost-secuirty_lostsouls-game&pullRequest=<N>&metricKeys=new_duplicated_lines_density&qualifiers=FIL"`
+  (new-code values live under each measure's `period`/`periods` field, not `value`).
 - **CodeRabbit** — AI review; all threads must resolve before merge. No local equivalent.
 
 > Which of these are _branch-protection-required_ vs. advisory isn't encoded in the repo files. Confirm

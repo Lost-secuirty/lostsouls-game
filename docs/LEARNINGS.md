@@ -738,3 +738,27 @@ base*(1+growth)^i`. Removed the hand-set per-floor `diff` from `PROGRESSION.floo
 - **`vitest run` cold-transforms THREE under coverage and can trip the 10s `beforeEach` hook** on
   `tests/input.proof.test.js` (it dynamic-imports `systems/input.js → three`). Environmental (warm cache
   → ~1s); a fresh `--coverage` run on a cold machine may need `--hookTimeout` headroom to report.
+
+## 2026-06-23 — SonarCloud Automatic Analysis ignores `sonar-project.properties`
+
+- **The big one:** this project uses SonarCloud **Automatic Analysis** (the GitHub App; there is no CI
+  scanner step). Automatic Analysis **does not read `sonar-project.properties` at all** — it reads
+  **`.sonarcloud.properties`**, and **only from the default branch**. So our duplication/coverage
+  exclusions in `sonar-project.properties` had **never actually applied**; nobody noticed because no PR
+  had added a big block of structurally-repetitive _new_ code until B10's `META_UPGRADES`. Fix: add
+  `.sonarcloud.properties` (same keys) on `main`. (Official docs:
+  https://docs.sonarsource.com/sonarqube-cloud/analyzing-source-code/automatic-analysis)
+- **PR analysis reads the config from the DEFAULT branch, not the PR branch.** Adding/editing
+  `.sonarcloud.properties` on a feature branch does nothing for that PR's own gate — it must be merged to
+  `main` first, then the PR re-analyzed. Plan exclusion changes as their own land-on-main-first PR.
+- **To find WHICH file/lines Sonar flags for new-code duplication**, don't guess — ask the API:
+  `curl "https://sonarcloud.io/api/measures/component_tree?component=Lost-secuirty_lostsouls-game&pullRequest=<N>&metricKeys=new_duplicated_lines_density&qualifiers=FIL"`.
+  **Gotcha:** new-code metric values are under each measure's `period`/`periods` field, NOT `value` — read
+  the wrong field and every file looks like `0`/`?`. This pinpointed config.js (45.9% of 74 new lines)
+  after three wrong-file fix attempts.
+- **`jscpd` is NOT a faithful proxy for Sonar's CPD here** — its HTML parser doesn't tokenize inline
+  `<style>` CSS, and its default token threshold differs, so it found none of the real duplication.
+  Trust the SonarCloud API for ground truth, not a local CPD tool.
+- **To verify Sonar isn't just lagging**, check the analyzed commit:
+  `curl ".../api/project_pull_requests/list?project=..."` → each PR's `commit.sha` + `analysisDate`.
+  Confirm it equals your HEAD before concluding a fix "failed."

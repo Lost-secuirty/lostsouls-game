@@ -15,6 +15,22 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-23 — Fix SonarCloud exclusions: add `.sonarcloud.properties` (no version change)
+
+Root-cause fix for a long-latent config bug, found while unblocking the B10 PR's quality gate.
+
+- **The bug:** SonarCloud **Automatic Analysis** (this repo's setup — GitHub App, no CI scanner step)
+  **ignores `sonar-project.properties`**. It reads **`.sonarcloud.properties`** instead, and only from
+  the **default branch**. So the repo's CPD/coverage exclusions never actually applied — exposed when
+  B10's `META_UPGRADES` (6 same-shape data objects) pushed new-code duplication to 3.3% on `src/config.js`
+  (a file that was _supposed_ to be excluded).
+- **New `.sonarcloud.properties`** — same `sonar.cpd.exclusions` (bosses, config.js, tests) +
+  `sonar.coverage.exclusions` the dead properties file carried.
+- **`sonar-project.properties`** — header corrected: kept only as the CI-analysis fallback; notes
+  `.sonarcloud.properties` is the live config and to keep them in sync.
+- **`docs/OPERATIONS.md`** — corrected the SonarCloud section + added the API recipe to find flagged
+  files/lines. **`docs/LEARNINGS.md`** — full write-up (incl. the `period`-field API gotcha).
+
 ## 2026-06-23 — Ops reference + tooling hygiene (no version change)
 
 A process/tooling PR (no gameplay change, no version bump): give the repo a single home for "what must
