@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { effectivePixelRatio, PIXEL_RATIO_CAPS, SHADOW_MAP_SIZES } from '../src/core/graphics.js';
+import { effectivePixelRatio } from '../src/core/graphics.js';
+import { PIXEL_RATIO_CAPS, SHADOW_MAP_SIZES } from '../src/config.js';
 
 describe('effectivePixelRatio', () => {
   it('clamps the device ratio down to the cap', () => {

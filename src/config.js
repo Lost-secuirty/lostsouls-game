@@ -623,6 +623,14 @@ export const GRAPHICS = {
   },
 };
 
+// ---- Graphics A/B debug option lists (FPS-1) ----
+// Dropdown choices for the debug "Graphics (A/B perf)" folder.
+// Kept here so all graphics tunables live in one place.
+export const PIXEL_RATIO_CAPS = [1, 1.25, 1.5, 2.0];
+export const SHADOW_MAP_SIZES = [512, 1024, 2048];
+export const MSAA_SAMPLES = [0, 2, 4];
+export const AO_QUALITIES = ['off', 'Performance', 'Low', 'Medium', 'High', 'Ultra'];
+
 // ---- readability overlay rings (ADR-0023 — systems/overlays.js) ----
 // Flat ground rings drawn over the action: an always-on boss TELEGRAPH ring (pulses
 // while a boss winds up) + the opt-in HITBOX overlay. Pooled like HAZARD (meshes made

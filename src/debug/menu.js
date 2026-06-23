@@ -7,11 +7,20 @@
 // =====================================================================
 
 import GUI from 'lil-gui';
-import { WEAPONS, PROGRESSION, CAPS, GRAPHICS, CAMERA } from '../config.js';
+import {
+  WEAPONS,
+  PROGRESSION,
+  CAPS,
+  GRAPHICS,
+  CAMERA,
+  PIXEL_RATIO_CAPS,
+  SHADOW_MAP_SIZES,
+  MSAA_SAMPLES,
+  AO_QUALITIES,
+} from '../config.js';
 import { roomsPerFloor, floorCount, floorInfo } from '../core/progression.js';
 import { WEAPON_TYPES } from '../entities/pickups.js';
 import { saves } from '../core/saves.js';
-import { PIXEL_RATIO_CAPS, SHADOW_MAP_SIZES } from '../core/graphics.js';
 
 const PICKUP_TYPES = ['HEAL', 'DAMAGE_UP', 'FIRE_RATE_UP', 'SPEED_UP', ...WEAPON_TYPES];
 
@@ -194,7 +203,7 @@ export function initDebugMenu(game) {
     .name('Pixel ratio cap')
     .onChange((v) => game.gfx?.setPixelRatioCap(v));
   gfx
-    .add(gfxState, 'msaa', [0, 2, 4])
+    .add(gfxState, 'msaa', MSAA_SAMPLES)
     .name('MSAA samples')
     .onChange((v) => {
       GRAPHICS.aaSamples = v;
@@ -220,7 +229,7 @@ export function initDebugMenu(game) {
       game.postfx?.rebuild();
     });
   gfx
-    .add(gfxState, 'aoQuality', ['off', 'Performance', 'Low', 'Medium', 'High', 'Ultra'])
+    .add(gfxState, 'aoQuality', AO_QUALITIES)
     .name('AO quality')
     .onChange((v) => {
       GRAPHICS.ao.enabled = v !== 'off';
