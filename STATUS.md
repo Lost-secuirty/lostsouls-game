@@ -164,7 +164,7 @@ two-player co-op (keyboard/mouse/gamepad). Most recent work:
 - **Cross-repo hardening** — secret/PII pre-commit + CI scanner (public-repo BLOCK policy),
   ESLint 10, pinned actions.
 
-25 ADRs (0001–0025). Verification: probability/proof tests, coverage gate, production smoke +
+28 ADRs (0001–0028). Verification: probability/proof tests, coverage gate, production smoke +
 browser smoke, OpenSSF scorecard, dependency review, control audit.
 
 ## Scope (unchanged)
