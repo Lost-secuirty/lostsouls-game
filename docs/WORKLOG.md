@@ -15,6 +15,19 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-23 — Testing kit ports: statistical RNG battery + config invariants + metamorphic tests (no version change)
+
+Port of test patterns from [`Lost-secuirty/Demo-math-slot-test-only`](https://github.com/Lost-secuirty/Demo-math-slot-test-only) into the game's Vitest suite. No gameplay code changed; 22 new tests added, 303 total (up from 281).
+
+- **`tests/helpers/stats.js`** (new) — 5 statistical helper functions ported from the slot-test harness: `chiSquareUniform`, `chiSquareCategorical`, `ksUniform` (Kolmogorov-Smirnov), `runsZ` (Wald-Wolfowitz runs test), `serialCorrelation` (lag-1). Pure math, no deps. Now available to any future test.
+- **`tests/rng-stats.test.js`** (new) — Statistical battery for `makeRng` (mulberry32): chi-square, KS, runs, serial correlation — all seeded and deterministic. Proves the PRNG is actually uniform and independent, not just "seems random." The existing `rng.test.js` only covered basic determinism/range.
+- **`tests/config-weapons.test.js`** (new) — Config invariant tests for `WEAPONS` and `PROGRESSION`. Every weapon entry is checked for: positive damage, positive cooldown (non-orbital), ≥1 pellet + positive bullet speed (non-orbital), spreadDeg in [0,360), explosive → positive explodeRadius, homing → positive turnRate, orbital → positive radius/spin/hitCooldown. Charge cannon inner config validated (minDamage < maxDamage, positive maxTime). Progression: roomsPerFloor is a positive integer, all floors have name + boss, no two floors share a boss type.
+- **`tests/metamorphic.test.js`** (new) — Metamorphic tests for the balance math (ported pattern from the slot-test harness): (1) `statBonus` linearity in maxBonus (scaling m by k must scale output by k — catches hardcoded-scale bugs); (2) `floorScale` consecutive-ratio invariance (ratio must be 1+growth regardless of floor index — catches off-by-one or table-lookup bugs); (3) `marginalBonus` telescoping identity tested across a wider parameter grid than the existing `scaling.test.js` regression pin.
+
+**Deviations:** `chiSquareCategorical` was ported from helpers even though there's no current test that calls it — included because it's the natural companion to `chiSquareUniform` and needed for any future weighted-drop fairness test.
+
+---
+
 ## 2026-06-23 — FPS-1: perf A/B tooling + safe dial-backs (v0.8.16)
 
 First plan filed under the new [`docs/plans/`](plans/) archive
