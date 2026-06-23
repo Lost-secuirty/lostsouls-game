@@ -123,12 +123,11 @@ export function migrate(raw) {
 
 function load() {
   try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) return normalizeSave(migrate(JSON.parse(raw)));
+    const stored = localStorage.getItem(KEY);
+    return stored ? normalizeSave(migrate(JSON.parse(stored))) : DEFAULTS();
   } catch {
-    /* no storage (private mode / headless / corrupt) — fall back to defaults */
+    return DEFAULTS();
   }
-  return DEFAULTS();
 }
 
 // ---- the singleton Save (one shared instance for the whole game) ----
@@ -228,10 +227,11 @@ class Save {
   }
 
   _save() {
+    const json = JSON.stringify(this._v);
     try {
-      localStorage.setItem(KEY, JSON.stringify(this._v));
+      localStorage.setItem(KEY, json);
     } catch {
-      /* storage unavailable — keep the in-memory value, just don't persist */
+      /* storage unavailable — keep in-memory */
     }
   }
 }
