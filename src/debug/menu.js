@@ -135,6 +135,10 @@ export function initDebugMenu(game) {
   ).name('🎁 Drop pickup');
 
   // ---- Performance (FPS + the counts that matter for tuning difficulty/perf) ----
+  // NOTE: when Post-FX is ON, draw calls + triangles will show as ~1 (the composer's
+  // final blit to screen), not the scene's actual geometry. Turn Post-FX OFF to see
+  // true scene complexity. The scene complexity is unchanged; you're just seeing
+  // the *final render pass* to screen when Post-FX is active.
   const perf = gui.addFolder('Performance');
   const fpsCtrl = perf.add(state, 'fps').name('FPS').disable().listen();
   const msCtrl = perf.add(state, 'frameMs').name('Frame ms').disable().listen();
