@@ -333,6 +333,132 @@
         color: #9a8a8a;
         letter-spacing: 1px;
       }
+
+      /* ---- room-clear upgrade offer: pick 1 of 3 (B9b, ui/offer.js) ---- */
+      #offer {
+        position: fixed;
+        inset: 0;
+        z-index: 21;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        text-align: center;
+        pointer-events: auto;
+        background: radial-gradient(circle at 50% 38%, #120a1c 0%, #0a0508 70%, #07060a 100%);
+        color: #fff;
+      }
+      #offer.show {
+        display: flex;
+      }
+      #offer-title {
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: #ffd24a;
+        text-shadow: 0 2px 12px #000;
+      }
+      #offer-cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        justify-content: center;
+        max-width: 820px;
+      }
+      .offer-card {
+        position: relative;
+        cursor: pointer;
+        width: 230px;
+        min-height: 158px;
+        padding: 20px 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: #fff;
+        background: #1a1320;
+        border: 2px solid #9aa0a6;
+        border-radius: 14px;
+        transition:
+          transform 0.1s ease,
+          background 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+      .offer-card:hover,
+      .offer-card.focus {
+        background: #251a30;
+        transform: translateY(-4px) scale(1.03);
+        outline: 3px solid #ffd24a;
+      }
+      .offer-key {
+        position: absolute;
+        top: 8px;
+        left: 11px;
+        font-size: 14px;
+        font-weight: 800;
+        opacity: 0.55;
+      }
+      .offer-tier {
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        color: #c8ced4;
+      }
+      .offer-name {
+        font-size: 21px;
+        font-weight: 800;
+        letter-spacing: 1px;
+      }
+      .offer-blurb {
+        font-size: 15px;
+        line-height: 1.35;
+        color: #d8c8e8;
+      }
+      /* tier accents (common grey / rare blue / epic purple / ultra gold) */
+      .offer-card.tier-rare {
+        border-color: #4db3ff;
+        box-shadow: 0 0 14px rgba(77, 179, 255, 0.25);
+      }
+      .offer-card.tier-rare .offer-tier {
+        color: #8ac8ff;
+      }
+      .offer-card.tier-epic {
+        border-color: #b06cff;
+        box-shadow: 0 0 16px rgba(176, 108, 255, 0.3);
+      }
+      .offer-card.tier-epic .offer-tier {
+        color: #d2b0ff;
+      }
+      .offer-card.tier-ultra {
+        border-color: #ffcf3a;
+        box-shadow: 0 0 22px rgba(255, 207, 58, 0.45);
+      }
+      .offer-card.tier-ultra .offer-tier {
+        color: #ffe79a;
+      }
+      #offer-reroll {
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 700;
+        color: #6cff8a;
+        border: 1px solid #3a5a40;
+        border-radius: 8px;
+        padding: 8px 16px;
+      }
+      #offer-reroll:hover {
+        color: #b6ffc8;
+        border-color: #6cff8a;
+      }
+      #offer-controls {
+        max-width: 480px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #9a8a8a;
+        letter-spacing: 1px;
+      }
       @keyframes bob {
         0%,
         100% {
@@ -515,6 +641,14 @@
         Pick how you approach — you won't know if it was the right call until you choose.
         &nbsp;·&nbsp; 1-4 / click / left-stick + A
       </div>
+    </div>
+
+    <!-- room-clear upgrade offer: pick 1 of 3 cards (built in ui/offer.js) -->
+    <div id="offer">
+      <div id="offer-title"></div>
+      <div id="offer-cards"></div>
+      <div id="offer-reroll"></div>
+      <div id="offer-controls"></div>
     </div>
 
     <!-- accessibility / feel settings: volume, mute, hitbox overlay, effects (persisted) -->

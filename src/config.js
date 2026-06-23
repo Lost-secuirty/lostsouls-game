@@ -254,6 +254,7 @@ export const PROGRESSION = {
 // asymptotes so the curve is what you feel.
 export const CAPS = {
   lives: { start: 3, max: 5 }, // start with 3, can grow to 5
+  maxHearts: 12, // hard ceiling on per-player hearts (the offered MAX_HP_UP grows it from PLAYER.maxHearts)
   damageMul: 2.0, // hard ceiling on the damage multiplier (curve asymptote = +100%)
   fireRateMin: 0.4, // cooldown floor (curve asymptote = -60% cooldown)
   speedMul: 1.6, // hard ceiling on move speed (curve asymptote = +60%)
@@ -262,15 +263,18 @@ export const CAPS = {
 };
 
 // ---- upgrade curves (diminishing returns — see core/scaling.js statBonus) ----
-// Each pickup adds ONE stack; the stat grows big early then tapers toward maxBonus,
-// so power ramps across a whole run instead of capping in ~3 pickups. Tune per stat:
+// Each pick adds ONE stack; the stat grows toward maxBonus but never hits a hard wall. Since B9b,
+// offers appear EVERY room clear, so a single stat can be picked many times in a long/endless run.
+// Design intent (Scott): each pick is a SMALL nudge — the excitement is the tier roll + (later) luck/
+// meta systems, not a big per-pick jump. So `half` (the knee) is set HIGH for a gentle, slow ramp that
+// climbs over a whole run without capping early. `maxBonus` (ceiling) + CAPS are unchanged from the
+// ground-drop era (CAPS sit at the asymptotes as safety backstops). Tune per stat:
 //   maxBonus = the eventual ceiling, half = how many stacks reach HALF of it
-//   (higher half = slower, longer ramp). The pistol-stays-weak / shotgun-fine
-//   balance is in WEAPONS; this is the player's stat growth.
+//   (higher half = slower, smaller-per-pick, longer ramp).
 export const UPGRADES = {
-  damage: { maxBonus: 1.0, half: 5 }, // damageMul = 1 + bonus  → up to ×2 damage
-  fireRate: { maxBonus: 0.6, half: 6 }, // fireRateMul = 1 - bonus → cooldown down to ×0.4
-  speed: { maxBonus: 0.6, half: 6 }, // speed = base × (1 + bonus) → up to +60%
+  damage: { maxBonus: 1.0, half: 12 }, // damageMul = 1 + bonus  → asymptote ×2 damage (small per pick)
+  fireRate: { maxBonus: 0.6, half: 12 }, // fireRateMul = 1 - bonus → asymptote cooldown ×0.4
+  speed: { maxBonus: 0.6, half: 12 }, // speed = base × (1 + bonus) → asymptote +60%
 };
 
 // ---- difficulty curve (one knob for the whole run — see scaling.js floorScale) ----
@@ -907,10 +911,14 @@ export const PICKUPS = {
 };
 
 // ---- B9: room-clear upgrade OFFER screen (pick 1 of 3) ----
-// Every room clear shows `cardCount` cards drawn from the core/items.js registry: roll a TIER per card
-// (weighted, with soft + hard pity), then an item of that tier. NOT wired live yet — B9b flips it on.
-// Self-contained tier list (incl. `ultra`) so it never disturbs the B8 ground-drop rarity
-// (PICKUPS.rarity); the offer engine (core/offers.js) reads these knobs.
+// Every NORMAL room clear shows `cardCount` cards drawn from the core/items.js registry: roll a TIER per
+// card (weighted, with soft + hard pity), then an item of that tier. LIVE since B9b (replaces the old
+// ground stat-drops; boss rooms still drop a ground HEAL + weapon chest). The offer engine
+// (core/offers.js) reads these knobs. NOTE — two SEPARATE tier ladders by design:
+//   • OFFERS.tiers (below) = common/rare/epic/ULTRA — the offer pool; `ultra` is the guard, offer-only.
+//   • PICKUPS.rarity.tiers (above) = common/rare/epic — the ground/boss-chest drop engine (B8).
+// items.js is the single registry; a no-drift test keeps its weapon tiers in lockstep with
+// PICKUPS.rarity.itemRarity. The two ladders never need to merge (different pools).
 export const OFFERS = {
   cardCount: 3, // cards shown per offer
   tiers: ['common', 'rare', 'epic', 'ultra'], // low → high (offer-only; adds `ultra` for the guard)
@@ -918,7 +926,7 @@ export const OFFERS = {
   // anti-repeat: scale an item's pick weight when it was offered recently or is an owned weapon
   recentDecay: 0.35, // pick weight × this if the item was in the last few offers
   ownedWeaponDecay: 0.15, // pick weight × this for a weapon you already carry (low re-value)
-  recentMemory: 6, // how many past offers count as "recent"
+  recentMemory: 6, // how many recently-offered item ids stay down-weighted (player.js ring buffer)
   categoryVariety: true, // avoid showing 3 cards of the same category when a 3rd category is available
   // soft pity ramps the guaranteed floor tier of the BEST card as rooms pass without taking a rare+;
   // hard pity forces a rare+ at the cap (mirrors B8's drop pity, applied to the offer).
@@ -931,10 +939,12 @@ export const GUARD = {
   rareCharges: 1, // "Guard" (rare) = block the next hit
   ultraCharges: 3, // "Greater Guard" (ultra, very rare) = block the next 3 hits
 };
-// damage reduction stacks on the same diminishing-returns curve as UPGRADES (core/scaling.js statBonus)
+// damage reduction stacks on the same diminishing-returns curve as UPGRADES (core/scaling.js statBonus).
+// Applied as a deterministic % with a CARRY accumulator (core/defense.js) so whole-heart HP still feels
+// a true fraction without ever going fractional — no RNG (fits the "skill, never chance" design ethic).
 export const DAMAGE_REDUCTION = {
   maxBonus: 0.4, // asymptotic ceiling — never exceeds −40% incoming damage
-  half: 4, // stacks to reach half of maxBonus
+  half: 8, // stacks to reach half of maxBonus (high = small per pick, like UPGRADES)
 };
 // B9: weapon-mod amounts (applied to the player's guns via the existing BULLET behavior flags)
 export const WEAPON_MODS = {

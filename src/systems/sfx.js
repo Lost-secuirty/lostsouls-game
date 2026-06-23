@@ -187,6 +187,11 @@ const SOUNDS = {
     tone({ freq: 400, type: 'square', dur: 0.12, vol: 0.16, delay: 0.16 });
   },
   bounce: () => tone({ freq: 900, slideTo: 1400, type: 'square', dur: 0.04, vol: 0.07 }),
+  // B9b: a guard charge deflects a hit — a crisp metallic clink (distinct from `hurt`)
+  shield: () => {
+    tone({ freq: 1000, slideTo: 1600, type: 'square', dur: 0.06, vol: 0.12 });
+    noise({ dur: 0.08, vol: 0.1, freq: 3000, q: 2 });
+  },
   // expansion 6 stage 3 — the dog/cat duo
   bossPounce: () => {
     // a low growl that swoops up into the lunge

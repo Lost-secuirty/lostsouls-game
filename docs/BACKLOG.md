@@ -16,6 +16,35 @@ decisions in [`docs/adr/`](adr/).
       covers the pure RNG _logic_ seams only, not a full stepped game. Reproducibility of the random
       logic is guaranteed; a fuller headless harness is deferred. (Documented in LEARNINGS 2026-06-10.)
 
+## Upgrade / meta systems — deferred from B9b (Scott's vision, too big for the offer PR)
+
+The B9b offer screen is intentionally a **small** per-pick nudge; the depth/excitement is meant to come
+from a stack of bigger systems layered on later. Parked here so the offer PR stays focused — each
+becomes an ADR when picked up.
+
+- [ ] **Luck factor / stat** — biases offer tiers + drop rarity (an in-run and/or meta stat).
+- [ ] **Other upgrade sources** beyond the room-clear offer (shops, shrines, events, …).
+- [ ] **Permanent / meta upgrades** — persistent between-run progression (this is **B10**, ADR-0029).
+- [ ] **Unlockable weapons** — guns gated behind progress/achievements (vs. all available from the start).
+- [ ] **Unlockable characters** — alternate playables unlocked via **achievements**.
+- [ ] **Achievements** — the unlock + tracking layer the above hang off.
+- [ ] **Challenge / endless / random (modifier) modes** — alternate run rulesets. Endless is why the
+      offer curve is "scales almost forever" (small steps that never hard-cap).
+
+### B9b-specific small follow-ups
+
+- [ ] **Co-op simultaneous offers** — B9b presents the two offers **sequentially** (P1 then P2); a
+      side-by-side, device-routed version is a polish pass.
+- [ ] **Gamepad ally-weapon reroll** — the solo reroll is keyboard/click (`R`) only for now.
+- [ ] **Bespoke boss reward screens** — boss rooms still drop a ground HEAL + weapon chest (B8); a
+      boss-specific reward/offer screen is later.
+- [ ] **Lives → %/HP-bar rework** — the guard + carry damage-reduction work with whole hearts today; a
+      finer HP model (half-hearts / a bar) is a bigger change (kept here so the carry-DR opacity is a
+      conscious trade, not a gap).
+- [ ] **Range upgrade** (bullets use lifetime, not range — not a mechanic yet) and **reload / finite
+      ammo** (guns are infinite-ammo for now).
+- [ ] **Level-up / XP cadence** as an alternative to the every-room offer.
+
 ## Future ideas (parking lot)
 
 - [ ] **Rework the Orbital Blade (playtest feedback, 2026-06-20).** As a standalone weapon it

@@ -8,6 +8,7 @@ import {
   itemsByCategory,
   blurbFor,
 } from '../src/core/items.js';
+import { PICKUPS, WEAPONS } from '../src/config.js';
 
 // B9a — the offerable-item registry. Pure data + blurbs, so the offer screen can't drift from it.
 
@@ -73,5 +74,21 @@ describe('blurbFor (the exact effect line on a card)', () => {
     expect(blurbFor(itemById('GREATER_GUARD'))).toBe('Block the next 3 hits');
     expect(blurbFor(itemById('MOD_PIERCE'))).toMatch(/pierce/i);
     expect(blurbFor(itemById('SHOTGUN'))).toBe('Shotgun');
+  });
+});
+
+// B9b — items.js is the single offer registry, but the B8 ground/boss-chest engine still reads
+// PICKUPS.rarity.itemRarity. Guard against the two SOURCES drifting apart on weapon tiers.
+describe('no-drift: weapon items stay in lockstep with the B8 drop engine', () => {
+  it('every weapon item maps to a real config.WEAPONS key', () => {
+    for (const it of itemsByCategory.weapon) {
+      expect(WEAPONS[it.effect.weapon]).toBeDefined();
+    }
+  });
+
+  it('each weapon tier equals PICKUPS.rarity.itemRarity[id] (no drift)', () => {
+    for (const it of itemsByCategory.weapon) {
+      expect(it.tier).toBe(PICKUPS.rarity.itemRarity[it.id]);
+    }
   });
 });
