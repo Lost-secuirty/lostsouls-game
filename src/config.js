@@ -761,6 +761,9 @@ export const FEEL = {
       shooter: 5.5,
     },
   },
+  // ---- survivor spawn ring (units from NPC). Enemies from a hostile survivor spawn at a
+  // ring so they don't land on the player who is standing right next to the NPC.
+  survivorSpawnRing: { min: 3, max: 4.5 },
 };
 
 // ---- blood / particles ----

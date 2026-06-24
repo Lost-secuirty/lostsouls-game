@@ -302,6 +302,14 @@ export class Game {
       this._handlePickups();
       this._handleSurvivors(dt); // survivors stay helpable after the fight is over
       this._checkDoor();
+      // _checkDoor() may call loadRoom() or _onWin(), changing state this tick — only
+      // update enemies when we're still in ROOM_CLEAR (hostile-survivor spawn case).
+      if (this.state === State.ROOM_CLEAR && this.enemies.length) {
+        for (const e of this.enemies) e.update(dt, this);
+        this.enemies = this.enemies.filter((e) => !e.dead);
+        const wipe = !this.players.some((p) => p.alive);
+        if (this.coop ? wipe : !this.player.alive) this._onDefeat();
+      }
     } else if (this.state === State.HUMAN_CHOICE) {
       // fight is paused while the overlay is up; just drive the gamepad cursor
       // (mouse + keyboard are handled inside ui/humanchoice.js)
@@ -401,8 +409,13 @@ export class Game {
 
     if (outcome.effect === 'SPAWN_ENEMIES') {
       for (let i = 0; i < outcome.magnitude; i++) {
-        const ox = npc.x + (this.rng.next() * 4 - 2);
-        const oz = npc.z + (this.rng.next() * 4 - 2);
+        // Spawn on a ring so enemies don't land on the player standing next to the NPC.
+        const angle = this.rng.next() * Math.PI * 2;
+        const ringR =
+          FEEL.survivorSpawnRing.min +
+          this.rng.next() * (FEEL.survivorSpawnRing.max - FEEL.survivorSpawnRing.min);
+        const ox = npc.x + Math.cos(angle) * ringR;
+        const oz = npc.z + Math.sin(angle) * ringR;
         this.addEnemy(new Enemy(this.scene, 'chaser', ox, oz));
       }
     } else {
