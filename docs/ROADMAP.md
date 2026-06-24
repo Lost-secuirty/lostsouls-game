@@ -31,7 +31,7 @@ neighbours:
 
 ## Audio
 
-- [ ] **Real boss themes (5)** — bespoke "1940s doom-jazz × Doom" per boss, designed **with Caden**
+- [ ] **Real boss themes (5)** — bespoke "1950s doom-jazz × Doom" per boss, designed **with Caden**
       (Stable Audio, full ownership; prompts in [`AUDIO.md`](AUDIO.md)). _Deferred:_ creative call +
       Caden time; the 5 boss slots share one placeholder, swappable with no code change. _Trigger:_ a
       theme-making session.

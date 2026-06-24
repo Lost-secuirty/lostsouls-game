@@ -232,7 +232,7 @@ becomes an ADR when picked up.
       (curate with Scott's ear, maybe CC0/OGG, distinct genre per stage) still a polish pass.
 - [x] ~~**In-game credits surface.**~~ **DONE (v0.6.7).** Start menu → ♪ Credits panel
       (`ui/credits.js`) lists the CC-BY music attributions.
-- [ ] **AI boss themes (5).** Bespoke "1940s doom-jazz × Doom" per boss (Stable Audio, full
+- [ ] **AI boss themes (5).** Bespoke "1950s doom-jazz × Doom" per boss (Stable Audio, full
       ownership) — designed with Caden. Prompts in `docs/AUDIO.md`. Currently the 5 boss slots share
       one placeholder; swap each `boss_*` in `config.MUSIC` when a theme exists.
 - [ ] **Final stage-track curation.** Replace the Kevin MacLeod placeholders with the chosen score
@@ -279,6 +279,23 @@ becomes an ADR when picked up.
 - [ ] Optional: asset compression (glTF + KTX2/Draco), `OffscreenCanvas` worker — only if needed.
 - **Trigger to revisit:** sustained on-screen bullets approaching the pool ceiling, or frame budget
   blowing past ~16 ms on a target device (watch via the Stage-3 perf HUD).
+
+## Story / narrative (deferred open questions — 2026-06-24)
+
+> These were parked during the lore-locking session that settled the era (1950s) and world history.
+> Decide when the time is right; write the answer into `docs/STORY.md` when locked.
+
+- [ ] **Dad & Son names + backstory.** Who are they, and why are they together in the worst place
+      on earth? Names, a one-line reason. Caden's call especially.
+- [ ] **What's across the rift?** The other side of the portal — final zone name, what it looks
+      like, what crossing over means for the ending. Could be "the zone," "the warp field," etc.
+- [ ] **NPC / survivor flavor text.** Survivor names and distinct lines for the in-game interaction
+      prompts (help/leave outcomes). Right now they're generic. Even 3–4 names + matching one-liners
+      would add a lot of life.
+- [ ] **"Living Weapons" rules.** How a weapon wakes up, what it does, is it good or a curse?
+      Needed before building the Living Weapons arc.
+- [ ] **Survivor ally system design.** Temp companions, escort/quest rooms, trade — the full version
+      of the trust mechanic. Design before building.
 
 ## Cross-repo / org
 
