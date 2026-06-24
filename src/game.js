@@ -302,9 +302,9 @@ export class Game {
       this._handlePickups();
       this._handleSurvivors(dt); // survivors stay helpable after the fight is over
       this._checkDoor();
-      // Hostile-survivor enemies spawn during ROOM_CLEAR — update them so they actually
-      // chase the player, filter dead ones, and check defeat the same way PLAYING does.
-      if (this.enemies.length) {
+      // _checkDoor() may call loadRoom() or _onWin(), changing state this tick — only
+      // update enemies when we're still in ROOM_CLEAR (hostile-survivor spawn case).
+      if (this.state === State.ROOM_CLEAR && this.enemies.length) {
         for (const e of this.enemies) e.update(dt, this);
         this.enemies = this.enemies.filter((e) => !e.dead);
         const wipe = !this.players.some((p) => p.alive);
@@ -409,10 +409,11 @@ export class Game {
 
     if (outcome.effect === 'SPAWN_ENEMIES') {
       for (let i = 0; i < outcome.magnitude; i++) {
-        // Spawn on a ring 3–4.5 units from the NPC so enemies don't land on the player
-        // (who is standing right next to the NPC during the interaction).
+        // Spawn on a ring so enemies don't land on the player standing next to the NPC.
         const angle = this.rng.next() * Math.PI * 2;
-        const ringR = 3 + this.rng.next() * 1.5;
+        const ringR =
+          FEEL.survivorSpawnRing.min +
+          this.rng.next() * (FEEL.survivorSpawnRing.max - FEEL.survivorSpawnRing.min);
         const ox = npc.x + Math.cos(angle) * ringR;
         const oz = npc.z + Math.sin(angle) * ringR;
         this.addEnemy(new Enemy(this.scene, 'chaser', ox, oz));
