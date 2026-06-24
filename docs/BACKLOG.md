@@ -287,8 +287,8 @@ becomes an ADR when picked up.
 
 - [ ] **Dad & Son names + backstory.** Who are they, and why are they together in the worst place
       on earth? Names, a one-line reason. Caden's call especially.
-- [ ] **What's across the rift?** The other side of the portal — final zone name, what it looks
-      like, what crossing over means for the ending. Could be "the zone," "the warp field," etc.
+- [ ] **Final zone / boss beyond the portal.** The other world is described in `STORY.md` — but
+      the post-portal act (final zone name, what crossing over means for gameplay + endings) is TBD.
 - [ ] **NPC / survivor flavor text.** Survivor names and distinct lines for the in-game interaction
       prompts (help/leave outcomes). Right now they're generic. Even 3–4 names + matching one-liners
       would add a lot of life.
@@ -296,6 +296,36 @@ becomes an ADR when picked up.
       Needed before building the Living Weapons arc.
 - [ ] **Survivor ally system design.** Temp companions, escort/quest rooms, trade — the full version
       of the trust mechanic. Design before building.
+- [ ] **"Argus Array" as the in-world experiment name.** Operation Argus (1958, real — nukes in
+      space) is the best fit for the in-world name of the resonance array. Caden to confirm.
+
+## Narrative system (deferred — design locked 2026-06-24)
+
+> The design for choices, implicit storytelling, and multiple endings was locked in this session
+> (see `docs/STORY.md` and the session plan). Implementation is deferred — each item below
+> becomes an ADR when picked up.
+
+- [ ] **inkjs integration.** `npm install inkjs` — JS port of Ink narrative scripting. Zero
+      extra deps, Vite/browser-native, TypeScript support. API: `new inkjs.Story(compiled_json)`,
+      `story.Continue()`, `story.currentChoices[]`. Ink source files (`.ink`) compile to JSON —
+      the JSON is what ships. **New ADR required** (new dependency), superceding nothing (no prior
+      choice-system ADR).
+- [ ] **Persistent `storyState` store.** Small object in localStorage: `trustScore`,
+      `loreFragmentsFound`, `runsCompleted`, `crossedOver`. Hook into the B10 meta-progression
+      save schema (`saves.js`) once that's been in production long enough to trust.
+- [ ] **Survivor dialogue: lore hint pass.** Per-floor survivor lines that hint at (not explain)
+      the experiment. 3–4 lines per floor, written to the "survivors don't explain, they hint"
+      rule in `STORY.md`.
+- [ ] **Environmental lore objects.** Room decorations + prop types: scorched schematics,
+      government crates with operation codenames, resonance device fragments. Mesh + placement
+      system. Lore text (if any) is one line: a label, a warning, a stencil — never exposition.
+- [ ] **Multiple endings: A / B / C.** Spec in the session plan. A (Close It — default),
+      B (The Truth — `loreFragmentsFound >= threshold`), C (What We Are — trust + lore). Each
+      ending is a different post-portal sequence. Requires inkjs + storyState.
+- [ ] **Other world zone (post-portal gameplay).** Crossing the rift currently ends the run.
+      A post-portal act — the final zone on the other side — is its own track. Scope separately.
+- [ ] **Hades-style run progression.** Story advances every run (win or loss). NPCs reference
+      previous runs. Requires inkjs + storyState `runsCompleted` counter.
 
 ## Cross-repo / org
 

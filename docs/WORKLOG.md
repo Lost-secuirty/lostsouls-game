@@ -15,6 +15,45 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-24 — Story lore session 2: full backstory structured, narrative system planned, 1950s tech table (no version change)
+
+Continuation of the lore session from PR #65. Era was already locked (1950s); this session went deeper
+into the full in-world canon and designed the narrative delivery approach.
+
+**What was locked this session:**
+
+- **Nukes fell in 1940** in this alternate timeline — the 1950s is ~15 years post-nuke, not post-WW2
+  in the usual sense.
+- **The experiment was in this specific city.** Not a generic government site — the resonance array was
+  built here downtown, which is why the rift is at this city's center and nowhere else.
+- **Tech progression documented:** small resonance devices (late 1940s) → small rifts that closed on
+  their own (seemed harmless) → larger arrays (early 1950s) → this city's array (~1957) pulled enough
+  to hold a portal permanently open.
+- **The other world:** geographically similar to ours but untouched — no people, only demons,
+  humanoid creatures, and animal/demon hybrids. Not invading; the portal was opened from our side.
+  **We caused this.** That's the narrative reveal.
+- **Implicit/environmental storytelling approach:** backstory is never stated — it lives in
+  environmental objects, survivor hints, room names, item descriptions, and graffiti. Codified in
+  a new `docs/STORY.md` section.
+- **Reveal structure (floor-by-floor narrative map):** floors 1–2 = survival only; 3–4 = environmental
+  clues start; 5 = experiment site itself; crossing = the full reveal.
+- **Multiple endings concept:** three endings (A: Close It, B: The Truth, C: What We Are) based on
+  cumulative `trustScore + loreFragmentsFound`. Design spec in session plan.
+- **Choice engine recommendation: inkjs** (`npm install inkjs`). JS port of Ink, zero extra deps,
+  Vite/browser-native. Deferred to a future PR + ADR.
+- **Horror design principle confirmed:** suspense from staying alive (bullet hell), not jump scares.
+- **1950s classified programs research:** Project Pluto, Operation Argus, Operation Plumbbob, Project
+  1794, MK-ULTRA, SAGE network — weapon/lore name table added to `docs/STORY.md`.
+- **3D models deferred** to this weekend. Track C (spider-wolf boss, Stalker boss) stays parked.
+
+**Files updated:** `docs/STORY.md` (expanded experiment section, new Other World + Reveal Structure +
+Implicit Storytelling sections, updated Open Questions, 1950s tech table), `docs/BACKLOG.md` (updated
+story open questions, new Narrative System section with 7 deferred items).
+
+**Deviations:** None.
+
+---
+
 ## 2026-06-24 — Story lore session: era locked at 1950s, world history settled, backlog expanded (no version change)
 
 Canon decisions locked from a lore session with Scott:
