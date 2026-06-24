@@ -62,7 +62,7 @@ whatever is on the other side.
 
 ## The other world (through the portal)
 
-The rift doesn't lead nowhere. The other side:
+The rift leads somewhere. The other side:
 
 - **Geography:** structurally similar to ours — same topology, same rivers, same hills — but
   **untouched**. No ruins, no roads, no cities. Overgrown and strange. The same soil, a different

@@ -308,7 +308,7 @@ becomes an ADR when picked up.
 - [ ] **inkjs integration.** `npm install inkjs` — JS port of Ink narrative scripting. Zero
       extra deps, Vite/browser-native, TypeScript support. API: `new inkjs.Story(compiled_json)`,
       `story.Continue()`, `story.currentChoices[]`. Ink source files (`.ink`) compile to JSON —
-      the JSON is what ships. **New ADR required** (new dependency), superceding nothing (no prior
+      the JSON is what ships. **New ADR required** (new dependency), superseding nothing (no prior
       choice-system ADR).
 - [ ] **Persistent `storyState` store.** Small object in localStorage: `trustScore`,
       `loreFragmentsFound`, `runsCompleted`, `crossedOver`. Hook into the B10 meta-progression
