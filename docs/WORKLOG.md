@@ -15,6 +15,18 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-24 — Quick-win bugs: hostile-survivor enemies now move + spawn at safe distance (no version change)
+
+Two gameplay bugs fixed in `src/game.js`, no new gameplay systems.
+
+- **Bug: survivor-spawned enemies stood still** — enemies added by `_resolveSurvivor` (SPAWN_ENEMIES outcome) while in `ROOM_CLEAR` state were never updated. The `e.update()` loop only ran inside `State.PLAYING`; ROOM_CLEAR had no enemy-update path. Fix: added a guarded enemy-update block to the ROOM_CLEAR branch — only runs when `this.enemies.length > 0` (zero overhead on normal clears). Also added dead-enemy filter and defeat check so a player killed by a hostile survivor reaches game-over correctly.
+- **Bug: enemies spawned on top of the player** — spawn formula was `npc.x ± 2`, placing enemies within arm's reach of the NPC (and thus the player standing next to it). Fix: replaced with a ring of radius 3–4.5 units at a random angle from the NPC (`Math.cos/sin` of `rng.next() * 2π`). Same two rng calls per enemy; enemies now spawn with reaction distance.
+- **Bug 3 (input gating in ROOM_CLEAR) — resolved as non-issue**: full player input was already correctly allowed in ROOM_CLEAR (player needs to walk to the door). After fixing Bug 1, enemies also actively chase in ROOM_CLEAR, so firing is necessary — no change made.
+
+**Deviations:** None.
+
+---
+
 ## 2026-06-23 — Testing kit ports: statistical RNG battery + config invariants + metamorphic tests (no version change)
 
 Port of test patterns from [`Lost-secuirty/Demo-math-slot-test-only`](https://github.com/Lost-secuirty/Demo-math-slot-test-only) into the game's Vitest suite. No gameplay code changed; 22 new tests added, 303 total (up from 281).

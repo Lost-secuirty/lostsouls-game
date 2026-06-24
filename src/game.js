@@ -302,6 +302,14 @@ export class Game {
       this._handlePickups();
       this._handleSurvivors(dt); // survivors stay helpable after the fight is over
       this._checkDoor();
+      // Hostile-survivor enemies spawn during ROOM_CLEAR — update them so they actually
+      // chase the player, filter dead ones, and check defeat the same way PLAYING does.
+      if (this.enemies.length) {
+        for (const e of this.enemies) e.update(dt, this);
+        this.enemies = this.enemies.filter((e) => !e.dead);
+        const wipe = !this.players.some((p) => p.alive);
+        if (this.coop ? wipe : !this.player.alive) this._onDefeat();
+      }
     } else if (this.state === State.HUMAN_CHOICE) {
       // fight is paused while the overlay is up; just drive the gamepad cursor
       // (mouse + keyboard are handled inside ui/humanchoice.js)
@@ -401,8 +409,12 @@ export class Game {
 
     if (outcome.effect === 'SPAWN_ENEMIES') {
       for (let i = 0; i < outcome.magnitude; i++) {
-        const ox = npc.x + (this.rng.next() * 4 - 2);
-        const oz = npc.z + (this.rng.next() * 4 - 2);
+        // Spawn on a ring 3–4.5 units from the NPC so enemies don't land on the player
+        // (who is standing right next to the NPC during the interaction).
+        const angle = this.rng.next() * Math.PI * 2;
+        const ringR = 3 + this.rng.next() * 1.5;
+        const ox = npc.x + Math.cos(angle) * ringR;
+        const oz = npc.z + Math.sin(angle) * ringR;
         this.addEnemy(new Enemy(this.scene, 'chaser', ox, oz));
       }
     } else {
