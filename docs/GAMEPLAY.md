@@ -121,7 +121,7 @@ and watch it live in `npm run dev`. Common knobs:
    gradient (`STORY.md`). Significant new mechanics get an ADR.
 2. **New weapon:** add a `WEAPONS.<name>` entry (+ a behavior flag if it's a new bullet behavior, per
    ADR-0015) and put it in the `PICKUPS` drop table.
-3. **Check it against the canon rules** in `STORY.md` (1940s-era, no zombies, trust is earned, harder
+3. **Check it against the canon rules** in `STORY.md` (1950s-era, no zombies, trust is earned, harder
    toward the center, kid-fair) — if it breaks a rule, it doesn't go in until the rule changes there
    on purpose.
 

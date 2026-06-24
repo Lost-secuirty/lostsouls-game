@@ -102,16 +102,16 @@ Ids match `config.MUSIC.tracks`. **Placeholder** = a stand-in to swap later.
 - **Curated:** [Eric Matyas / Soundimage](https://soundimage.org/) (CC-BY, looping OGGs by mood:
   Dark/Ominous, Horror/Surreal, Boss), [Kevin MacLeod](https://incompetech.com) (CC-BY),
   [Pixabay](https://pixabay.com/music/) (no-attribution), [OpenGameArt CC0](https://opengameart.org/content/cc0-music-0), FreePD (public domain).
-- **Identity to aim for:** "1940s × Doom" = **doom-jazz / dark-jazz** + industrial weight; **distinct
+- **Identity to aim for:** "1950s × Doom" = **doom-jazz / dark-jazz** + industrial weight; **distinct
   genre per stage** (noir → military → organic → frantic → gothic).
 
 ## Boss themes — designed with Caden (AI-generated, the real ones)
 
-Plan: bespoke **"1940s doom-jazz × Doom"** per boss via **Stable Audio** (Pro = full ownership).
+Plan: bespoke **"1950s doom-jazz × Doom"** per boss via **Stable Audio** (Pro = full ownership).
 Generate → render OGG (~120s, clean loop) → drop in `public/audio/` as `boss_<key>.ogg` → set the id
 in `config.MUSIC.tracks` (loop points: ask Claude to tighten if needed). Prompts:
 
-- **`boss_spider`** — "Creeping 1940s noir doom-jazz: muted trumpet, slow upright-bass walk,
+- **`boss_spider`** — "Creeping Cold War noir doom-jazz: muted trumpet, slow upright-bass walk,
   skittering brushed percussion, faint clarinet; mounting unease erupting into a distorted
   industrial-metal spike — first-contact dread."
 - **`boss_human`** — "Frantic, paranoid dark-jazz: jittery brushed drums, anxious dissonant piano,

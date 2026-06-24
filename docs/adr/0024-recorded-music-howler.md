@@ -8,7 +8,7 @@
 
 Audio was 100% procedural (ADR-0006): snappy synth SFX + one low drone that just shifts pitch per
 floor. Scott wants this pass focused **heavy on audio** — real, produced **music**: a distinct
-background track per stage and a unique theme per boss, with a "**1940s × Doom**" identity (the real
+background track per stage and a unique theme per boss, with a "**1950s × Doom**" identity (the real
 genre **doom-jazz / dark-jazz / noir-jazz** + industrial weight). ADR-0006 itself anticipated this
 ("real audio files could still be added later behind the same `audio.play` facade").
 

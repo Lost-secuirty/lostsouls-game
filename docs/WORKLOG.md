@@ -15,6 +15,20 @@ interim home for the dedicated org-wide logging repo noted in [`BACKLOG.md`](BAC
 
 ---
 
+## 2026-06-24 — Story lore session: era locked at 1950s, world history settled, backlog expanded (no version change)
+
+Canon decisions locked from a lore session with Scott:
+
+- **Era shifted from 1940s to mid-to-late 1950s.** Caden originally picked the 1940s; after discussing the Echo/nuclear origin, Cold War paranoia is a better era anchor. Weapons, atmosphere, and music prompts updated throughout docs.
+- **World history resolved.** WW2 happened → the American government grew increasingly paranoid and cracked down → by the mid-1950s a **civil war** (people vs. government) had torn the country apart. This city was a battleground. The rift is a government experiment failure on top of all that.
+- **Echo energy origin promoted to canon.** Government scientists were studying nuclear blast energy as a new kind of fuel/force. Their teleportation experiment went wrong. The rift is the result. "Echo" is not a word that exists in the game world at the start — it's earned at the end.
+- **Files updated:** `STORY.md` (full rewrite of Setting + canon + removed "under discussion" section), `GAMEPLAY.md`, `AUDIO.md` (1940s → 1950s doom-jazz), `ROADMAP.md`, `BACKLOG.md` (added Story/narrative section with 5 deferred open questions), `LEARNINGS.md`, `docs/adr/0024-recorded-music-howler.md`.
+- **Deferred to backlog:** Dad & Son names, what's across the rift, NPC/survivor flavor text, Living Weapons rules, survivor ally system design.
+
+**Deviations:** None.
+
+---
+
 ## 2026-06-24 — Quick-win bugs: hostile-survivor enemies now move + spawn at safe distance (no version change)
 
 Two gameplay bugs fixed in `src/game.js`, no new gameplay systems.

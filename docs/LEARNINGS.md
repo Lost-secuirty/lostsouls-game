@@ -353,7 +353,7 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
 ## 2026-06-20 — Expansion 6 Stage 6 (polish: story bible, roomier arenas, scale pass, orbital fix)
 
 - **Wrote the story down so the theme can't drift (`docs/STORY.md`).** Scott + Caden's
-  canon: **1940s post-war ruined city**, an **experiment-gone-wrong rift** at the center
+  canon: **mid-to-late 1950s ruined city** (Cold War paranoia + civil war), an **experiment-gone-wrong rift** at the center
   that keeps spawning (harder toward the core; you win by **crossing over**), distrustful
   **survivors who help only temporarily** (already realized as the Human decision-boss),
   WW2-era guns that fuse with rift-tech and can **come "alive,"** and a hard rule:
@@ -409,10 +409,11 @@ Referenced by the Working Agreement (`AGENTS.md` #2).
   revive); `package.json` ↔ STATUS version re-synced; size-ladder comment fixed to `2.0–3.0`
   (cat is the smallest boss at 2.0); noted minion size derives from `ENEMY.chaser.radius`.
 - **Story canon fix (Scott corrected CodeRabbit).** CodeRabbit read "1940 + post-WW2" as a
-  contradiction; the real intent is: **no WW2 in this timeline — a civil war** wrecked a
-  **nameless** place, and "1940s" is only a **tech/era anchor** (period weapons/names/dates,
-  _no uzis_). Rewrote `STORY.md` Setting + canon rules accordingly. Lesson: when a linter
-  flags a "contradiction" in creative canon, confirm intent with the humans before "fixing."
+  contradiction; at the time the intent was no WW2. Later expanded (2026-06-24): WW2 did
+  happen → American government cracked down → **people-vs-government civil war** in the
+  mid-1950s, era anchor now **1950s** (Cold War paranoia fits the nuclear origin better).
+  Lesson: when a linter flags a "contradiction" in creative canon, confirm intent with the
+  humans before "fixing" — and leave room for the canon to evolve.
 
 ## 2026-06-21 — Expansion 7 Stage 2 (scaling math: upgrades + difficulty)
 
