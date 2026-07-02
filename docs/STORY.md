@@ -27,7 +27,8 @@ whatever is on the other side.
 - **Place:** a **nameless, medium-sized city** — not a sprawling metropolis, and deliberately
   unnamed. Streets, barricades, rubble, ruined blocks; a war-torn town, not a skyline.
 - **What broke it (history):**
-  - **WW2 happened.** The bombs fell. The world kept moving.
+  - **WW2 happened.** The bombs fell — **in 1940 in this timeline**, earlier than our history. The
+    war ended differently. The world kept moving.
   - In the years after, the American government grew increasingly paranoid — about Soviet nuclear
     capability, about internal dissent, about its own people.
   - The crackdowns escalated. Distrust became law. **People pushed back.**
@@ -37,9 +38,16 @@ whatever is on the other side.
     fear.
 - **The experiment:** Government scientists — working in secret — had been studying **nuclear energy
   as more than just a bomb**. They harvested something from the blast energy, something that
-  behaved like a fuel and a force. Ambitious enough, they tried to use it as a **transit
-  mechanism**. It went wrong. **Portals opened. The monsters came through.** The rift is their
-  failure, sitting at the center of the city.
+  behaved like a fuel and a force (no one has a name for it yet; the player may earn one by the
+  end). The program scaled in stages:
+  1. **Small resonance devices** (late 1940s) — barely enough to detect the signal. Tiny rifts
+     opened and closed on their own in seconds. Harmless, they concluded.
+  2. **Larger arrays** (early 1950s) — bigger devices, bigger rifts, longer durations. Still
+     closed. Creatures from the other side appeared occasionally. Written off as anomalies.
+  3. **This city's array** (~1957) — the largest yet, built in secret downtown. It pulled enough
+     Echo energy to hold a portal **permanently open**. The team didn't know until it was too
+     late. The experiment team is gone — dead, fled, or silenced. **The rift is their failure,
+     sitting at the center of the city, and it does not close on its own.**
 - **The mood:** paranoid, scavenged, desperate. Survivors hole up. Help is temporary and earned.
   The bomb already killed the old world; the rift is just the newest disaster on top of the old.
 
@@ -51,6 +59,25 @@ whatever is on the other side.
 - **It does not stop on its own.** The waves only end when the heroes **reach inside it and cross
   over** — into the other world / zone / "warp field" (name TBD; see Open Questions).
 - **Direction = difficulty.** Moving toward the center is moving toward the worst of it.
+
+## The other world (through the portal)
+
+The rift leads somewhere. The other side:
+
+- **Geography:** structurally similar to ours — same topology, same rivers, same hills — but
+  **untouched**. No ruins, no roads, no cities. Overgrown and strange. The same soil, a different
+  history.
+- **No people have ever lived there.** What lives there instead:
+  - **Demons** — ancient, no analogue to any human category.
+  - **Humanoid creatures** — bipedal, roughly human-shaped, but clearly not human; possibly the
+    dominant species of their world.
+  - **Animal/demon hybrids** — things that blur the line between creature and demon.
+- **They are not invading.** They are not organized. The portal opening in their world is as
+  disorienting to them as it is to ours — creatures fall through in both directions. **We punched
+  the hole. This is on us.** That's the reveal.
+- **The name:** player-earned. The Dad and Son have no name for it at the start. If the player
+  finds enough lore fragments and crosses over, they may understand what it actually is. **Caden
+  picks the final name.** Placeholder: "the other side" / "the zone."
 
 ## The heroes
 
@@ -117,13 +144,47 @@ gradient.)_
 
 The energy that powers the rift came from nuclear experiments:
 
-- Post-WW2, government scientists found that nuclear blasts released **something beyond radiation**
-  — a harvested force they couldn't fully categorize.
-- Early experiments treated it as a new kind of fuel. Ambitious tests tried to use it as a
-  **transit mechanism**. It went wrong. **The rift opened.**
+- Post-1940 (the bombs fell earlier in this timeline), government scientists found that nuclear
+  blasts released **something beyond radiation** — a harvested force they couldn't fully categorize.
+- The program escalated in stages: small resonance devices → small rifts that closed on their own
+  → larger arrays → **this city's array** that held a portal permanently open. Each stage was
+  treated as progress, not warning. See the full tech progression in _Setting > The experiment_.
 - **"Echo" is not a word that exists in the game world at the start.** Players encounter the
   energy, see the monsters it unleashed, fight toward the source. The name is earned — if at all
   — by the end, when they understand what they've been dealing with.
+
+## The reveal structure (narrative map, floor by floor)
+
+The backstory is **not announced**. The player pieces it together through environmental clues
+and survivor hints. The key reveal — **humans caused this** — should hit only near the end.
+
+| Floor(s)                         | What the player experiences                                                                                                                                                                                                                                                   | What they don't know yet                                 |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| **1–2** (Outskirts, Barricade)   | Just monsters. Survival mode. A survivor might say "don't go toward the center" or "the ones who built that thing are long gone" — cryptic, nothing explained.                                                                                                                | Everything. They don't know about the experiment at all. |
+| **3–4** (Fungal Depths, Kennels) | Environmental clues start: abandoned equipment in rooms, partially burned schematics, government crates with operation codenames stenciled on. Graffiti: "RESONANCE ARRAY — DO NOT APPROACH." Civil war damage and rift damage look the same — can't tell which caused which. | What the array was, or that this city was its test site. |
+| **5** (Catacombs → core)         | The experiment site itself. The player is walking into ground zero. The final approach makes it undeniable: this wasn't cosmic bad luck — it was **built here**.                                                                                                              | Only the final piece: what's on the other side.          |
+| **Crossing over**                | The portal. The other world. It's quiet. The creatures aren't attacking an invasion force — they're just there, in their world. The horror is retrospective: _we did this._                                                                                                   | Nothing — by here, they know.                            |
+
+The **Dad and Son** are silent protagonists — _they_ don't know the lore. The player discovers it
+ahead of them. That gap between player knowledge and character knowledge creates dread.
+
+## Implicit storytelling — how to deliver the lore
+
+The backstory is **never stated in dialogue or UI text**. Where it lives:
+
+1. **Environmental objects.** Abandoned resonance equipment fragments, scorched schematics, government
+   crates stamped with operation codenames. Players who explore find it; players who don't, miss it
+   — that's the right trade.
+2. **Survivor dialogue (handled carefully).** Survivors hint, they don't explain. Good: "the army
+   ran _from_ the center, not toward it." Bad: "the government built a resonance array in 1957 that
+   opened a portal." Let the player infer.
+3. **Room names.** "The Array Approach." "Resonance Block." "Processing Site 4." These carry lore
+   without a single word of exposition text.
+4. **Weapon and item descriptions.** A found prototype might say "DO NOT OPERATE WITHOUT SHIELDING"
+   — no explanation of what it does or why. The absence of explanation is the horror.
+5. **Graffiti / wall detail.** Kilroy-style markings, civil war slogans ("PEOPLE OVER GOV"), and
+   experiment warnings coexist on the same walls. The player pieces together two different
+   disasters' worth of history from the same surface.
 
 ## Tone & canon rules (the guardrails)
 
@@ -142,13 +203,21 @@ Keep new content inside these so the theme doesn't get lost:
 
 ## Open questions / placeholders (decide later, then write it here)
 
-- **Name of the other side** — "the other world," "the zone," the **"warp field"**? (Caden/Scott
-  pick.)
-- **What's across the rift?** The finale destination — a final zone/boss beyond the portal.
+- **Name of the other side** — the world is described in _The other world_ section above, but it
+  has no name yet. "The other side" / "the zone" are placeholders. **Caden picks.**
+- **Final zone / boss beyond the portal** — crossing the rift ends the current run; what's the
+  full post-portal act? A boss that lives in the other world? A way to destroy the array from
+  the inside? TBD.
+- **Multiple endings** — three-ending spec is in the session plan (A: Close It, B: The Truth, C:
+  What We Are). Needs inkjs integration before implementation.
 - **"Living Weapons" rules** — how a weapon wakes up, what it does, is it good or a curse?
-- **Survivor ally system** — temp companions, escort/quest rooms, trade, area mini-games.
-- **The dad & son** — names? a reason they're still together in the worst place on earth?
-- **NPC/survivor flavor text** — names and dialogue lines for in-game survivor encounters.
+  Needed before building the Living Weapons arc.
+- **Survivor ally system** — temp companions, escort/quest rooms, trade, area mini-games. Design
+  before building.
+- **The dad & son** — names? a reason they're still together in the worst place on earth? **Caden
+  and Scott pick.**
+- **NPC/survivor flavor text** — names and distinct lines for the in-game survivor interaction
+  prompts. Even 3–4 names + one-liners each would add a lot of life.
 
 ## Atmosphere & flavor sources (background research, not lore decisions)
 
@@ -168,6 +237,24 @@ flavor:
 
 These are **atmosphere/flavor sources**, not canon decisions. Use them to inspire room names, wall
 detail, enemy design — don't force them into plot.
+
+### Real 1950s classified programs — weapon / lore name table
+
+All declassified and public domain. Use for weapon names, operation codenames, room names, item
+descriptions, and graffiti:
+
+| Program                                  | Real context (brief)                                                                                                          | Game use                                                                                                                   |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **Project Pluto** ("The Flying Crowbar") | Nuclear ramjet missile; unshielded reactor powering a supersonic cruise weapon — everything in its flight path was irradiated | Weapon name ("Pluto Drive"), enemy projectile type, room crate label                                                       |
+| **Operation Argus**                      | 1958 — US detonated nukes in space to create an artificial radiation belt; "first time humans altered space weather"          | In-world name for the experiment: "the Argus Array" or "the Argus Event" — **Caden to confirm**                            |
+| **Operation Plumbbob**                   | 30 nuclear test shots in 1957; individual shot names: Hood, Harry, John, Able, Diablo, Boltzmann, Wilson                      | Weapon names ("Hood Carbine," "Boltzmann Charge"), graffiti/crate stencils, operation codenames in abandoned files         |
+| **Project 1794**                         | Flying-saucer-shaped aircraft contracted to shoot down Soviet bombers                                                         | A crate in a room stamped "PROJECT 1794 — TRANSIT PROTOTYPE"; a strange weapon silhouette                                  |
+| **MK-ULTRA**                             | CIA mind-control program using LSD and BZ on unknowing subjects                                                               | Why some survivors act erratic; "government experiment" flavor in survivor dialogue; ties to the civil war paranoia pillar |
+| **Philadelphia Experiment**              | Ship allegedly made invisible by military tech (already in this doc above)                                                    | The resonance experiment's cover story — it was publicly presented as a "transit" test                                     |
+| **SAGE network**                         | Semi-Automatic Ground Environment — massive Cold War radar + computer net to detect Soviet bombers                            | "Echo-SAGE" as the in-world name for the detection system the government used to track rift energy before the public knew  |
+
+**Weapon naming convention:** base name is 1950s-era hardware (M1, .45, carbine, launcher) +
+operation codename when rift-fused. Examples: "Hood Carbine," "Argus Launcher," "Pluto Drive."
 
 ---
 
